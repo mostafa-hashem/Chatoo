@@ -1,0 +1,12 @@
+{
+  "language" : "Language",
+  "english" : "English",
+  "arabic" : "Arabic",
+  "theme" : "Theme",
+  "lightMood" : "Light",
+  "darkMood" : "Dark",
+  "on" : "On",
+  "off" : "Off",
+  "groups": "Groups",
+  "chats": "Chats"
+}

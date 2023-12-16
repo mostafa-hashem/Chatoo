@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "633796968326",
+    "project_id": "chat-app-319",
+    "storage_bucket": "chat-app-319.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:633796968326:android:e138dfd8c66511d6cc7607",
+        "android_client_info": {
+          "package_name": "com.chat.soldier.chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "633796968326-ke6ejhk85c55t6q6at242p3feudl2vpr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1Yjn3vEV2Oq9fvtAm_oyxkMR-YKAZwms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "633796968326-ke6ejhk85c55t6q6at242p3feudl2vpr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
