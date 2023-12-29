@@ -41,11 +41,13 @@ class GroupFirebaseServices {
 
   static CollectionReference<Group> getGroupsCollection() {
     return FirebaseFirestore.instance
+        .collection(FirebasePath.users)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.groups)
         .withConverter<Group>(
-          fromFirestore: (snapshot, _) => Group.fromJson(snapshot.data()!),
-          toFirestore: (equipment, options) => equipment.toJson(),
-        );
+      fromFirestore: (snapshot, _) => Group.fromJson(snapshot.data()!),
+      toFirestore: (equipment, options) => equipment.toJson(),
+    );
   }
 
   Future<List<Group>> getGroups() async {
@@ -56,10 +58,10 @@ class GroupFirebaseServices {
   }
 
   Future<void> createGroup(
-    Group group,
-    String userName,
-    User currentUser,
-  ) async {
+      Group group,
+      String userName,
+      User currentUser,
+      ) async {
     final groups = getGroupsCollection();
     final userGroupDocRef = await groups.add(group);
     group.groupId = userGroupDocRef.id;
@@ -77,9 +79,10 @@ class GroupFirebaseServices {
       "groupId": userGroupDocRef.id,
     });
     await _usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({
-      "groups": FieldValue.arrayUnion([group.groupId]),
+      "groups": FieldValue.arrayUnion(["${group.groupId}_${group.groupName}"]),
     });
   }
+
 
   Future<String> uploadImage(File imageFile) async {
     final Reference storageRef = _storage.ref().child('groups');

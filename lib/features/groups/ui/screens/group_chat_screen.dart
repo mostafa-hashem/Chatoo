@@ -6,7 +6,6 @@ import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/shared/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
-import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
@@ -42,6 +41,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         TextPosition(offset: messageController.text.length),
       );
   }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
@@ -68,18 +68,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       ),
       body: Column(
         children: <Widget>[
-          BlocConsumer<GroupCubit, GroupStates>(
-            listener: (context, state) {
-
-            },
-            builder: (context, state) {
-              if(state is GetAllGroupMessagesLoading){
-                return const Expanded(child: LoadingIndicator());
-              }
-              return ChatMessages(
-                groupData: GroupCubit.get(context).filteredMessages,
-              );
-            },
+          ChatMessages(
+            groupData: GroupCubit.get(context).filteredMessages,
           ),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
@@ -135,24 +125,32 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     ),
                   ),
                 ),
-                Material(
-                  color: Colors.transparent,
-                  child: IconButton(
-                    onPressed: () {
-                      if (messageController.text.isNotEmpty) {
-                        GroupCubit.get(context).sendMessage(
-                          groupData,
-                          sender,
-                          messageController.text,
-                        );
-                        setState(() {
-                          messageController.clear();
-                        });
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.send,
-                      color: Colors.white,
+                BlocListener<GroupCubit, GroupStates>(
+                  listener: (context, state) {
+                    if (state is SendMessageSuccess) {
+                      GroupCubit.get(context)
+                          .getAllGroupMessages(groupData.groupId);
+                    }
+                  },
+                  child: Material(
+                    color: Colors.transparent,
+                    child: IconButton(
+                      onPressed: () {
+                        if (messageController.text.isNotEmpty) {
+                          GroupCubit.get(context).sendMessage(
+                            groupData,
+                            sender,
+                            messageController.text,
+                          );
+                          setState(() {
+                            messageController.clear();
+                          });
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
