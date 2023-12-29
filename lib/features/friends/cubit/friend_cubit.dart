@@ -1,5 +1,7 @@
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
+import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/data/services/friend_firebase_services.dart';
+import 'package:chat_app/features/groups/data/model/message_data.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +13,12 @@ class FriendCubit extends Cubit<FriendStates> {
   static FriendCubit get(BuildContext context) => BlocProvider.of(context);
   final _friendFirebaseServices = FriendFirebaseServices();
   List<User> allUsers = [];
-  List<User> allFriends = [];
+  List<Friend> allFriends = [];
   List<User> searchedFriends = [];
+  List<Message> allMessages = [];
+  List<Message> filteredMessages = [];
 
-  Future<void> addFriend(User friend,User currentUser) async {
+  Future<void> addFriend(User friend, User currentUser) async {
     emit(AddFriendLoading());
     try {
       await _friendFirebaseServices.addFriend(friend, currentUser);
@@ -25,10 +29,10 @@ class FriendCubit extends Cubit<FriendStates> {
   }
 
   Future<void> getAllUsers() async {
-    emit( GetAllUsersLoading());
+    emit(GetAllUsersLoading());
     try {
       allUsers = await _friendFirebaseServices.getUsers();
-      emit( GetAllUsersSuccess());
+      emit(GetAllUsersSuccess());
     } catch (e) {
       emit(
         GetAllUsersError(Failure.fromException(e).message),
@@ -46,7 +50,6 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-
   Future<void> searchOnFriend(String friendName) async {
     emit(SearchOnFriendLoading());
     try {
@@ -54,8 +57,8 @@ class FriendCubit extends Cubit<FriendStates> {
       searchedFriends = allUsers
           .where(
             (friend) =>
-            friend.userName == friendName || friend.id == friendName,
-      )
+                friend.userName == friendName || friend.id == friendName,
+          )
           .toList();
       emit(SearchOnFriendSuccess());
     } catch (e) {
@@ -63,14 +66,27 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> sendMessageToFriend(User friend, User sender, String message) async {
+  Future<void> sendMessageToFriend(
+      User friend, User sender, String message) async {
     emit(SendMessageLoading());
     try {
-      await _friendFirebaseServices.sendMessageToFriend(friend, message, sender);
+      await _friendFirebaseServices.sendMessageToFriend(
+          friend, message, sender);
       emit(SendMessageSuccess());
     } catch (e) {
       emit(SendMessageError(Failure.fromException(e).message));
     }
   }
 
+  Future<void> getAllFriendMessages(String friendId) async {
+    emit(GetAllFriendMessagesLoading());
+    try {
+      allMessages = await _friendFirebaseServices.getAllUserMessages(friendId);
+      filteredMessages =
+          allMessages.where((message) => message.groupId == friendId).toList();
+      emit(GetAllFriendMessagesSuccess());
+    } catch (e) {
+      emit(GetAllFriendMessagesError(Failure.fromException(e).message));
+    }
+  }
 }

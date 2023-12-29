@@ -53,6 +53,7 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
             friendData
                 .addFriend(widget.friendData, userdata.user)
                 .whenComplete(() {
+              FriendCubit.get(context).getAllUserFriends();
               showSnackBar(
                 context,
                 Colors.green,

@@ -1,4 +1,4 @@
-// import 'package:chat_app/features/friends/ui/screens/frind_chat_screen.dart';
+// import 'package:chat_app/features/friends/ui/screens/friend_chat_screen.dart';
 // import 'package:chat_app/ui/resources/app_colors.dart';
 // import 'package:chat_app/widgets/widgets.dart';
 // import 'package:flutter/material.dart';

@@ -1,34 +1,32 @@
+import 'package:chat_app/utils/data/models/user.dart';
+
 class Friend {
-  final String friendName;
-  final String friendId;
-  final String friendBio;
-  final String friendPhoto;
-  final List<String> friendMessages;
+   User? friendData;
+  String? recentMessage;
+  String? recentMessageSender;
 
   Friend({
-    required this.friendName,
-    required this.friendId,
-    required this.friendBio,
-    required this.friendPhoto,
-    required this.friendMessages,
+    required this.friendData,
+    required this.recentMessage,
+    required this.recentMessageSender,
   });
 
-  Friend.fromJson(Map<String, dynamic> json)
-      : this(
-          friendName: json['friendName'] as String,
-          friendId: json['friendId'] as String,
-          friendBio: json['friendBio'] as String,
-          friendPhoto: json['friendPhoto'] as String,
-          friendMessages: (json['friendMessages'] as List)
-              .map((friendMessages) => friendMessages as String)
-              .toList(),
-        );
+  Friend.fromJson(Map<String, dynamic> json) {
+    if (json['friendData'] != null) {
+      friendData = User.fromJson(json['friendData'] as Map<String, dynamic>);
+    }
+    if (json['recentMessage'] != null) {
+      recentMessage = json['recentMessage'] as String;
+    }
+    if (json['recentMessageSender'] != null) {
+      recentMessageSender = json['recentMessageSender'] as String;
+    }
+  }
 
   Map<String, dynamic> toJson() => {
-        'friendName': friendName,
-        'friendId': friendId,
-        'friendBio': friendBio,
-        'friendPhoto': friendPhoto,
-        'friendMessages': friendMessages,
+        if (friendData != null) 'friendData': friendData?.toJson(),
+        if (recentMessage != null) 'recentMessage': recentMessage,
+        if (recentMessageSender != null)
+          'recentMessageSender': recentMessageSender,
       };
 }

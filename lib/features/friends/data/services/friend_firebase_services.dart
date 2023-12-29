@@ -1,3 +1,5 @@
+import 'package:chat_app/features/friends/data/model/friend_data.dart';
+import 'package:chat_app/features/groups/data/model/message_data.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,10 +20,10 @@ class FriendFirebaseServices {
         .toList();
   }
 
-  Future<List<User>> getAllUserFriends() async {
+  Future<List<Friend>> getAllUserFriends() async {
     final querySnapshot = await _friendsCollection.get();
     return querySnapshot.docs
-        .map((queryDocSnapshot) => User.fromJson(queryDocSnapshot.data()))
+        .map((queryDocSnapshot) => Friend.fromJson(queryDocSnapshot.data()))
         .toList();
   }
 
@@ -29,11 +31,17 @@ class FriendFirebaseServices {
     _usersCollection
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.friends)
-        .add(friend.toJson());
-    _usersCollection
-        .doc(friend.id)
-        .collection(FirebasePath.friends)
-        .add(currentUser.toJson());
+        .doc()
+        .set({
+      'recentMessage': '',
+      'recentMessageSender': '',
+      "friendData": friend.toJson(),
+    });
+    _usersCollection.doc(friend.id).collection(FirebasePath.friends).doc().set({
+      'recentMessage': '',
+      'recentMessageSender': '',
+      "friendData": currentUser.toJson(),
+    });
     _usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({
       "friends": FieldValue.arrayUnion([
         friend.id,
@@ -47,10 +55,10 @@ class FriendFirebaseServices {
   }
 
   Future<void> sendMessageToFriend(
-      User friend,
-      String message,
-      User sender,
-      ) async {
+    User friend,
+    String message,
+    User sender,
+  ) async {
     if (message.isEmpty) {
       return;
     }
@@ -100,4 +108,18 @@ class FriendFirebaseServices {
       'recentMessageSender': sender.userName,
     });
   }
+
+  Future<List<Message>> getAllUserMessages(String friendId) async {
+    final querySnapshot = await _usersCollection
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .collection(FirebasePath.messages)
+        .get();
+
+    return querySnapshot.docs
+        .map((queryDocSnapshot) => Message.fromJson(queryDocSnapshot.data()))
+        .toList();
+  }
+
 }

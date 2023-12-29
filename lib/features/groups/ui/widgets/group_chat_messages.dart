@@ -25,8 +25,8 @@ class _ChatMessagesState extends State<ChatMessages> {
         itemBuilder: (context, index) {
           return GroupMessagesTile(
             groupMessage:widget.groupData[index],
-            sentByMe: ProfileCubit.get(context).user.userName ==
-                widget.groupData[index].sender.userName,
+            sentByMe: ProfileCubit.get(context).user.id ==
+                widget.groupData[index].sender.id,
           );
         },
       ),

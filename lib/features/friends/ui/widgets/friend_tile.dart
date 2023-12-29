@@ -5,11 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 class FriendTile extends StatefulWidget {
   const FriendTile({
     super.key,
-    required this.friendId,
     required this.friendName,
   });
 
-  final String friendId;
   final String friendName;
 
   @override

@@ -1,7 +1,7 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
-import 'package:chat_app/features/groups/ui/widgets/chat_messages.dart';
+import 'package:chat_app/features/groups/ui/widgets/group_chat_messages.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/shared/provider/app_provider.dart';

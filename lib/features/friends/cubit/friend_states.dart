@@ -51,3 +51,12 @@ class SendMessageError extends FriendStates {
 
   SendMessageError(this.message);
 }
+ class GetAllFriendMessagesLoading extends FriendStates {}
+
+class GetAllFriendMessagesSuccess extends FriendStates {}
+
+class GetAllFriendMessagesError extends FriendStates {
+  final String message;
+
+  GetAllFriendMessagesError(this.message);
+}
