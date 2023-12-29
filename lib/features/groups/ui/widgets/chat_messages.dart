@@ -1,4 +1,3 @@
-import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/groups/data/model/message_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_messages_tile.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';

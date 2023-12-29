@@ -19,7 +19,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
     final groups = GroupCubit.get(context);
-    return groups.allGroups.isNotEmpty
+    return groups.allUserGroups.isNotEmpty
         ? BlocConsumer<GroupCubit, GroupStates>(
             listener: (_, state) {
               if (state is CreateGroupLoading) {
@@ -60,22 +60,22 @@ class _GroupsScreenState extends State<GroupsScreen> {
               }
             },
             builder: (context, state) => ListView.builder(
-              itemCount: groups.allGroups.length,
+              itemCount: groups.allUserGroups.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
                     GroupCubit.get(context)
-                        .getAllGroupMessages(groups.allGroups[index].groupId);
+                        .getAllGroupMessages(groups.allUserGroups[index].groupId);
                     Navigator.pushNamed(
                       context,
                       Routes.groupChatScreen,
-                      arguments: groups.allGroups[index],
+                      arguments: groups.allUserGroups[index],
                     );
                   },
                   child: GroupTile(
-                    groupId: groups.allGroups[index].groupId,
-                    groupName: groups.allGroups[index].groupName,
-                    userName: groups.allGroups[index].adminName,
+                    groupId: groups.allUserGroups[index].groupId,
+                    groupName: groups.allUserGroups[index].groupName,
+                    userName: groups.allUserGroups[index].adminName,
                   ),
                 );
               },

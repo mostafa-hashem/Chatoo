@@ -42,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 left: 20.w,
                 right: 20.w,
                 top: 10.h,
-                bottom: MediaQuery.of(context).viewInsets.bottom * 0.1),
+                bottom: MediaQuery.of(context).viewInsets.bottom * 0.1,),
             child: Form(
               key: formKey,
               child: Column(

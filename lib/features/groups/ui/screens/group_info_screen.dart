@@ -1,8 +1,9 @@
+import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
-import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_members.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
+import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
-import 'package:chat_app/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,13 +18,6 @@ class GroupInfo extends StatefulWidget {
 }
 
 class _GroupInfoState extends State<GroupInfo> {
-  Stream? members;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   String getName(String r) {
     return r.substring(r.indexOf("_") + 1);
   }
@@ -64,7 +58,15 @@ class _GroupInfoState extends State<GroupInfo> {
                       ),
                       IconButton(
                         onPressed: () {
-                          nextScreenReplace(context, const GroupsScreen());
+                          GroupCubit.get(context).leaveGroup(
+                            ProfileCubit.get(context).user.id!,
+                            groupData.groupId,
+                            ProfileCubit.get(context).user,
+                          );
+                          Navigator.pushReplacementNamed(
+                            context,
+                            Routes.groupChatScreen,
+                          );
                         },
                         icon: const Icon(
                           Icons.done,

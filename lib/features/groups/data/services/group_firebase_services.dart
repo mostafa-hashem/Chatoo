@@ -41,13 +41,18 @@ class GroupFirebaseServices {
 
   static CollectionReference<Group> getGroupsCollection() {
     return FirebaseFirestore.instance
-        .collection(FirebasePath.users)
-        .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.groups)
         .withConverter<Group>(
           fromFirestore: (snapshot, _) => Group.fromJson(snapshot.data()!),
           toFirestore: (equipment, options) => equipment.toJson(),
         );
+  }
+
+  Future<List<Group>> getGroups() async {
+    final querySnapshot = await _groupsCollection.get();
+    return querySnapshot.docs
+        .map((queryDocSnapshot) => Group.fromJson(queryDocSnapshot.data()))
+        .toList();
   }
 
   Future<void> createGroup(
@@ -72,7 +77,7 @@ class GroupFirebaseServices {
       "groupId": userGroupDocRef.id,
     });
     await _usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({
-      "groups": FieldValue.arrayUnion(["${group.groupId}_${group.groupName}"]),
+      "groups": FieldValue.arrayUnion([group.groupId]),
     });
   }
 
@@ -88,7 +93,10 @@ class GroupFirebaseServices {
   }
 
   Future<void> sendMessageToGroup(
-      Group group, String message, User sender) async {
+    Group group,
+    String message,
+    User sender,
+  ) async {
     if (message.isEmpty) {
       return;
     }
@@ -133,6 +141,44 @@ class GroupFirebaseServices {
         .update({
       'recentMessage': message,
       'recentMessageSender': sender.userName,
+    });
+  }
+
+  Future<bool> isUserInGroup(String userId, String groupId) async {
+    final DocumentSnapshot userDocSnapshot = await _usersCollection
+        .doc(userId)
+        .collection(FirebasePath.groups)
+        .doc(groupId)
+        .get();
+
+    return userDocSnapshot.exists;
+  }
+
+  Future<void> joinGroup(String userId, Group group, User user) async {
+
+    _usersCollection.doc(userId).collection(FirebasePath.groups).add(group.toJson());
+
+    await _usersCollection.doc(userId).update({
+      "groups": FieldValue.arrayUnion([group.groupId]),
+    });
+    await _groupsCollection.doc(group.groupId).update({
+      "members": FieldValue.arrayUnion([user]),
+    });
+  }
+
+  Future<void> leaveGroup(String userId, String groupId, User user) async {
+    final DocumentReference userDocReference = _usersCollection
+        .doc(userId)
+        .collection(FirebasePath.groups)
+        .doc(groupId);
+
+    await userDocReference.delete();
+
+    await _usersCollection.doc(userId).update({
+      "groups": FieldValue.arrayRemove([groupId]),
+    });
+    await _groupsCollection.doc(groupId).update({
+      "members": FieldValue.arrayRemove([user]),
     });
   }
 }

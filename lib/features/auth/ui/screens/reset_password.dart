@@ -30,7 +30,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 left: 16.0.w,
                 right: 16.0.w,
                 top: 20.h,
-                bottom: MediaQuery.of(context).viewInsets.bottom * 1.1),
+                bottom: MediaQuery.of(context).viewInsets.bottom * 1.1,),
             child: Form(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +79,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     "please enter your mail address to resets your password",
                     style: novaFlat18WhiteLight().copyWith(
                       letterSpacing: -0.41,
-                      fontSize: 14
+                      fontSize: 14,
                     ),
                   ),
                   SizedBox(

@@ -150,7 +150,7 @@ class _FriendsChatScreenState extends State<FriendsChatScreen> {
               ? ListView.builder(
                   itemCount: 0,
                   itemBuilder: (context, index) {
-                    return SizedBox.shrink();
+                    return const SizedBox.shrink();
                   },
                 )
               : Container();
