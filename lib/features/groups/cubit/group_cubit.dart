@@ -68,7 +68,7 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
-  Future<void> sendMessage(Group group, User sender, String message) async {
+  Future<void> sendMessageToGroup(Group group, User sender, String message) async {
     emit(SendMessageLoading());
     try {
       await _groupFirebaseServices.sendMessageToGroup(group, message, sender);

@@ -1,6 +1,6 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
-import 'package:chat_app/features/groups/ui/widgets/search_group_widget.dart';
+import 'package:chat_app/features/groups/ui/widgets/group_search_widget.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -16,14 +16,6 @@ class GroupSearchScreen extends StatefulWidget {
 }
 
 class _GroupSearchScreenState extends State<GroupSearchScreen> {
-  TextEditingController searchOnGroupsController = TextEditingController();
-  bool isJoined = true;
-
-  @override
-  void dispose() {
-    searchOnGroupsController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +48,6 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                     builder: (context, state) {
                       return TextField(
                         onChanged: (value) => groupData.searchOnGroup(value),
-                        controller: searchOnGroupsController,
                         style: GoogleFonts.ubuntu(color: Colors.white),
                         decoration: InputDecoration(
                           border: InputBorder.none,
@@ -96,7 +87,7 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                         groupData.allUserGroups[index].groupId,
                       );
                     },
-                    child: SearchGroupWidget(
+                    child: GroupSearchWidget(
                       groupData: groupData.searchedGroups[index],
                       isJoined: groupData.isUserMember,
                     ),

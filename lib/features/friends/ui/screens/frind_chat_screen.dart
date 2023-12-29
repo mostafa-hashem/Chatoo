@@ -1,76 +1,49 @@
-import 'package:chat_app/features/groups/cubit/group_cubit.dart';
-import 'package:chat_app/features/groups/cubit/group_states.dart';
-import 'package:chat_app/features/groups/data/model/group_data.dart';
-import 'package:chat_app/features/groups/ui/widgets/chat_messages.dart';
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/shared/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class GroupChatScreen extends StatefulWidget {
-  const GroupChatScreen({
+class FriendChatScreen extends StatefulWidget {
+  const FriendChatScreen({
     super.key,
   });
 
   @override
-  State<GroupChatScreen> createState() => _GroupChatScreenState();
+  State<FriendChatScreen> createState() => _FriendChatScreenState();
 }
 
-class _GroupChatScreenState extends State<GroupChatScreen> {
+class _FriendChatScreenState extends State<FriendChatScreen> {
   TextEditingController messageController = TextEditingController();
-
   bool emojiShowing = false;
 
   @override
-  void dispose() {
-    messageController.dispose();
-    super.dispose();
-  }
-
-  void _onBackspacePressed() {
-    messageController
-      ..text = messageController.text.characters.toString()
-      ..selection = TextSelection.fromPosition(
-        TextPosition(offset: messageController.text.length),
-      );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<MyAppProvider>(context);
+    final friendData = ModalRoute.of(context)!.settings.arguments! as User;
     final sender = ProfileCubit.get(context).user;
-    final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
+    final provider = Provider.of<MyAppProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          groupData.groupName,
+          friendData.userName!,
           style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                Routes.groupInfo,
-                arguments: groupData,
-              );
-            },
+            onPressed: () {},
             icon: const Icon(Icons.info),
           ),
         ],
       ),
       body: Column(
         children: <Widget>[
-          ChatMessages(
-            groupData: GroupCubit.get(context).filteredMessages,
-          ),
+          chatMessages(),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
@@ -125,32 +98,24 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     ),
                   ),
                 ),
-                BlocListener<GroupCubit, GroupStates>(
-                  listener: (context, state) {
-                    if (state is SendMessageSuccess) {
-                      GroupCubit.get(context)
-                          .getAllGroupMessages(groupData.groupId);
-                    }
-                  },
-                  child: Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () {
-                        if (messageController.text.isNotEmpty) {
-                          GroupCubit.get(context).sendMessageToGroup(
-                            groupData,
-                            sender,
-                            messageController.text,
-                          );
-                          setState(() {
-                            messageController.clear();
-                          });
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                      ),
+                Material(
+                  color: Colors.transparent,
+                  child: IconButton(
+                    onPressed: () {
+                      if (messageController.text.isNotEmpty) {
+                        FriendCubit.get(context).sendMessageToFriend(
+                          friendData,
+                          sender,
+                          messageController.text,
+                        );
+                        setState(() {
+                          messageController.clear();
+                        });
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.send,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -163,7 +128,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               height: 220.h,
               child: EmojiPicker(
                 textEditingController: messageController,
-                onBackspacePressed: _onBackspacePressed,
                 config: Config(
                   emojiSizeMax: 30 *
                       (foundation.defaultTargetPlatform == TargetPlatform.iOS
@@ -187,5 +151,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ],
       ),
     );
+  }
+
+  Expanded chatMessages() {
+    return Expanded(
+        child: ListView.builder(
+      itemCount: 0,
+      itemBuilder: (context, index) {
+        return const SizedBox.shrink();
+      },
+    ));
   }
 }

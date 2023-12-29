@@ -8,7 +8,7 @@ class User {
   String? phoneNumber;
   String? profileImage;
   List<dynamic>? groups;
-  List<String>? friends;
+  List<dynamic>? friends;
   Address? address;
 
   User({
@@ -33,11 +33,11 @@ class User {
     if (json['address'] != null) {
       address = Address.fromJson(json['address'] as Map<String, dynamic>);
     }
-    if (json['groups'] != null) {
+    if (json['groups'] != null && json['groups'] is List<dynamic>)  {
       groups = json['groups'] as List<dynamic>;
     }
-    if (json['friends'] != null) {
-      friends = json['friends'] as List<String>;
+    if (json['friends'] != null && json['friends'] is List<dynamic>) {
+      friends = json['friends'] as List<dynamic>;
     }
   }
 
@@ -51,7 +51,7 @@ class User {
       'profileImage': profileImage,
       if (address != null) 'address': address?.toJson(),
       if (groups != null) 'groups': groups,
-      if (friends != null) 'address': friends,
+      if (friends != null) 'friends': friends,
     };
   }
 }

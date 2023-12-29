@@ -1,5 +1,5 @@
 import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
-import 'package:chat_app/features/friends/cubit/cubit.dart';
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/firebase_options.dart';

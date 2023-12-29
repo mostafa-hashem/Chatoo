@@ -74,7 +74,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
             IconButton(
               onPressed: () {
                  _tabController.index == 0
-                     ? Navigator.pushNamed(context, Routes.groupSearchScreen)
+                     ? Navigator.pushNamed(context, Routes.friendSearchScreen)
                     : Navigator.pushNamed(context, Routes.groupSearchScreen);
               },
               icon: const Icon(

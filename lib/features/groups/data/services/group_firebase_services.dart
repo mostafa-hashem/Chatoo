@@ -50,6 +50,17 @@ class GroupFirebaseServices {
     );
   }
 
+  // static CollectionReference<Message> getMessagesCollection(String groupId) {
+  //   return FirebaseFirestore.instance
+  //       .collection(FirebasePath.groups)
+  //       .doc(groupId)
+  //       .collection(FirebasePath.messages)
+  //       .withConverter<Message>(
+  //     fromFirestore: (snapshot, _) => Message.fromJson(snapshot.data()!),
+  //     toFirestore: (equipment, options) => equipment.toJson(),
+  //   );
+  // }
+
   Future<List<Group>> getGroups() async {
     final querySnapshot = await _groupsCollection.get();
     return querySnapshot.docs
@@ -124,6 +135,7 @@ class GroupFirebaseServices {
       'sender': sender.toJson(),
       'sentAt': FieldValue.serverTimestamp(),
     });
+
     groupMessageDocRef.set({
       'groupId': group.groupId,
       'messageId': messageId,

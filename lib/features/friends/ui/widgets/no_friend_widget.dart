@@ -1,3 +1,4 @@
+import 'package:chat_app/route_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,7 +13,9 @@ class NoFriendWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.pushNamed(context, Routes.friendSearchScreen);
+            },
             child: Icon(
               Icons.add_circle,
               color: Colors.grey[700],

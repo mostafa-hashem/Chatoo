@@ -7,21 +7,21 @@ import 'package:chat_app/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SearchGroupWidget extends StatefulWidget {
+class GroupSearchWidget extends StatefulWidget {
   final Group groupData;
   final bool isJoined;
 
-  const SearchGroupWidget({
+  const GroupSearchWidget({
     super.key,
     required this.groupData,
     required this.isJoined,
   });
 
   @override
-  State<SearchGroupWidget> createState() => _SearchGroupWidgetState();
+  State<GroupSearchWidget> createState() => _GroupSearchWidgetState();
 }
 
-class _SearchGroupWidgetState extends State<SearchGroupWidget> {
+class _GroupSearchWidgetState extends State<GroupSearchWidget> {
   @override
   Widget build(BuildContext context) {
     final userdata = ProfileCubit.get(context);
