@@ -22,7 +22,7 @@ class Message {
     messageId: json['messageId'] as String,
     message: json['message'] as String,
     sender: User.fromJson(json['sender'] as Map<String, dynamic>),
-    sentAt: (json['sentAt'] as Timestamp).toDate(),
+    sentAt: json['sentAt'] != null ? (json['sentAt'] as Timestamp).toDate() : DateTime.now(),
   );
 
 

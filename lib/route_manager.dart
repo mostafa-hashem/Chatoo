@@ -1,9 +1,9 @@
 import 'package:chat_app/features/auth/ui/screens/login_screen.dart';
 import 'package:chat_app/features/auth/ui/screens/register_screen.dart';
 import 'package:chat_app/features/auth/ui/screens/reset_password.dart';
+import 'package:chat_app/features/friends/ui/screens/friend_chat_screen.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_info_screen.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_search_screen.dart';
-import 'package:chat_app/features/friends/ui/screens/friend_chat_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/grop_search_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/group_chat_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/group_info_screen.dart';

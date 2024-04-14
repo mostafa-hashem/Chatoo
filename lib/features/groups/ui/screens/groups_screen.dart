@@ -65,12 +65,15 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 return GestureDetector(
                   onTap: () {
                     GroupCubit.get(context)
-                        .getAllGroupMessages(groups.allUserGroups[index].groupId);
-                    Navigator.pushNamed(
-                      context,
-                      Routes.groupChatScreen,
-                      arguments: groups.allUserGroups[index],
-                    );
+                        .getAllGroupMessages(
+                            groups.allUserGroups[index].groupId)
+                        .whenComplete(
+                          () => Navigator.pushNamed(
+                            context,
+                            Routes.groupChatScreen,
+                            arguments: groups.allUserGroups[index],
+                          ),
+                        );
                   },
                   child: GroupTile(
                     groupId: groups.allUserGroups[index].groupId,

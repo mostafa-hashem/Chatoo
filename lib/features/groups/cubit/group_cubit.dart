@@ -21,6 +21,7 @@ class GroupCubit extends Cubit<GroupStates> {
   List<Message> allMessages = [];
   List<Message> filteredMessages = [];
   bool isUserMember = false;
+  ScrollController scrollController = ScrollController();
 
   Future<void> createGroup(Group group, String userName, User user) async {
     emit(CreateGroupLoading());
@@ -61,7 +62,8 @@ class GroupCubit extends Cubit<GroupStates> {
     try {
       allMessages = await _groupFirebaseServices.getAllGroupMessages(groupId);
       filteredMessages =
-          allMessages.where((message) => message.groupId == groupId).toList();
+          allMessages.where((message) => message.groupId == groupId,).toList();
+      filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
       emit(GetAllGroupMessagesSuccess());
     } catch (e) {
       emit(GetAllGroupMessagesError(Failure.fromException(e).message));

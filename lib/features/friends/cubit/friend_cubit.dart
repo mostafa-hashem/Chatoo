@@ -67,11 +67,11 @@ class FriendCubit extends Cubit<FriendStates> {
   }
 
   Future<void> sendMessageToFriend(
-      User friend, User sender, String message) async {
+      User friend, User sender, String message,) async {
     emit(SendMessageLoading());
     try {
       await _friendFirebaseServices.sendMessageToFriend(
-          friend, message, sender);
+          friend, message, sender,);
       emit(SendMessageSuccess());
     } catch (e) {
       emit(SendMessageError(Failure.fromException(e).message));

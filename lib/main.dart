@@ -3,8 +3,8 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/firebase_options.dart';
+import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
-import 'package:chat_app/shared/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/my_theme.dart';
 import 'package:chat_app/utils/bloc_observer.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -41,8 +41,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    getPreferences();
     provider = Provider.of<MyAppProvider>(context);
+    getPreferences();
     return ScreenUtilInit(
       minTextAdapt: true,
       splitScreenMode: true,
@@ -56,10 +56,10 @@ class _MyAppState extends State<MyApp> {
               create: (_) => ProfileCubit(),
             ),
             BlocProvider(
-              create: (_) => GroupCubit()..getAllUserGroups(),
+              create: (_) => GroupCubit(),
             ),
             BlocProvider(
-              create: (_) => FriendCubit()..getAllUserFriends(),
+              create: (_) => FriendCubit(),
             ),
           ],
           child: MaterialApp(
@@ -81,7 +81,9 @@ class _MyAppState extends State<MyApp> {
   Future<void> getPreferences() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? language = prefs.getString('language');
-    provider.changeLanguage(language!);
+    if (language != null) {
+      provider.changeLanguage(language);
+    }
     if (prefs.getString('theme') == 'dark') {
       provider.changeTheme(ThemeMode.dark);
     } else if (prefs.getString('theme') == 'system') {

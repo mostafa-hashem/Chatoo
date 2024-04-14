@@ -1,5 +1,5 @@
-import 'package:chat_app/widgets/language_bootom_sheet.dart';
-import 'package:chat_app/widgets/theme_bottom_sheet.dart';
+import 'package:chat_app/ui/widgets/language_bootom_sheet.dart';
+import 'package:chat_app/ui/widgets/theme_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -68,4 +68,3 @@ void showThemeSheet(BuildContext context) {
     ),
   );
 }
-

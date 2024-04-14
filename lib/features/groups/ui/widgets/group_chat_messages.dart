@@ -1,3 +1,4 @@
+import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/message_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_messages_tile.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
@@ -21,6 +22,8 @@ class _ChatMessagesState extends State<ChatMessages> {
   Widget build(BuildContext context) {
     return Expanded(
       child:  ListView.builder(
+        reverse: true,
+        controller:  GroupCubit.get(context).scrollController,
         itemCount: widget.groupData.length,
         itemBuilder: (context, index) {
           return GroupMessagesTile(

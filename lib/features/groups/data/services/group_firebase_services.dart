@@ -31,7 +31,7 @@ class GroupFirebaseServices {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.groups)
         .doc(groupId)
-        .collection(FirebasePath.messages)
+        .collection(FirebasePath.messages).orderBy('sentAt', descending: true)
         .get();
 
     return querySnapshot.docs

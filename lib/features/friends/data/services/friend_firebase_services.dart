@@ -87,7 +87,7 @@ class FriendFirebaseServices {
     });
 
     friendMessageDocRef.set({
-      'groupId': currentUserUid,
+      'friendId': currentUserUid,
       'messageId': messageId,
       'message': message,
       'sender': sender.toJson(),

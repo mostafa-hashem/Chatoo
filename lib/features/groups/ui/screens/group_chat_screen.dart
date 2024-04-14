@@ -3,10 +3,11 @@ import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_chat_messages.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
+import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
-import 'package:chat_app/shared/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,10 +29,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   bool emojiShowing = false;
 
+
   @override
   void dispose() {
     messageController.dispose();
+    GroupCubit.get(context).scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    GroupCubit.get(context).filteredGroups.clear();
+    super.deactivate();
   }
 
   void _onBackspacePressed() {
@@ -40,6 +49,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       ..selection = TextSelection.fromPosition(
         TextPosition(offset: messageController.text.length),
       );
+  }
+
+  void scrollToBottom() {
+    GroupCubit.get(context).scrollController.animateTo(
+      0.0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+
+    );
   }
 
   @override
@@ -67,9 +85,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ],
       ),
       body: Column(
-        children: <Widget>[
-          ChatMessages(
-            groupData: GroupCubit.get(context).filteredMessages,
+        children: [
+          BlocBuilder<GroupCubit, GroupStates>(
+            builder: (context, state) {
+              return ChatMessages(
+                groupData: GroupCubit.get(context).filteredMessages.reversed.toList(),
+              );
+            },
           ),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
@@ -144,6 +166,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           );
                           setState(() {
                             messageController.clear();
+                            scrollToBottom();
                           });
                         }
                       },
@@ -176,7 +199,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   iconColorSelected: AppColors.primary,
                   backspaceColor: AppColors.primary,
                   noRecents: Text(
-                    'No Recents',
+                    'No Resents',
                     style: TextStyle(fontSize: 16.sp, color: Colors.black26),
                     textAlign: TextAlign.center,
                   ),
