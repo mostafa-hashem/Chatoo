@@ -4,7 +4,7 @@ import 'package:chat_app/widgets/friend_messages_tile.dart';
 import 'package:flutter/material.dart';
 
 class FriendChatMessages extends StatefulWidget {
-   FriendChatMessages({
+   const FriendChatMessages({
     super.key,
   });
 

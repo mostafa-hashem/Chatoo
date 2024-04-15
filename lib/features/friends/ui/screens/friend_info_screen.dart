@@ -13,24 +13,15 @@ class FriendInfoScreen extends StatefulWidget {
 }
 
 class _FriendInfoScreenState extends State<FriendInfoScreen> {
-
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        isLoading = false;
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final friendsData = ModalRoute.of(context)!.settings.arguments! as Friend;
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          iconTheme: const IconThemeData.fallback(),
+        ),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Center(

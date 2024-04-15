@@ -1,7 +1,6 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_search_widget.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,7 +23,6 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userdata = ProfileCubit.get(context);
     final groupData = GroupCubit.get(context);
     return Scaffold(
       appBar: AppBar(
@@ -95,7 +93,6 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                   itemBuilder: (context, index) => GestureDetector(
                     onTap: () {
                       groupData.checkUserInGroup(
-                        userdata.user.id!,
                         groupData.allUserGroups[index].groupId,
                       );
                     },

@@ -28,23 +28,25 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   bool emojiShowing = false;
   late Group groupData;
+  late GroupCubit groupCubit;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
-    super.didChangeDependencies();
     groupData = ModalRoute.of(context)!.settings.arguments! as Group;
+    groupCubit = GroupCubit.get(context);
+    super.didChangeDependencies();
   }
 
   @override
   void dispose() {
     messageController.dispose();
-    GroupCubit.get(context).scrollController.dispose();
     super.dispose();
   }
 
   @override
   void deactivate() {
-    GroupCubit.get(context).filteredGroups.clear();
+    groupCubit.filteredGroups.clear();
     super.deactivate();
   }
 
@@ -69,6 +71,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final provider = Provider.of<MyAppProvider>(context);
     final sender = ProfileCubit.get(context).user;
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
           groupData.groupName,
@@ -91,7 +94,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         children: [
           BlocBuilder<GroupCubit, GroupStates>(
             builder: (context, state) {
-              return ChatMessages();
+              return const ChatMessages();
             },
           ),
           SizedBox(

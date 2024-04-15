@@ -6,6 +6,7 @@ class Group {
   final String groupName;
   String groupIcon;
   final String adminName;
+  final String adminId;
   List<User>? members;
   String recentMessage;
   String recentMessageSender;
@@ -16,6 +17,7 @@ class Group {
     required this.groupName,
     this.groupIcon = "",
     this.adminName = "",
+    this.adminId = "",
     this.members,
     this.recentMessage = "",
     this.recentMessageSender = "",
@@ -27,6 +29,7 @@ class Group {
           groupId: json['groupId'] as String,
           groupName: json['groupName'] as String,
           adminName: json['adminName'] as String,
+          adminId: json['adminId'] as String,
           groupIcon: json['groupIcon'] as String,
           members: (json['members'] as List<dynamic>?)
               ?.map((member) => User.fromJson(member as Map<String, dynamic>))
@@ -40,6 +43,7 @@ class Group {
         'groupId': groupId,
         'groupName': groupName,
         'adminName': adminName,
+        'adminId': adminId,
         'groupIcon': groupIcon,
         'members': members?.map((user) => user.toJson()).toList(),
         'recentMessage': recentMessage,

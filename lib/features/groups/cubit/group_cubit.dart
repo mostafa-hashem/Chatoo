@@ -102,36 +102,31 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
-  Future<void> checkUserInGroup(String userId, String groupId) async {
+  Future<void> checkUserInGroup( String groupId) async {
     emit(CheckUserInGroupLoading());
     try {
       isUserMember =
-          await _groupFirebaseServices.isUserInGroup(userId, groupId);
-
-      if (isUserMember) {
+          await _groupFirebaseServices.isUserInGroup( groupId);
         emit(CheckUserInGroupSuccess());
-      } else {
-        emit(CheckUserInGroupError("User is not a member of the group"));
-      }
     } catch (e) {
       emit(CheckUserInGroupError(Failure.fromException(e).message));
     }
   }
 
-  Future<void> joinGroup(String userId, Group group, User user) async {
+  Future<void> joinGroup( Group group, User user) async {
     emit(JoinGroupLoading());
     try {
-      await _groupFirebaseServices.joinGroup(userId, group, user);
+      await _groupFirebaseServices.joinGroup(group, user);
       emit(JoinGroupSuccess());
     } catch (e) {
       emit(JoinGroupError(Failure.fromException(e).message));
     }
   }
 
-  Future<void> leaveGroup(String userId, String groupId, User user) async {
+  Future<void> leaveGroup(Group group, User user) async {
     emit(LeaveGroupLoading());
     try {
-      await _groupFirebaseServices.leaveGroup(userId, groupId, user);
+      await _groupFirebaseServices.leaveGroup(group, user);
       emit(LeaveGroupSuccess());
     } catch (e) {
       emit(LeaveGroupError(Failure.fromException(e).message));

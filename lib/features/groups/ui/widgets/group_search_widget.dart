@@ -23,8 +23,6 @@ class GroupSearchWidget extends StatefulWidget {
 class _GroupSearchWidgetState extends State<GroupSearchWidget> {
   @override
   Widget build(BuildContext context) {
-    final userdata = ProfileCubit.get(context);
-    final groupData = GroupCubit.get(context);
     return Padding(
       padding: const EdgeInsets.all(8),
       child: ListTile(
@@ -49,8 +47,8 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
         ),
         trailing: InkWell(
           onTap: () async {
-            groupData
-                .joinGroup(userdata.user.id!, widget.groupData, userdata.user)
+            GroupCubit.get(context)
+                .joinGroup( widget.groupData, ProfileCubit.get(context).user)
                 .whenComplete(() {
               showSnackBar(
                 context,

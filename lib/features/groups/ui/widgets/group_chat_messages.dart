@@ -4,7 +4,7 @@ import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter/material.dart';
 
 class ChatMessages extends StatefulWidget {
-  ChatMessages({
+  const ChatMessages({
     super.key,
   });
 

@@ -1,10 +1,14 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
+import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_members.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/ui/widgets/error_indicator.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -48,22 +52,37 @@ class _GroupInfoState extends State<GroupInfo> {
                           color: Colors.red,
                         ),
                       ),
-                      IconButton(
-                        onPressed: () {
-                          GroupCubit.get(context).leaveGroup(
-                            ProfileCubit.get(context).user.id!,
-                            groupData.groupId,
-                            ProfileCubit.get(context).user,
-                          );
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            Routes.layout,
-                            (route) => false,
-                          );
+                      BlocListener<GroupCubit, GroupStates>(
+                        listener: (c, state) {
+                          if (state is LeaveGroupLoading) {
+                            const LoadingIndicator();
+                          } else  {
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                            if (state is LeaveGroupSuccess){
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              Routes.layout,
+                              (route) => false,
+                            );
+                            }
+                            if(state is LeaveGroupError){
+                              const ErrorIndicator();
+                            }
+                          }
                         },
-                        icon: const Icon(
-                          Icons.done,
-                          color: Colors.green,
+                        child: IconButton(
+                          onPressed: () {
+                            GroupCubit.get(context).leaveGroup(
+                              groupData,
+                              ProfileCubit.get(context).user,
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.done,
+                            color: Colors.green,
+                          ),
                         ),
                       ),
                     ],

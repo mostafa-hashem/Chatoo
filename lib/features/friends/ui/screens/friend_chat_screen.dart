@@ -27,23 +27,24 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
   TextEditingController messageController = TextEditingController();
   bool emojiShowing = false;
   late Friend friendData;
+  late FriendCubit friendCubit;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     friendData = ModalRoute.of(context)!.settings.arguments! as Friend;
+    friendCubit = FriendCubit.get(context);
   }
 
   @override
   void dispose() {
     messageController.dispose();
-    FriendCubit.get(context).scrollController.dispose();
     super.dispose();
   }
 
   @override
   void deactivate() {
-    FriendCubit.get(context).filteredMessages.clear();
+    friendCubit.filteredMessages.clear();
     super.deactivate();
   }
 
@@ -82,7 +83,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
         children: [
           BlocBuilder<FriendCubit, FriendStates>(
             builder: (context, state) {
-              return FriendChatMessages();
+              return const FriendChatMessages();
             },
           ),
           SizedBox(
