@@ -1,6 +1,5 @@
 import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
-import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/route_manager.dart';
@@ -21,7 +20,6 @@ class _SplashScreenState extends State<SplashScreen> {
     if (AuthCubit.get(context).isLoggedIn) {
       Future.wait([
         ProfileCubit.get(context).getUser(),
-        GroupCubit.get(context).getAllUserGroups(),
         FriendCubit.get(context).getAllUserFriends(),
       ]);
     } else {

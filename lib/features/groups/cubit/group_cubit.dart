@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
-import 'package:chat_app/features/groups/data/model/message_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/groups/data/services/group_firebase_services.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
 import 'package:chat_app/utils/data/models/user.dart';
@@ -18,8 +19,8 @@ class GroupCubit extends Cubit<GroupStates> {
   List<Group> allGroups = [];
   List<Group> searchedGroups = [];
   List<Group> filteredGroups = [];
-  List<Message> allMessages = [];
-  List<Message> filteredMessages = [];
+  List<GroupMessage> allMessages = [];
+  List<GroupMessage> filteredMessages = [];
   bool isUserMember = false;
   ScrollController scrollController = ScrollController();
 
@@ -50,7 +51,9 @@ class GroupCubit extends Cubit<GroupStates> {
   Future<void> getAllUserGroups() async {
     emit(GetAllGroupsLoading());
     try {
-      allUserGroups = await _groupFirebaseServices.getAllUserGroups();
+       _groupFirebaseServices.getAllUserGroups().listen((groups) {
+        allUserGroups = groups;
+      });
       emit(GetAllGroupsSuccess());
     } catch (e) {
       emit(GetAllGroupsError(Failure.fromException(e).message));
@@ -60,11 +63,14 @@ class GroupCubit extends Cubit<GroupStates> {
   Future<void> getAllGroupMessages(String groupId) async {
     emit(GetAllGroupMessagesLoading());
     try {
-      allMessages = await _groupFirebaseServices.getAllGroupMessages(groupId);
-      filteredMessages =
-          allMessages.where((message) => message.groupId == groupId,).toList();
-      filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
-      emit(GetAllGroupMessagesSuccess());
+     _groupFirebaseServices
+          .getAllGroupMessages(groupId)
+          .listen((messages) {
+        allMessages = messages;
+        filteredMessages = allMessages.where((message) => message.groupId == groupId).toList();
+        filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+        emit(GetAllGroupMessagesSuccess());
+      });
     } catch (e) {
       emit(GetAllGroupMessagesError(Failure.fromException(e).message));
     }

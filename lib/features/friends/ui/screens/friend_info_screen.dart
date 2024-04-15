@@ -1,9 +1,9 @@
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_info.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shimmer/shimmer.dart';
 
 class FriendInfoScreen extends StatefulWidget {
   const FriendInfoScreen({super.key});
@@ -39,33 +39,13 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                 SizedBox(
                   height: 22.h,
                 ),
-                Stack(
-                  children: [
-                    Visibility(
-                      visible: !isLoading,
-                      child: ClipOval(
-                        child: Image.network(
-                          friendsData.friendData!.profileImage!,
-                          fit: BoxFit.cover,
-                          width: 180.w,
-                          height: 170.h,
-                        ),
-                      ),
-                    ),
-                    Visibility(
-                      visible: isLoading,
-                      child: Shimmer.fromColors(
-                        baseColor: Colors.grey.shade300,
-                        highlightColor: Colors.grey.shade100,
-                        child: const ClipOval(
-                          child: Icon(
-                            Icons.person,
-                            size: 190,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                ClipOval(
+                  child: FancyShimmerImage(
+                    imageUrl: friendsData.friendData!.profileImage!,
+                    boxFit: BoxFit.cover,
+                    width: 180.w,
+                    height: 170.h,
+                  ),
                 ),
                 SizedBox(
                   height: 8.h,

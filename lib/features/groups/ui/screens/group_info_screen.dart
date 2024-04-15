@@ -18,14 +18,6 @@ class GroupInfo extends StatefulWidget {
 }
 
 class _GroupInfoState extends State<GroupInfo> {
-  String getName(String r) {
-    return r.substring(r.indexOf("_") + 1);
-  }
-
-  String getId(String res) {
-    return res.substring(0, res.indexOf("_"));
-  }
-
   @override
   Widget build(BuildContext context) {
     final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
@@ -63,9 +55,10 @@ class _GroupInfoState extends State<GroupInfo> {
                             groupData.groupId,
                             ProfileCubit.get(context).user,
                           );
-                          Navigator.pushReplacementNamed(
+                          Navigator.pushNamedAndRemoveUntil(
                             context,
-                            Routes.groupChatScreen,
+                            Routes.layout,
+                            (route) => false,
                           );
                         },
                         icon: const Icon(

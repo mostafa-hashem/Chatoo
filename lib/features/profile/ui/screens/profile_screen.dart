@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
 import 'package:chat_app/features/auth/cubit/auth_state.dart';
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/widgets/custom_profile_container.dart';
@@ -12,6 +14,7 @@ import 'package:chat_app/ui/widgets/default_button.dart';
 import 'package:chat_app/ui/widgets/default_text_button.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/data/models/user.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -88,6 +91,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       } else {
                         Navigator.pop(context);
                         if (state is LoggedOut) {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            Routes.login,
+                            (route) => false,
+                          );
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
@@ -138,10 +146,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 IconButton(
                                   onPressed: () {
                                     AuthCubit.get(context).logout();
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      Routes.login,
-                                    );
+                                    GroupCubit.get(context)
+                                        .allUserGroups
+                                        .clear();
+                                    FriendCubit.get(context).allFriends.clear();
                                   },
                                   icon: const Icon(
                                     Icons.done,
@@ -196,7 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       }
                     }
                   },
-                  builder:(context, state) => Stack(
+                  builder: (context, state) => Stack(
                     alignment: Alignment.topRight,
                     children: [
                       Container(
@@ -204,20 +212,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         width: 145.w,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(40.r),
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: NetworkImage(
-                              ProfileCubit.get(context).user.profileImage !=
-                                          null &&
-                                      ProfileCubit.get(context)
-                                          .user
-                                          .profileImage!
-                                          .isNotEmpty
-                                  ? ProfileCubit.get(context).user.profileImage!
-                                  : "https://firebasestorage.googleapis.com/v0/b/chat-app-319.appspot.com/o/defultProfileImage%2Fuser.png?alt=media&token=bab1fe29-62a5-4338-83ac-ff462c322fbd",
-                            ),
-                          ),
                         ),
+                        child: ProfileCubit.get(context).user.profileImage !=
+                                    null &&
+                                ProfileCubit.get(context)
+                                    .user
+                                    .profileImage!
+                                    .isNotEmpty
+                            ? ClipOval(
+                                child: FancyShimmerImage(
+                                  imageUrl: profile.user.profileImage!,
+                                  height: 150.h,
+                                  width: 180.w,
+                                  boxFit: BoxFit.contain,
+                                  errorWidget:
+                                      const Icon(Icons.error_outline_outlined),
+                                ),
+                              )
+                            : Image.network(
+                                "https://firebasestorage.googleapis.com/v0/b/chat-app-319.appspot.com/o/defultProfileImage%2Fuser.png?alt=media&token=bab1fe29-62a5-4338-83ac-ff462c322fbd",
+                              ),
                       ),
                       GestureDetector(
                         onTap: () async {

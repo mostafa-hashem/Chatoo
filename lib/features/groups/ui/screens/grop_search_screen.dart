@@ -16,6 +16,11 @@ class GroupSearchScreen extends StatefulWidget {
 }
 
 class _GroupSearchScreenState extends State<GroupSearchScreen> {
+  @override
+  void deactivate() {
+    GroupCubit.get(context).searchedGroups.clear();
+    super.deactivate();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +52,14 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                   child: BlocBuilder<GroupCubit, GroupStates>(
                     builder: (context, state) {
                       return TextField(
-                        onChanged: (value) => groupData.searchOnGroup(value),
+                        onChanged: (value) {
+                          if (value.isEmpty) {
+                            groupData.searchedGroups.clear();
+                          }
+                          if (value.isNotEmpty) {
+                            groupData.searchOnGroup(value);
+                          }
+                        },
                         style: GoogleFonts.ubuntu(color: Colors.white),
                         decoration: InputDecoration(
                           border: InputBorder.none,

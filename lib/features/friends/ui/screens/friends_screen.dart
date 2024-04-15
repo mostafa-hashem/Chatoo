@@ -28,12 +28,22 @@ class _FriendsScreenState extends State<FriendsScreen> {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
-                      print("User Name : ${friends.allFriends[index].friendData?.userName}");
-                      Navigator.pushNamed(
-                        context,
-                        Routes.friendChatScreen,
-                        arguments: friends.allFriends[index],
-                      );
+                      friends
+                          .getAllFriendMessages(
+                            friends.allFriends[index].friendData!.id!,
+                          )
+                          .whenComplete(
+                            () => Future.delayed(
+                              const Duration(
+                                milliseconds: 50,
+                              ),
+                              () => Navigator.pushNamed(
+                                context,
+                                Routes.friendChatScreen,
+                                arguments: friends.allFriends[index],
+                              ),
+                            ),
+                          );
                     },
                     child: FriendTile(
                       friendName:

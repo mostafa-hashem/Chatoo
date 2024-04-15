@@ -1,7 +1,6 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -59,10 +58,7 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                 "Successfully joined he group",
               );
               Future.delayed(const Duration(seconds: 2), () {
-                Navigator.pushReplacementNamed(
-                  context,
-                  Routes.groupsScreen,
-                );
+                Navigator.pop(context);
               });
             });
           },

@@ -55,7 +55,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                       duration: Duration(seconds: 3),
                     ),
                   );
-                  GroupCubit.get(context).getAllUserGroups();
+                  // GroupCubit.get(context).getAllUserGroups();
                 }
               }
             },
@@ -64,14 +64,20 @@ class _GroupsScreenState extends State<GroupsScreen> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    GroupCubit.get(context)
+                    groups
                         .getAllGroupMessages(
-                            groups.allUserGroups[index].groupId)
+                          groups.allUserGroups[index].groupId,
+                        )
                         .whenComplete(
-                          () => Navigator.pushNamed(
-                            context,
-                            Routes.groupChatScreen,
-                            arguments: groups.allUserGroups[index],
+                          () => Future.delayed(
+                            const Duration(
+                              milliseconds: 40,
+                            ),
+                            () => Navigator.pushNamed(
+                              context,
+                              Routes.groupChatScreen,
+                              arguments: groups.allUserGroups[index],
+                            ),
                           ),
                         );
                   },

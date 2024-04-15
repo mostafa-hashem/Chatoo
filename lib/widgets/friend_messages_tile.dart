@@ -1,11 +1,11 @@
-import 'package:chat_app/features/groups/data/model/message_data.dart';
+import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FriendMessagesTile extends StatefulWidget {
   final bool sentByMe;
-  final Message friendMessage;
+  final FriendMessage friendMessage;
 
   const FriendMessagesTile({
     super.key,
@@ -18,8 +18,6 @@ class FriendMessagesTile extends StatefulWidget {
 }
 
 class _FriendMessagesTileState extends State<FriendMessagesTile> {
-
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -77,9 +75,8 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
           left: widget.sentByMe ? 0 : 24,
           right: widget.sentByMe ? 24 : 0,
         ),
-        alignment: widget.sentByMe == false
-            ? Alignment.centerRight
-            : Alignment.centerLeft,
+        alignment:
+            widget.sentByMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: widget.sentByMe
               ? const EdgeInsets.only(left: 30)
@@ -88,7 +85,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
               ? const EdgeInsets.only(top: 17, bottom: 17, left: 30, right: 18)
               : const EdgeInsets.only(top: 17, bottom: 17, left: 18, right: 30),
           decoration: BoxDecoration(
-            borderRadius: widget.sentByMe == false
+            borderRadius: widget.sentByMe
                 ? const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
@@ -99,7 +96,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                     topRight: Radius.circular(20),
                     bottomRight: Radius.circular(20),
                   ),
-            color: widget.sentByMe == false
+            color: widget.sentByMe
                 ? const Color(0xffecae7d)
                 : const Color(0xff8db4ad),
           ),

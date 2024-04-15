@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:chat_app/features/groups/data/model/group_data.dart';
-import 'package:chat_app/features/groups/data/model/message_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,28 +15,34 @@ class GroupFirebaseServices {
   final _groupsCollection =
       FirebaseFirestore.instance.collection(FirebasePath.groups);
 
-  Future<List<Group>> getAllUserGroups() async {
-    final querySnapshot = await _usersCollection
+  Stream<List<Group>> getAllUserGroups() {
+    return _usersCollection
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.groups)
-        .get();
-
-    return querySnapshot.docs
-        .map((queryDocSnapshot) => Group.fromJson(queryDocSnapshot.data()))
-        .toList();
+        .snapshots()
+        .map(
+          (querySnapshot) => querySnapshot.docs
+              .map(
+                (queryDocSnapshot) => Group.fromJson(queryDocSnapshot.data()),
+              )
+              .toList(),
+        );
   }
 
-  Future<List<Message>> getAllGroupMessages(String groupId) async {
-    final querySnapshot = await _usersCollection
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection(FirebasePath.groups)
+  Stream<List<GroupMessage>> getAllGroupMessages(String groupId) {
+    return _groupsCollection
         .doc(groupId)
-        .collection(FirebasePath.messages).orderBy('sentAt', descending: true)
-        .get();
-
-    return querySnapshot.docs
-        .map((queryDocSnapshot) => Message.fromJson(queryDocSnapshot.data()))
-        .toList();
+        .collection(FirebasePath.messages)
+        .orderBy('sentAt', descending: true)
+        .snapshots()
+        .map(
+          (querySnapshot) => querySnapshot.docs
+              .map(
+                (queryDocSnapshot) =>
+                    GroupMessage.fromJson(queryDocSnapshot.data()),
+              )
+              .toList(),
+        );
   }
 
   static CollectionReference<Group> getGroupsCollection() {
@@ -45,21 +51,10 @@ class GroupFirebaseServices {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.groups)
         .withConverter<Group>(
-      fromFirestore: (snapshot, _) => Group.fromJson(snapshot.data()!),
-      toFirestore: (equipment, options) => equipment.toJson(),
-    );
+          fromFirestore: (snapshot, _) => Group.fromJson(snapshot.data()!),
+          toFirestore: (equipment, options) => equipment.toJson(),
+        );
   }
-
-  // static CollectionReference<Message> getMessagesCollection(String groupId) {
-  //   return FirebaseFirestore.instance
-  //       .collection(FirebasePath.groups)
-  //       .doc(groupId)
-  //       .collection(FirebasePath.messages)
-  //       .withConverter<Message>(
-  //     fromFirestore: (snapshot, _) => Message.fromJson(snapshot.data()!),
-  //     toFirestore: (equipment, options) => equipment.toJson(),
-  //   );
-  // }
 
   Future<List<Group>> getGroups() async {
     final querySnapshot = await _groupsCollection.get();
@@ -69,10 +64,10 @@ class GroupFirebaseServices {
   }
 
   Future<void> createGroup(
-      Group group,
-      String userName,
-      User currentUser,
-      ) async {
+    Group group,
+    String userName,
+    User currentUser,
+  ) async {
     final groups = getGroupsCollection();
     final userGroupDocRef = await groups.add(group);
     group.groupId = userGroupDocRef.id;
@@ -93,7 +88,6 @@ class GroupFirebaseServices {
       "groups": FieldValue.arrayUnion(["${group.groupId}_${group.groupName}"]),
     });
   }
-
 
   Future<String> uploadImage(File imageFile) async {
     final Reference storageRef = _storage.ref().child('groups');
@@ -170,8 +164,10 @@ class GroupFirebaseServices {
   }
 
   Future<void> joinGroup(String userId, Group group, User user) async {
-
-    _usersCollection.doc(userId).collection(FirebasePath.groups).add(group.toJson());
+    _usersCollection
+        .doc(userId)
+        .collection(FirebasePath.groups)
+        .add(group.toJson());
 
     await _usersCollection.doc(userId).update({
       "groups": FieldValue.arrayUnion([group.groupId]),

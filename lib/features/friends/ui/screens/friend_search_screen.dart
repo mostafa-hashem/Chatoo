@@ -1,7 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_search_widget.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,8 +17,13 @@ class FriendSearchScreen extends StatefulWidget {
 class _FriendSearchScreenState extends State<FriendSearchScreen> {
 
   @override
+  void deactivate() {
+    FriendCubit.get(context).searchedFriends.clear();
+    super.deactivate();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final userdata = ProfileCubit.get(context);
     final friendData = FriendCubit.get(context);
     return Scaffold(
       appBar: AppBar(
@@ -30,9 +34,10 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
         title: Text(
           "Search",
           style: GoogleFonts.ubuntu(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.white,),
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w400,
+            color: Colors.white,
+          ),
         ),
       ),
       body: Column(
@@ -44,21 +49,32 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    onChanged: (value) => friendData.searchOnFriend(value),
+                    onChanged: (value) {
+                      if (value.isEmpty) {
+                        friendData.searchedFriends.clear();
+                      }
+                      if (value.isNotEmpty) {
+                        friendData.searchOnFriend(value);
+                      }
+                    },
                     style: GoogleFonts.ubuntu(color: Colors.white),
                     decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Search friends....",
-                        hintStyle: GoogleFonts.novaFlat(
-                            color: Colors.white, fontSize: 16,),),
+                      border: InputBorder.none,
+                      hintText: "Search friends....",
+                      hintStyle: GoogleFonts.novaFlat(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
                 Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(40),),
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(40),
+                  ),
                   child: const Icon(
                     Icons.search,
                     color: Colors.white,

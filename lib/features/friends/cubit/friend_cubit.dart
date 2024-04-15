@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
+import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/friends/data/services/friend_firebase_services.dart';
-import 'package:chat_app/features/groups/data/model/message_data.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +17,9 @@ class FriendCubit extends Cubit<FriendStates> {
   List<User> allUsers = [];
   List<Friend> allFriends = [];
   List<User> searchedFriends = [];
-  List<Message> allMessages = [];
-  List<Message> filteredMessages = [];
+  List<FriendMessage> filteredMessages = [];
+  ScrollController scrollController = ScrollController();
+
 
   Future<void> addFriend(User friend, User currentUser) async {
     emit(AddFriendLoading());
@@ -28,22 +31,12 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> getAllUsers() async {
-    emit(GetAllUsersLoading());
-    try {
-      allUsers = await _friendFirebaseServices.getUsers();
-      emit(GetAllUsersSuccess());
-    } catch (e) {
-      emit(
-        GetAllUsersError(Failure.fromException(e).message),
-      );
-    }
-  }
-
   Future<void> getAllUserFriends() async {
     emit(GetAllUserFriendsLoading());
     try {
-      allFriends = await _friendFirebaseServices.getAllUserFriends();
+          _friendFirebaseServices.getAllUserFriends().listen((friends) {
+        allFriends = friends;
+      });
       emit(GetAllUserFriendsSuccess());
     } catch (e) {
       emit(GetAllUserFriendsError(Failure.fromException(e).message));
@@ -53,13 +46,14 @@ class FriendCubit extends Cubit<FriendStates> {
   Future<void> searchOnFriend(String friendName) async {
     emit(SearchOnFriendLoading());
     try {
-      allUsers = await _friendFirebaseServices.getUsers();
+      _friendFirebaseServices.getUsers().listen((search){
+        allUsers = search;
       searchedFriends = allUsers
           .where(
-            (friend) =>
-                friend.userName == friendName || friend.id == friendName,
+            (friend) => friend.userName?.contains(friendName) ?? false,
           )
           .toList();
+      });
       emit(SearchOnFriendSuccess());
     } catch (e) {
       emit(SearchOnFriendError(Failure.fromException(e).message));
@@ -67,11 +61,17 @@ class FriendCubit extends Cubit<FriendStates> {
   }
 
   Future<void> sendMessageToFriend(
-      User friend, User sender, String message,) async {
+    User friend,
+    String message,
+    User sender,
+  ) async {
     emit(SendMessageLoading());
     try {
       await _friendFirebaseServices.sendMessageToFriend(
-          friend, message, sender,);
+        friend,
+        message,
+        sender,
+      );
       emit(SendMessageSuccess());
     } catch (e) {
       emit(SendMessageError(Failure.fromException(e).message));
@@ -81,12 +81,16 @@ class FriendCubit extends Cubit<FriendStates> {
   Future<void> getAllFriendMessages(String friendId) async {
     emit(GetAllFriendMessagesLoading());
     try {
-      allMessages = await _friendFirebaseServices.getAllUserMessages(friendId);
-      filteredMessages =
-          allMessages.where((message) => message.groupId == friendId).toList();
+       _friendFirebaseServices
+          .getAllUserMessages(friendId)
+          .listen((messages) {
+         filteredMessages = messages;
+        filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+      });
       emit(GetAllFriendMessagesSuccess());
     } catch (e) {
       emit(GetAllFriendMessagesError(Failure.fromException(e).message));
     }
   }
+
 }

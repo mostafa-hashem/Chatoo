@@ -1,14 +1,14 @@
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Message {
+class GroupMessage {
   final String groupId;
   final String messageId;
   final String message;
   final User sender;
   final DateTime sentAt;
 
-  Message({
+  GroupMessage({
     required this.groupId,
     required this.messageId,
     required this.message,
@@ -16,7 +16,7 @@ class Message {
     required this.sentAt,
   });
 
-  Message.fromJson(Map<String, dynamic> json)
+  GroupMessage.fromJson(Map<String, dynamic> json)
       : this(
     groupId: json['groupId'] as String,
     messageId: json['messageId'] as String,

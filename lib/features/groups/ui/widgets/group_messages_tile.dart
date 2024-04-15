@@ -1,11 +1,11 @@
-import 'package:chat_app/features/groups/data/model/message_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GroupMessagesTile extends StatefulWidget {
   final bool sentByMe;
-  final Message groupMessage;
+  final GroupMessage groupMessage;
 
   const GroupMessagesTile({
     super.key,

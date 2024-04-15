@@ -26,145 +26,172 @@ class FriendChatScreen extends StatefulWidget {
 class _FriendChatScreenState extends State<FriendChatScreen> {
   TextEditingController messageController = TextEditingController();
   bool emojiShowing = false;
+  late Friend friendData;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    friendData = ModalRoute.of(context)!.settings.arguments! as Friend;
+  }
+
+  @override
+  void dispose() {
+    messageController.dispose();
+    FriendCubit.get(context).scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    FriendCubit.get(context).filteredMessages.clear();
+    super.deactivate();
+  }
+
+  void scrollToBottom() {
+    FriendCubit.get(context).scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final friendData = ModalRoute.of(context)!.settings.arguments! as Friend;
     final sender = ProfileCubit.get(context).user;
     final provider = Provider.of<MyAppProvider>(context);
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            friendData.friendData!.userName!,
-            style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, Routes.friendInfoScreen, arguments: friendData);
-              },
-              icon: const Icon(Icons.info),
-            ),
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          friendData.friendData!.userName!,
+          style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
         ),
-        body: Column(
-          children: <Widget>[
-            FriendChatMessages(friendData: FriendCubit.get(context).filteredMessages),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.01,
-            ),
-            Container(
-              height: 60.h,
-              color: Colors.grey[600],
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          emojiShowing = !emojiShowing;
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.emoji_emotions,
-                        color: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                Routes.friendInfoScreen,
+                arguments: friendData,
+              );
+            },
+            icon: const Icon(Icons.info),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          BlocBuilder<FriendCubit, FriendStates>(
+            builder: (context, state) {
+              return FriendChatMessages();
+            },
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.01,
+          ),
+          Container(
+            height: 60.h,
+            color: Colors.grey[600],
+            child: Row(
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        emojiShowing = !emojiShowing;
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.emoji_emotions,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextField(
+                      controller: messageController,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: provider.themeMode == ThemeMode.light
+                            ? Colors.black87
+                            : AppColors.light,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Type a message',
+                        hintStyle: Theme.of(context).textTheme.bodySmall,
+                        filled: true,
+                        fillColor: provider.themeMode == ThemeMode.light
+                            ? Colors.white
+                            : AppColors.dark,
+                        contentPadding: const EdgeInsets.only(
+                          left: 16.0,
+                          bottom: 8.0,
+                          top: 8.0,
+                          right: 16.0,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          borderRadius: BorderRadius.circular(50.r),
+                        ),
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextField(
-                        controller: messageController,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: provider.themeMode == ThemeMode.light
-                              ? Colors.black87
-                              : AppColors.light,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Type a message',
-                          hintStyle: Theme.of(context).textTheme.bodySmall,
-                          filled: true,
-                          fillColor: provider.themeMode == ThemeMode.light
-                              ? Colors.white
-                              : AppColors.dark,
-                          contentPadding: const EdgeInsets.only(
-                            left: 16.0,
-                            bottom: 8.0,
-                            top: 8.0,
-                            right: 16.0,
-                          ),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(50.r),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  BlocListener<FriendCubit, FriendStates>(
-                    listener: (context, state) {
-                      if (state is SendMessageSuccess) {
-                        FriendCubit.get(context)
-                            .getAllFriendMessages(friendData.friendData!.id!);
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: IconButton(
+                    onPressed: () {
+                      if (messageController.text.isNotEmpty) {
+                        FriendCubit.get(context).sendMessageToFriend(
+                          friendData.friendData!,
+                          messageController.text,
+                          sender,
+                        );
+                        messageController.clear();
+                        Future.delayed(
+                          const Duration(milliseconds: 40),
+                          () => scrollToBottom(),
+                        );
                       }
                     },
-                    child: Material(
-                      color: Colors.transparent,
-                      child: IconButton(
-                        onPressed: () {
-                          if (messageController.text.isNotEmpty) {
-                            FriendCubit.get(context).sendMessageToFriend(
-                              friendData.friendData!,
-                              sender,
-                              messageController.text,
-                            );
-                            setState(() {
-                              messageController.clear();
-                            });
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.send,
-                          color: Colors.white,
-                        ),
-                      ),
+                    icon: const Icon(
+                      Icons.send,
+                      color: Colors.white,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Offstage(
-              offstage: !emojiShowing,
-              child: SizedBox(
-                height: 220.h,
-                child: EmojiPicker(
-                  textEditingController: messageController,
-                  config: Config(
-                    emojiSizeMax: 30 *
-                        (foundation.defaultTargetPlatform == TargetPlatform.iOS
-                            ? 1.30
-                            : 1.0),
-                    bgColor: provider.themeMode == ThemeMode.light
-                        ? const Color(0xFFF2F2F2)
-                        : AppColors.dark,
-                    indicatorColor: AppColors.primary,
-                    iconColorSelected: AppColors.primary,
-                    backspaceColor: AppColors.primary,
-                    noRecents: Text(
-                      'No Recents',
-                      style: TextStyle(fontSize: 16.sp, color: Colors.black26),
-                      textAlign: TextAlign.center,
-                    ),
+          ),
+          Offstage(
+            offstage: !emojiShowing,
+            child: SizedBox(
+              height: 220.h,
+              child: EmojiPicker(
+                textEditingController: messageController,
+                config: Config(
+                  emojiSizeMax: 30 *
+                      (foundation.defaultTargetPlatform == TargetPlatform.iOS
+                          ? 1.30
+                          : 1.0),
+                  bgColor: provider.themeMode == ThemeMode.light
+                      ? const Color(0xFFF2F2F2)
+                      : AppColors.dark,
+                  indicatorColor: AppColors.primary,
+                  iconColorSelected: AppColors.primary,
+                  backspaceColor: AppColors.primary,
+                  noRecents: Text(
+                    'No Recents',
+                    style: TextStyle(fontSize: 16.sp, color: Colors.black26),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

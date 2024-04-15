@@ -7,7 +7,6 @@ import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,7 +27,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   TextEditingController messageController = TextEditingController();
 
   bool emojiShowing = false;
+  late Group groupData;
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    groupData = ModalRoute.of(context)!.settings.arguments! as Group;
+  }
 
   @override
   void dispose() {
@@ -53,18 +58,16 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   void scrollToBottom() {
     GroupCubit.get(context).scrollController.animateTo(
-      0.0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-
-    );
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
     final sender = ProfileCubit.get(context).user;
-    final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -88,9 +91,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         children: [
           BlocBuilder<GroupCubit, GroupStates>(
             builder: (context, state) {
-              return ChatMessages(
-                groupData: GroupCubit.get(context).filteredMessages.reversed.toList(),
-              );
+              return ChatMessages();
             },
           ),
           SizedBox(
@@ -147,33 +148,25 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     ),
                   ),
                 ),
-                BlocListener<GroupCubit, GroupStates>(
-                  listener: (context, state) {
-                    if (state is SendMessageSuccess) {
-                      GroupCubit.get(context)
-                          .getAllGroupMessages(groupData.groupId);
-                    }
-                  },
-                  child: Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () {
-                        if (messageController.text.isNotEmpty) {
-                          GroupCubit.get(context).sendMessageToGroup(
-                            groupData,
-                            sender,
-                            messageController.text,
-                          );
-                          setState(() {
-                            messageController.clear();
-                            scrollToBottom();
-                          });
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                      ),
+                Material(
+                  color: Colors.transparent,
+                  child: IconButton(
+                    onPressed: () {
+                      if (messageController.text.isNotEmpty) {
+                        GroupCubit.get(context).sendMessageToGroup(
+                          groupData,
+                          sender,
+                          messageController.text,
+                        );
+                        setState(() {
+                          messageController.clear();
+                          scrollToBottom();
+                        });
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.send,
+                      color: Colors.white,
                     ),
                   ),
                 ),
