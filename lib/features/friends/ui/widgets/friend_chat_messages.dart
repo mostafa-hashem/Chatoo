@@ -4,7 +4,8 @@ import 'package:chat_app/widgets/friend_messages_tile.dart';
 import 'package:flutter/material.dart';
 
 class FriendChatMessages extends StatefulWidget {
-   const FriendChatMessages({
+  // Note: Avoid using `const` with constructors.
+  FriendChatMessages({
     super.key,
   });
 
@@ -13,7 +14,6 @@ class FriendChatMessages extends StatefulWidget {
 }
 
 class _FriendChatMessagesState extends State<FriendChatMessages> {
-
   @override
   Widget build(BuildContext context) {
     final friendsMessages =

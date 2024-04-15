@@ -15,16 +15,22 @@ class FriendSearchScreen extends StatefulWidget {
 }
 
 class _FriendSearchScreenState extends State<FriendSearchScreen> {
+  late FriendCubit friendCubit;
+
+  @override
+  void didChangeDependencies() {
+    friendCubit = FriendCubit.get(context);
+    super.didChangeDependencies();
+  }
 
   @override
   void deactivate() {
-    FriendCubit.get(context).searchedFriends.clear();
+    friendCubit.searchedFriends.clear();
     super.deactivate();
   }
 
   @override
   Widget build(BuildContext context) {
-    final friendData = FriendCubit.get(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -51,10 +57,11 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                   child: TextField(
                     onChanged: (value) {
                       if (value.isEmpty) {
-                        friendData.searchedFriends.clear();
+                        friendCubit.searchedFriends.clear();
                       }
                       if (value.isNotEmpty) {
-                        friendData.searchOnFriend(value);
+                        friendCubit.searchOnFriend(value);
+                        isFriend(value);
                       }
                     },
                     style: GoogleFonts.ubuntu(color: Colors.white),
@@ -87,22 +94,14 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
             child: BlocBuilder<FriendCubit, FriendStates>(
               builder: (context, state) {
                 return ListView.separated(
-                  itemBuilder: (context, index) => GestureDetector(
-                    onTap: () {
-                      // friendData.checkUserInGroup(
-                      //   userdata.user.id!,
-                      //   friendData.allUserGroups[index].groupId,
-                      // );
-                    },
-                    child: FriendSearchWidget(
-                      friendData: friendData.searchedFriends[index],
-                      isFriend: false,
-                    ),
+                  itemBuilder: (context, index) => FriendSearchWidget(
+                    friendData: friendCubit.searchedFriends[index],
+                    isFriend: false,
                   ),
                   separatorBuilder: (context, index) => Divider(
                     thickness: 4.h,
                   ),
-                  itemCount: friendData.searchedFriends.length,
+                  itemCount: friendCubit.searchedFriends.length,
                 );
               },
             ),
@@ -110,5 +109,9 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
         ],
       ),
     );
+  }
+
+  void isFriend(String friendId) {
+    friendCubit.checkUserIsFriend(friendId);
   }
 }

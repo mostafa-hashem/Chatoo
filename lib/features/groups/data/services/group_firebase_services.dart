@@ -56,11 +56,14 @@ class GroupFirebaseServices {
         );
   }
 
-  Future<List<Group>> getGroups() async {
-    final querySnapshot = await _groupsCollection.get();
-    return querySnapshot.docs
-        .map((queryDocSnapshot) => Group.fromJson(queryDocSnapshot.data()))
-        .toList();
+  Stream<List<Group>> getGroups() {
+    return _groupsCollection.snapshots().map(
+          (querySnapshot) => querySnapshot.docs
+              .map(
+                (queryDocSnapshot) => Group.fromJson(queryDocSnapshot.data()),
+              )
+              .toList(),
+        );
   }
 
   Future<void> createGroup(
@@ -83,7 +86,7 @@ class GroupFirebaseServices {
       "members": FieldValue.arrayUnion([
         currentUserMap,
       ]),
-      "groupId": userGroupDocRef.id,
+      "groupId": group.groupId,
     });
     await _usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({
       "groups": FieldValue.arrayUnion([group.groupId]),
@@ -119,7 +122,7 @@ class GroupFirebaseServices {
     final DocumentReference groupMessageDocRef = _groupsCollection
         .doc(group.groupId)
         .collection(FirebasePath.messages)
-        .doc();
+        .doc(userMessageDocRef.id);
 
     final String messageId = userMessageDocRef.id;
 
@@ -154,14 +157,13 @@ class GroupFirebaseServices {
     });
   }
 
-  Future<bool> isUserInGroup(String groupId) async {
-    final DocumentSnapshot userDocSnapshot = await _usersCollection
+  Stream<bool> isUserInGroup(String groupId) {
+    return _usersCollection
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.groups)
         .doc(groupId)
-        .get();
-
-    return userDocSnapshot.exists;
+        .snapshots()
+        .map((event) => event.exists);
   }
 
   Future<void> joinGroup(Group group, User user) async {

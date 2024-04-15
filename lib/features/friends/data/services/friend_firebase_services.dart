@@ -14,16 +14,13 @@ class FriendFirebaseServices {
       .collection(FirebasePath.friends);
 
   Stream<List<User>> getUsers()  {
-    return _usersCollection
-        .snapshots()
-        .map(
+    return _usersCollection.snapshots().map(
           (querySnapshot) => querySnapshot.docs
-          .map(
-            (queryDocSnapshot) => User.fromJson(queryDocSnapshot.data()),
-      )
-          .toList(),
-    );
-
+              .map(
+                (queryDocSnapshot) => User.fromJson(queryDocSnapshot.data()),
+              )
+              .toList(),
+        );
   }
 
   Stream<List<Friend>> getAllUserFriends() {
@@ -65,6 +62,13 @@ class FriendFirebaseServices {
         FirebaseAuth.instance.currentUser!.uid,
       ]),
     });
+  }
+
+  Stream<bool> isUserFriend(String friendId) {
+    return _usersCollection
+        .doc(FirebaseAuth.instance.currentUser!.uid).collection(FirebasePath.friends).doc(friendId)
+        .snapshots()
+        .map((event) => event.exists);
   }
 
   Future<void> sendMessageToFriend(

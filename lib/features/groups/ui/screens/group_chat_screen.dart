@@ -94,7 +94,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         children: [
           BlocBuilder<GroupCubit, GroupStates>(
             builder: (context, state) {
-              return const ChatMessages();
+              return ChatMessages();
             },
           ),
           SizedBox(

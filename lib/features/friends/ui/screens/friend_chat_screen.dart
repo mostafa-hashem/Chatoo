@@ -83,7 +83,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
         children: [
           BlocBuilder<FriendCubit, FriendStates>(
             builder: (context, state) {
-              return const FriendChatMessages();
+              return FriendChatMessages();
             },
           ),
           SizedBox(

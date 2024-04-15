@@ -11,6 +11,15 @@ class AddFriendError extends FriendStates {
 
   AddFriendError(this.message);
 }
+class CheckIsUserFriendLoading extends FriendStates {}
+
+class CheckIsUserFriendSuccess extends FriendStates {}
+
+class CheckIsUserFriendError extends FriendStates {
+  final String message;
+
+  CheckIsUserFriendError(this.message);
+}
 
 class GetAllUsersLoading extends FriendStates {}
 

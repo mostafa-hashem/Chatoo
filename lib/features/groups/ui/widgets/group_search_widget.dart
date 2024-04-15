@@ -45,38 +45,41 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
           "Admin: ${widget.groupData.adminName}",
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: InkWell(
-          onTap: () async {
-            GroupCubit.get(context)
-                .joinGroup( widget.groupData, ProfileCubit.get(context).user)
-                .whenComplete(() {
-              showSnackBar(
-                context,
-                Colors.green,
-                "Successfully joined he group",
-              );
-              Future.delayed(const Duration(seconds: 2), () {
-                Navigator.pop(context);
-              });
-            });
-          },
-          child: widget.isJoined
-              ? Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.black,
-                    border: Border.all(color: Colors.white),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  child: Text(
-                    "Joined",
-                    style: GoogleFonts.ubuntu(color: Colors.white),
-                  ),
-                )
-              : Container(
+        trailing: widget.isJoined
+            ? Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black,
+                  border: Border.all(color: Colors.white),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: Text(
+                  "Joined",
+                  style: GoogleFonts.ubuntu(color: Colors.white),
+                ),
+              )
+            : InkWell(
+                onTap: () async {
+                  GroupCubit.get(context)
+                      .joinGroup(
+                    widget.groupData,
+                    ProfileCubit.get(context).user,
+                  )
+                      .whenComplete(() {
+                    showSnackBar(
+                      context,
+                      Colors.green,
+                      "Successfully joined he group",
+                    );
+                    Future.delayed(const Duration(seconds: 1), () {
+                      Navigator.pop(context);
+                    });
+                  });
+                },
+                child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: AppColors.primary,
@@ -90,7 +93,7 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                     style: GoogleFonts.ubuntu(color: Colors.white),
                   ),
                 ),
-        ),
+              ),
       ),
     );
   }

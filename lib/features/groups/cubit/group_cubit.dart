@@ -51,7 +51,7 @@ class GroupCubit extends Cubit<GroupStates> {
   Future<void> getAllUserGroups() async {
     emit(GetAllGroupsLoading());
     try {
-       _groupFirebaseServices.getAllUserGroups().listen((groups) {
+      _groupFirebaseServices.getAllUserGroups().listen((groups) {
         allUserGroups = groups;
       });
       emit(GetAllGroupsSuccess());
@@ -63,11 +63,9 @@ class GroupCubit extends Cubit<GroupStates> {
   Future<void> getAllGroupMessages(String groupId) async {
     emit(GetAllGroupMessagesLoading());
     try {
-     _groupFirebaseServices
-          .getAllGroupMessages(groupId)
-          .listen((messages) {
-        allMessages = messages;
-        filteredMessages = allMessages.where((message) => message.groupId == groupId).toList();
+      _groupFirebaseServices.getAllGroupMessages(groupId).listen((messages) {
+        filteredMessages =
+            messages.where((message) => message.groupId == groupId).toList();
         filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
         emit(GetAllGroupMessagesSuccess());
       });
@@ -76,7 +74,11 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
-  Future<void> sendMessageToGroup(Group group, User sender, String message) async {
+  Future<void> sendMessageToGroup(
+    Group group,
+    User sender,
+    String message,
+  ) async {
     emit(SendMessageLoading());
     try {
       await _groupFirebaseServices.sendMessageToGroup(group, message, sender);
@@ -89,31 +91,32 @@ class GroupCubit extends Cubit<GroupStates> {
   Future<void> searchOnGroup(String groupName) async {
     emit(SearchOnGroupLoading());
     try {
-      allGroups = await _groupFirebaseServices.getGroups();
-      searchedGroups = allGroups
-          .where(
-            (group) =>
-                group.groupId == groupName || group.groupName == groupName,
-          )
-          .toList();
+      _groupFirebaseServices.getGroups().listen((search) {
+        searchedGroups = search
+            .where(
+              (group) => group.groupName.contains(groupName),
+            )
+            .toList();
+      });
       emit(SearchOnGroupSuccess());
     } catch (e) {
       emit(SearchOnGroupError(Failure.fromException(e).message));
     }
   }
 
-  Future<void> checkUserInGroup( String groupId) async {
+  Future<void> checkUserInGroup(String groupId) async {
     emit(CheckUserInGroupLoading());
     try {
-      isUserMember =
-          await _groupFirebaseServices.isUserInGroup( groupId);
+      _groupFirebaseServices.isUserInGroup(groupId).listen((isMember) {
+        isUserMember = isMember;
         emit(CheckUserInGroupSuccess());
+      });
     } catch (e) {
       emit(CheckUserInGroupError(Failure.fromException(e).message));
     }
   }
 
-  Future<void> joinGroup( Group group, User user) async {
+  Future<void> joinGroup(Group group, User user) async {
     emit(JoinGroupLoading());
     try {
       await _groupFirebaseServices.joinGroup(group, user);

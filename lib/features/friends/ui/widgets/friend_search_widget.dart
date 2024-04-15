@@ -48,42 +48,42 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
           widget.friendData.bio!,
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: InkWell(
-          onTap: () async {
-            friendData
-                .addFriend(widget.friendData, userdata.user)
-                .whenComplete(() {
-              FriendCubit.get(context).getAllUserFriends();
-              showSnackBar(
-                context,
-                Colors.green,
-                "Successfully added the friend",
-              );
-              Future.delayed(const Duration(seconds: 2), () {
-                Navigator.pushReplacementNamed(
-                  context,
-                  Routes.layout,
-                );
-              });
-            });
-          },
-          child: widget.isFriend
-              ? Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.black,
-                    border: Border.all(color: Colors.white),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  child: Text(
-                    "Added",
-                    style: GoogleFonts.ubuntu(color: Colors.white),
-                  ),
-                )
-              : Container(
+        trailing: widget.isFriend
+            ? Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black,
+                  border: Border.all(color: Colors.white),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: Text(
+                  "Added",
+                  style: GoogleFonts.ubuntu(color: Colors.white),
+                ),
+              )
+            : InkWell(
+                onTap: () async {
+                  friendData
+                      .addFriend(widget.friendData, userdata.user)
+                      .whenComplete(() {
+                    FriendCubit.get(context).getAllUserFriends();
+                    showSnackBar(
+                      context,
+                      Colors.green,
+                      "Successfully added the friend",
+                    );
+                    Future.delayed(const Duration(seconds: 2), () {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        Routes.layout,
+                      );
+                    });
+                  });
+                },
+                child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: AppColors.primary,
@@ -97,7 +97,7 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                     style: GoogleFonts.ubuntu(color: Colors.white),
                   ),
                 ),
-        ),
+              ),
       ),
     );
   }

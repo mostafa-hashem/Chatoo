@@ -19,6 +19,7 @@ class FriendCubit extends Cubit<FriendStates> {
   List<User> searchedFriends = [];
   List<FriendMessage> filteredMessages = [];
   ScrollController scrollController = ScrollController();
+  bool isUserFriend = false;
 
 
   Future<void> addFriend(User friend, User currentUser) async {
@@ -28,6 +29,17 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(AddFriendSuccess());
     } catch (e) {
       emit(AddFriendError(Failure.fromException(e).message));
+    }
+  }
+  Future<void> checkUserIsFriend(String friendId) async {
+    emit(CheckIsUserFriendLoading());
+    try {
+      _friendFirebaseServices.isUserFriend(friendId).listen((isFriend) {
+        isUserFriend = isFriend;
+        emit(CheckIsUserFriendSuccess());
+      });
+    } catch (e) {
+      emit(CheckIsUserFriendError(Failure.fromException(e).message));
     }
   }
 
@@ -47,8 +59,7 @@ class FriendCubit extends Cubit<FriendStates> {
     emit(SearchOnFriendLoading());
     try {
       _friendFirebaseServices.getUsers().listen((search){
-        allUsers = search;
-      searchedFriends = allUsers
+      searchedFriends = search
           .where(
             (friend) => friend.userName?.contains(friendName) ?? false,
           )

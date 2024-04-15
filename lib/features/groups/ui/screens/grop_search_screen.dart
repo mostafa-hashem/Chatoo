@@ -1,6 +1,7 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_search_widget.dart';
+import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,15 +16,22 @@ class GroupSearchScreen extends StatefulWidget {
 }
 
 class _GroupSearchScreenState extends State<GroupSearchScreen> {
+  late GroupCubit groupCubit;
+
+  @override
+  void didChangeDependencies() {
+    groupCubit = GroupCubit.get(context);
+    super.didChangeDependencies();
+  }
+
   @override
   void deactivate() {
-    GroupCubit.get(context).searchedGroups.clear();
+    groupCubit.searchedGroups.clear();
     super.deactivate();
   }
 
   @override
   Widget build(BuildContext context) {
-    final groupData = GroupCubit.get(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -52,10 +60,11 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                       return TextField(
                         onChanged: (value) {
                           if (value.isEmpty) {
-                            groupData.searchedGroups.clear();
+                            groupCubit.searchedGroups.clear();
                           }
                           if (value.isNotEmpty) {
-                            groupData.searchOnGroup(value);
+                            groupCubit.searchOnGroup(value);
+                            inGroup(value);
                           }
                         },
                         style: GoogleFonts.ubuntu(color: Colors.white),
@@ -92,19 +101,23 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                 return ListView.separated(
                   itemBuilder: (context, index) => GestureDetector(
                     onTap: () {
-                      groupData.checkUserInGroup(
-                        groupData.allUserGroups[index].groupId,
-                      );
+                      groupCubit.isUserMember
+                          ? Navigator.pushReplacementNamed(
+                              context,
+                              Routes.groupChatScreen,
+                              arguments: groupCubit.searchedGroups[index],
+                            )
+                          : null;
                     },
                     child: GroupSearchWidget(
-                      groupData: groupData.searchedGroups[index],
-                      isJoined: groupData.isUserMember,
+                      groupData: groupCubit.searchedGroups[index],
+                      isJoined: groupCubit.isUserMember,
                     ),
                   ),
                   separatorBuilder: (context, index) => Divider(
                     thickness: 4.h,
                   ),
-                  itemCount: groupData.searchedGroups.length,
+                  itemCount: groupCubit.searchedGroups.length,
                 );
               },
             ),
@@ -112,5 +125,9 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
         ],
       ),
     );
+  }
+
+  void inGroup(String groupId) {
+    groupCubit.checkUserInGroup(groupId);
   }
 }
