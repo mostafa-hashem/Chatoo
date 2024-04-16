@@ -6,10 +6,12 @@ class ErrorIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Icon(
-      Icons.error,
-      color: AppColors.primary,
-      size: 40,
+    return const Center(
+      child: Icon(
+        Icons.error,
+        color: AppColors.primary,
+        size: 40,
+      ),
     );
   }
 }

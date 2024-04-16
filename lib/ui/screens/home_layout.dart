@@ -6,7 +6,7 @@ import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/drawer_tile.dart';
-import 'package:chat_app/widgets/widgets.dart';
+import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -38,12 +38,6 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
         appBarTitle = AppLocalizations.of(context)!.groups;
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   @override

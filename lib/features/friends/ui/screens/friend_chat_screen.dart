@@ -37,12 +37,6 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
   }
 
   @override
-  void dispose() {
-    messageController.dispose();
-    super.dispose();
-  }
-
-  @override
   void deactivate() {
     friendCubit.filteredMessages.clear();
     super.deactivate();
@@ -82,6 +76,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
       body: Column(
         children: [
           BlocBuilder<FriendCubit, FriendStates>(
+            buildWhen: (_, currentState) =>
+                currentState is GetAllFriendMessagesError ||
+                currentState is GetAllFriendMessagesSuccess ||
+                currentState is GetAllFriendMessagesLoading,
             builder: (context, state) {
               return FriendChatMessages();
             },
@@ -151,10 +149,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                           sender,
                         );
                         messageController.clear();
-                        Future.delayed(
-                          const Duration(milliseconds: 40),
-                          () => scrollToBottom(),
-                        );
+                        scrollToBottom();
                       }
                     },
                     icon: const Icon(

@@ -9,8 +9,8 @@ import 'package:chat_app/ui/widgets/default_form_field.dart';
 import 'package:chat_app/ui/widgets/default_password_form_filed.dart';
 import 'package:chat_app/ui/widgets/default_text_button.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
+import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/helper_methods.dart';
-import 'package:chat_app/widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -45,6 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 bottom: MediaQuery.of(context).viewInsets.bottom * 0.1,),
             child: Form(
               key: formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

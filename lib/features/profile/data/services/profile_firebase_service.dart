@@ -23,17 +23,16 @@ class ProfileFirebaseService {
     final updatedUserData = updatedUser.toJson();
     await userDoc.update(updatedUserData);
   }
-
   Future<void> uploadProfileImage(String filePath, File imageFile) async {
-    final Reference storageRef =
-        _storage.ref().child(FirebasePath.users).child(filePath);
-    final UploadTask uploadTask =
-        storageRef.child('${imageFile.hashCode}').putFile(imageFile);
-    final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
-    final String downloadUrl = await snapshot.ref.getDownloadURL();
+      final Reference storageRef =
+          _storage.ref().child(FirebasePath.users).child(filePath);
+      final UploadTask uploadTask =
+          storageRef.child('${imageFile.hashCode}').putFile(imageFile);
+      final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
 
-    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    final userDoc = _usersCollection.doc(currentUserId);
-    await userDoc.update({'profileImage': downloadUrl});
+      final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      final userDoc = _usersCollection.doc(currentUserId);
+      await userDoc.update({'profileImage': downloadUrl});
   }
 }

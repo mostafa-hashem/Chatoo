@@ -3,6 +3,7 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/firebase_options.dart';
+import 'package:chat_app/helper/notification_services.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/my_theme.dart';
@@ -20,6 +21,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationServices().initNotifications();
   Bloc.observer = AppBlocObserver();
   runApp(
     ChangeNotifierProvider(

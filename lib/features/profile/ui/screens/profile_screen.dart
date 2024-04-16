@@ -13,6 +13,7 @@ import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/default_button.dart';
 import 'package:chat_app/ui/widgets/default_text_button.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -213,12 +215,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(40.r),
                         ),
-                        child: ProfileCubit.get(context).user.profileImage !=
-                                    null &&
-                                ProfileCubit.get(context)
-                                    .user
-                                    .profileImage!
-                                    .isNotEmpty
+                        child: profile.user.profileImage != null &&
+                                profile.user.profileImage!.isNotEmpty
                             ? ClipOval(
                                 child: FancyShimmerImage(
                                   imageUrl: profile.user.profileImage!,
@@ -229,29 +227,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       const Icon(Icons.error_outline_outlined),
                                 ),
                               )
-                            : Image.network(
-                                "https://firebasestorage.googleapis.com/v0/b/chat-app-319.appspot.com/o/defultProfileImage%2Fuser.png?alt=media&token=bab1fe29-62a5-4338-83ac-ff462c322fbd",
+                            : ClipOval(
+                                child: FancyShimmerImage(
+                                  imageUrl: FirebasePath.defaultImage,
+                                  height: 150.h,
+                                  width: 180.w,
+                                  boxFit: BoxFit.contain,
+                                  errorWidget:
+                                      const Icon(Icons.error_outline_outlined),
+                                ),
                               ),
                       ),
                       GestureDetector(
                         onTap: () async {
-                          final ImagePicker picker = ImagePicker();
-                          final XFile? xFile = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
+                          final PermissionStatus status =
+                              await Permission.storage.status;
+                          if (status.isGranted) {
+                            final ImagePicker picker = ImagePicker();
+                            final XFile? xFile = await picker.pickImage(
+                              source: ImageSource.gallery,
+                            );
+                            if (xFile != null) {
+                              File xFilePathToFile(XFile xFile) {
+                                return File(xFile.path);
+                              }
 
-                          if (xFile != null) {
-                            File xFilePathToFile(XFile xFile) {
-                              return File(xFile.path);
+                              imageFile = xFilePathToFile(xFile);
+                              if (context.mounted) {
+                                profile.uploadProfileImageToFireStorage(
+                                  profile.user.id!,
+                                  imageFile!,
+                                );
+                              }
                             }
-
-                            imageFile = xFilePathToFile(xFile);
-                            if (context.mounted) {
-                              profile.uploadProfileImageToFireStorage(
-                                profile.user.id!,
-                                imageFile!,
-                              );
-                            }
+                          } else {
+                            await Permission.storage.request();
+                            return;
                           }
                         },
                         child: const Icon(Icons.edit),
@@ -293,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 BlocListener<ProfileCubit, ProfileState>(
                   listener: (_, state) {
                     if (state is UpdateUserSuccess) {
-                      ProfileCubit.get(context).getUser();
+                      profile.getUser();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -308,7 +319,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   },
                   child: DefaultTextButton(
                     function: () {
-                      ProfileCubit.get(context).updateUser(
+                      profile.updateUser(
                         User(
                           id: profile.user.id,
                           userName: userNameController.text,

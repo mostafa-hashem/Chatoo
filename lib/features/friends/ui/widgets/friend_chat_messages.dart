@@ -1,6 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/widgets/friend_messages_tile.dart';
+import 'package:chat_app/features/friends/ui/widgets/friend_messages_tile.dart';
 import 'package:flutter/material.dart';
 
 class FriendChatMessages extends StatefulWidget {
@@ -16,7 +16,7 @@ class FriendChatMessages extends StatefulWidget {
 class _FriendChatMessagesState extends State<FriendChatMessages> {
   @override
   Widget build(BuildContext context) {
-    final friendsMessages =
+    final friendMessages =
         FriendCubit.get(context).filteredMessages.reversed.toList();
     return Expanded(
       child: ListView.builder(
@@ -24,12 +24,12 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
         controller: FriendCubit.get(context).scrollController,
         itemBuilder: (context, index) {
           return FriendMessagesTile(
-            friendMessage: friendsMessages[index],
+            friendMessage: friendMessages[index],
             sentByMe: ProfileCubit.get(context).user.userName ==
-                friendsMessages[index].sender.userName,
+                friendMessages[index].sender.userName,
           );
         },
-        itemCount: friendsMessages.length,
+        itemCount: friendMessages.length,
       ),
     );
   }

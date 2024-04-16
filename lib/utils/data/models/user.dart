@@ -10,6 +10,7 @@ class User {
   List<dynamic>? groups;
   List<dynamic>? friends;
   Address? address;
+  String? fCMToken;
 
   User({
     required this.id,
@@ -18,6 +19,7 @@ class User {
     this.bio = '',
     this.phoneNumber = '',
     this.profileImage = '',
+    this.fCMToken,
     this.groups,
     this.friends,
     this.address,
@@ -30,10 +32,13 @@ class User {
     bio = json['bio'] as String?;
     phoneNumber = json['phoneNumber'] as String?;
     profileImage = json['profileImage'] as String?;
+    if (json['fCMToken'] != null) {
+      fCMToken = json['fCMToken'] as String?;
+    }
     if (json['address'] != null) {
       address = Address.fromJson(json['address'] as Map<String, dynamic>);
     }
-    if (json['groups'] != null && json['groups'] is List<dynamic>)  {
+    if (json['groups'] != null && json['groups'] is List<dynamic>) {
       groups = json['groups'] as List<dynamic>;
     }
     if (json['friends'] != null && json['friends'] is List<dynamic>) {
@@ -49,6 +54,7 @@ class User {
       'bio': bio,
       'phoneNumber': phoneNumber,
       'profileImage': profileImage,
+      if (fCMToken != null) 'fCMToken': fCMToken,
       if (address != null) 'address': address?.toJson(),
       if (groups != null) 'groups': groups,
       if (friends != null) 'friends': friends,

@@ -1,11 +1,13 @@
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
+import 'package:chat_app/helper/notification_services.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 
 class FriendFirebaseServices {
+  final _notificationServices = NotificationServices();
   final _usersCollection =
       FirebaseFirestore.instance.collection(FirebasePath.users);
   final _friendsCollection = FirebaseFirestore.instance
@@ -13,7 +15,7 @@ class FriendFirebaseServices {
       .doc(FirebaseAuth.instance.currentUser!.uid)
       .collection(FirebasePath.friends);
 
-  Stream<List<User>> getUsers()  {
+  Stream<List<User>> getUsers() {
     return _usersCollection.snapshots().map(
           (querySnapshot) => querySnapshot.docs
               .map(
@@ -47,7 +49,11 @@ class FriendFirebaseServices {
       'recentMessageSender': '',
       "friendData": friend.toJson(),
     });
-    _usersCollection.doc(friend.id).collection(FirebasePath.friends).doc(currentUser.id).set({
+    _usersCollection
+        .doc(friend.id)
+        .collection(FirebasePath.friends)
+        .doc(currentUser.id)
+        .set({
       'recentMessage': '',
       'recentMessageSender': '',
       "friendData": currentUser.toJson(),
@@ -66,7 +72,9 @@ class FriendFirebaseServices {
 
   Stream<bool> isUserFriend(String friendId) {
     return _usersCollection
-        .doc(FirebaseAuth.instance.currentUser!.uid).collection(FirebasePath.friends).doc(friendId)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
         .snapshots()
         .map((event) => event.exists);
   }
@@ -124,6 +132,12 @@ class FriendFirebaseServices {
       'recentMessage': message,
       'recentMessageSender': sender.userName,
     });
+    // Send notification to friend
+    await _notificationServices.sendNotification(
+      fcmToken: friend.fCMToken ?? '',
+      title: '${sender.userName}',
+      body: message,
+    );
   }
 
   Stream<List<FriendMessage>> getAllUserMessages(String friendId) {
@@ -135,7 +149,8 @@ class FriendFirebaseServices {
         .map(
           (querySnapshot) => querySnapshot.docs
               .map(
-                (queryDocSnapshot) => FriendMessage.fromJson(queryDocSnapshot.data()),
+                (queryDocSnapshot) =>
+                    FriendMessage.fromJson(queryDocSnapshot.data()),
               )
               .toList(),
         );

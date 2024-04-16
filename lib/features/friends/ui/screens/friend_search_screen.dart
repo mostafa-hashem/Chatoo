@@ -61,7 +61,8 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                       }
                       if (value.isNotEmpty) {
                         friendCubit.searchOnFriend(value);
-                        isFriend(value);
+                        friendCubit.checkUserIsFriend(value);
+                        print(friendCubit.isUserFriend);
                       }
                     },
                     style: GoogleFonts.ubuntu(color: Colors.white),
@@ -96,7 +97,6 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                 return ListView.separated(
                   itemBuilder: (context, index) => FriendSearchWidget(
                     friendData: friendCubit.searchedFriends[index],
-                    isFriend: false,
                   ),
                   separatorBuilder: (context, index) => Divider(
                     thickness: 4.h,
@@ -109,9 +109,5 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
         ],
       ),
     );
-  }
-
-  void isFriend(String friendId) {
-    friendCubit.checkUserIsFriend(friendId);
   }
 }

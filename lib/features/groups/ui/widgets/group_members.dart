@@ -1,18 +1,17 @@
-import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class GroupMembers extends StatelessWidget {
-  final Group groupData;
-
-  const GroupMembers({super.key, required this.groupData});
-
+  // Note: Avoid using `const` with constructors.
+   GroupMembers({super.key,});
   @override
   Widget build(BuildContext context) {
+    final groupCubit = GroupCubit.get(context);
     return ListView.builder(
-      itemCount: 0,
+      itemCount: groupCubit.allGroupMembers.length,
       shrinkWrap: true,
       itemBuilder: (context, index) {
         return Container(
@@ -28,7 +27,7 @@ class GroupMembers extends StatelessWidget {
               radius: 25.r,
               backgroundColor: AppColors.primary,
               child: Text(
-                groupData.members![index].userName!
+                groupCubit.allGroupMembers[index].userName!
                     .substring(0, 1)
                     .toUpperCase(),
                 style: GoogleFonts.ubuntu(
@@ -37,9 +36,9 @@ class GroupMembers extends StatelessWidget {
                 ),
               ),
             ),
-            title: Text(groupData.members![index].userName!),
+            title: Text(groupCubit.allGroupMembers[index].userName!),
             subtitle: Text(
-              "ID: ${groupData.members![index].id}",
+              "ID: ${groupCubit.allGroupMembers[index].id}",
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),

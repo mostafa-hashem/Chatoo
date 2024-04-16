@@ -111,7 +111,6 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                     },
                     child: GroupSearchWidget(
                       groupData: groupCubit.searchedGroups[index],
-                      isJoined: groupCubit.isUserMember,
                     ),
                   ),
                   separatorBuilder: (context, index) => Divider(

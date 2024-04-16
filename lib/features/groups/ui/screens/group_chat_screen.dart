@@ -41,6 +41,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   @override
   void dispose() {
     messageController.dispose();
+    groupCubit.filteredGroups.clear();
     super.dispose();
   }
 
@@ -80,11 +81,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(
-                context,
-                Routes.groupInfo,
-                arguments: groupData,
-              );
+              groupCubit.getAllGroupMembers(groupData.groupId).whenComplete(
+                    () => Navigator.pushNamed(
+                      context,
+                      Routes.groupInfo,
+                      arguments: groupData,
+                    ),
+                  );
             },
             icon: const Icon(Icons.info),
           ),

@@ -2,6 +2,7 @@ import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/widgets/groupe_tile.dart';
 import 'package:chat_app/features/groups/ui/widgets/no_groups_widget.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
@@ -18,8 +19,8 @@ class GroupsScreen extends StatefulWidget {
 class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
-    final groups = GroupCubit.get(context);
-    return groups.allUserGroups.isNotEmpty
+    final groupsCubit = GroupCubit.get(context);
+    return groupsCubit.allUserGroups.isNotEmpty
         ? BlocConsumer<GroupCubit, GroupStates>(
             listener: (_, state) {
               if (state is CreateGroupLoading) {
@@ -60,31 +61,31 @@ class _GroupsScreenState extends State<GroupsScreen> {
               }
             },
             builder: (context, state) => ListView.builder(
-              itemCount: groups.allUserGroups.length,
+              itemCount: groupsCubit.allUserGroups.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    groups
+                    groupsCubit
                         .getAllGroupMessages(
-                          groups.allUserGroups[index].groupId,
+                          groupsCubit.allUserGroups[index].groupId,
                         )
                         .whenComplete(
                           () => Future.delayed(
                             const Duration(
-                              milliseconds: 40,
+                              milliseconds: 55,
                             ),
                             () => Navigator.pushNamed(
                               context,
                               Routes.groupChatScreen,
-                              arguments: groups.allUserGroups[index],
+                              arguments: groupsCubit.allUserGroups[index],
                             ),
                           ),
                         );
                   },
                   child: GroupTile(
-                    groupId: groups.allUserGroups[index].groupId,
-                    groupName: groups.allUserGroups[index].groupName,
-                    userName: groups.allUserGroups[index].adminName,
+                    groupId: groupsCubit.allUserGroups[index].groupId,
+                    groupName: groupsCubit.allUserGroups[index].groupName,
+                    userName: ProfileCubit.get(context).user.userName!,
                   ),
                 );
               },

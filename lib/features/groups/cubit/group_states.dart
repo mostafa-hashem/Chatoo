@@ -22,6 +22,16 @@ class UploadGroupImageToFireStorageError extends GroupStates {
   UploadGroupImageToFireStorageError(this.message);
 }
 
+class UploadImageAndUpdateGroupIconLoading extends GroupStates {}
+
+class UploadImageAndUpdateGroupIconSuccess extends GroupStates {}
+
+class UploadImageAndUpdateGroupIconError extends GroupStates {
+  final String message;
+
+  UploadImageAndUpdateGroupIconError(this.message);
+}
+
 class GetAllGroupsLoading extends GroupStates {}
 
 class GetAllGroupsSuccess extends GroupStates {}
@@ -40,6 +50,16 @@ class GetAllGroupMessagesError extends GroupStates {
   final String message;
 
   GetAllGroupMessagesError(this.message);
+}
+
+class GetAllGroupMembersLoading extends GroupStates {}
+
+class GetAllGroupMembersSuccess extends GroupStates {}
+
+class GetAllGroupMembersError extends GroupStates {
+  final String message;
+
+  GetAllGroupMembersError(this.message);
 }
 
 class SendMessageLoading extends GroupStates {}

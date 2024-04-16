@@ -103,5 +103,4 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(GetAllFriendMessagesError(Failure.fromException(e).message));
     }
   }
-
 }

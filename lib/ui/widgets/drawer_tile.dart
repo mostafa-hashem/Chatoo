@@ -3,7 +3,8 @@ import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/screens/about_us.dart';
-import 'package:chat_app/widgets/widgets.dart';
+import 'package:chat_app/ui/widgets/widgets.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,10 +42,14 @@ class _DrawerTileState extends State<DrawerTile> {
                         errorWidget: const Icon(Icons.error_outline_outlined),
                       ),
                     )
-                  : Icon(
-                      Icons.account_circle,
-                      size: 150,
-                      color: Colors.grey[700],
+                  : ClipOval(
+                      child: FancyShimmerImage(
+                        imageUrl: FirebasePath.defaultImage,
+                        height: 150.h,
+                        width: 180.w,
+                        boxFit: BoxFit.contain,
+                        errorWidget: const Icon(Icons.error_outline_outlined),
+                      ),
                     );
             },
           ),
@@ -94,18 +99,5 @@ class _DrawerTileState extends State<DrawerTile> {
         ],
       ),
     );
-    //   ListTile(
-    //   onTap: () {
-    //     nextScreen(context, page);
-    //   },
-    //   selected: isSelected,
-    //   selectedColor: AppColors.primaryColor,
-    //   contentPadding:
-    //   const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-    //   leading: Icon(icon),
-    //   title: Text(
-    //     title,
-    //     style: Theme.of(context).textTheme.bodyMedium)
-    // );
   }
 }

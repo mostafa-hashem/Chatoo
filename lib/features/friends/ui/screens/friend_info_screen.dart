@@ -1,6 +1,7 @@
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_info.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,7 +16,7 @@ class FriendInfoScreen extends StatefulWidget {
 class _FriendInfoScreenState extends State<FriendInfoScreen> {
   @override
   Widget build(BuildContext context) {
-    final friendsData = ModalRoute.of(context)!.settings.arguments! as Friend;
+    final friendsCubit = ModalRoute.of(context)!.settings.arguments! as Friend;
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -30,19 +31,30 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                 SizedBox(
                   height: 22.h,
                 ),
-                ClipOval(
-                  child: FancyShimmerImage(
-                    imageUrl: friendsData.friendData!.profileImage!,
-                    boxFit: BoxFit.cover,
-                    width: 180.w,
-                    height: 170.h,
+                if (friendsCubit.friendData!.profileImage == null &&
+                    friendsCubit.friendData!.profileImage!.isNotEmpty)
+                  ClipOval(
+                    child: FancyShimmerImage(
+                      imageUrl: friendsCubit.friendData!.profileImage!,
+                      boxFit: BoxFit.cover,
+                      width: 180.w,
+                      height: 170.h,
+                    ),
+                  )
+                else
+                  ClipOval(
+                    child: FancyShimmerImage(
+                      imageUrl: FirebasePath.defaultImage,
+                      boxFit: BoxFit.cover,
+                      width: 180.w,
+                      height: 170.h,
+                    ),
                   ),
-                ),
                 SizedBox(
                   height: 8.h,
                 ),
                 Text(
-                  friendsData.friendData!.bio!,
+                  friendsCubit.friendData!.bio!,
                   style: Theme.of(context)
                       .textTheme
                       .bodyLarge!
@@ -64,7 +76,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                 ),
                 FriendInfo(
                   labelText: 'User Name',
-                  info: friendsData.friendData!.userName!,
+                  info: friendsCubit.friendData!.userName!,
                 ),
                 const Divider(
                   thickness: 3,
@@ -72,7 +84,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                 ),
                 FriendInfo(
                   labelText: 'Email',
-                  info: friendsData.friendData!.email!,
+                  info: friendsCubit.friendData!.email!,
                 ),
                 const Divider(
                   thickness: 3,
@@ -80,7 +92,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                 ),
                 FriendInfo(
                   labelText: 'Phone',
-                  info: friendsData.friendData!.phoneNumber!,
+                  info: friendsCubit.friendData!.phoneNumber!,
                 ),
               ],
             ),

@@ -15,7 +15,9 @@ class GroupCubit extends Cubit<GroupStates> {
 
   static GroupCubit get(BuildContext context) => BlocProvider.of(context);
   final _groupFirebaseServices = GroupFirebaseServices();
+  String groupIcon = "";
   List<Group> allUserGroups = [];
+  List<User> allGroupMembers = [];
   List<Group> allGroups = [];
   List<Group> searchedGroups = [];
   List<Group> filteredGroups = [];
@@ -24,28 +26,49 @@ class GroupCubit extends Cubit<GroupStates> {
   bool isUserMember = false;
   ScrollController scrollController = ScrollController();
 
-  Future<void> createGroup(Group group, String userName, User user) async {
+  Future<void> createGroup(Group group, User user) async {
     emit(CreateGroupLoading());
     try {
-      await _groupFirebaseServices.createGroup(group, userName, user);
+      await _groupFirebaseServices.createGroup(group, user);
       emit(CreateGroupSuccess());
     } catch (e) {
       emit(CreateGroupError(Failure.fromException(e).message));
     }
   }
 
-  Future<void> uploadGroupImageToFireStorage(
-    File imageFiles,
-  ) async {
+  Future<void> uploadGroupImageToFireStorage(File imageFiles) async {
     emit(UploadGroupImageToFireStorageLoading());
     try {
-      await _groupFirebaseServices.uploadImage(imageFiles);
+      groupIcon = await _groupFirebaseServices.uploadImage(imageFiles);
       emit(UploadGroupImageToFireStorageSuccess());
     } catch (e) {
       emit(
         UploadGroupImageToFireStorageError(Failure.fromException(e).message),
       );
     }
+  }
+
+  Future<String?> uploadImageAndUpdateGroupIcon(
+    File imageFiles,
+    String groupId,
+  ) async {
+    emit(UploadImageAndUpdateGroupIconLoading());
+    try {
+      await _groupFirebaseServices.uploadImageAndUpdateGroupIcon(
+        imageFiles,
+        groupId,
+      );
+      emit(UploadImageAndUpdateGroupIconSuccess());
+      return _groupFirebaseServices.uploadImageAndUpdateGroupIcon(
+        imageFiles,
+        groupId,
+      );
+    } catch (e) {
+      emit(
+        UploadImageAndUpdateGroupIconError(Failure.fromException(e).message),
+      );
+    }
+    return null;
   }
 
   Future<void> getAllUserGroups() async {
@@ -71,6 +94,17 @@ class GroupCubit extends Cubit<GroupStates> {
       });
     } catch (e) {
       emit(GetAllGroupMessagesError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> getAllGroupMembers(String groupId) async {
+    emit(GetAllGroupMembersLoading());
+    try {
+      allGroupMembers =
+          await _groupFirebaseServices.getAllGroupMembers(groupId);
+      emit(GetAllGroupMembersSuccess());
+    } catch (e) {
+      emit(GetAllGroupMembersError(Failure.fromException(e).message));
     }
   }
 
