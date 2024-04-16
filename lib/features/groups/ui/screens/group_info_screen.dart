@@ -165,7 +165,7 @@ class _GroupInfoState extends State<GroupInfo> {
                               .then((downloadUrl) {
                             setState(() {
                               groupData.groupIcon =
-                                  downloadUrl!; // Update the groupData with the new download URL
+                                  downloadUrl!;
                             });
                           });
                         }

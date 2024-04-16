@@ -21,7 +21,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -240,9 +239,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       GestureDetector(
                         onTap: () async {
-                          final PermissionStatus status =
-                              await Permission.storage.status;
-                          if (status.isGranted) {
                             final ImagePicker picker = ImagePicker();
                             final XFile? xFile = await picker.pickImage(
                               source: ImageSource.gallery,
@@ -260,10 +256,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 );
                               }
                             }
-                          } else {
-                            await Permission.storage.request();
-                            return;
-                          }
                         },
                         child: const Icon(Icons.edit),
                       ),

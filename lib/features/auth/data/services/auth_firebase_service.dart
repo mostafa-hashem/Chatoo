@@ -1,10 +1,10 @@
 import 'package:chat_app/features/auth/data/models/login_data.dart';
 import 'package:chat_app/features/auth/data/models/register_data.dart';
+import 'package:chat_app/helper/notification_services.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
-
 
 class AuthFirebaseService {
   final _usersCollection =
@@ -21,6 +21,7 @@ class AuthFirebaseService {
     final userModel = User(
       id: uId,
       userName: registerModel.userName,
+      fCMToken: NotificationServices().fCMToken,
       email: registerModel.email,
     );
     await _usersCollection.doc(uId).set(userModel.toJson());
@@ -35,7 +36,11 @@ class AuthFirebaseService {
     );
     if (userCredential.user!.emailVerified) {
       final uId = userCredential.user!.uid;
+      await _usersCollection.doc(uId).update({
+        'fcmToken': NotificationServices().fCMToken,
+      });
       final docSnapShot = await _usersCollection.doc(uId).get();
+
       final userModel = User.fromJson(docSnapShot.data()!);
       return userModel;
     } else {

@@ -6,11 +6,11 @@ import 'package:permission_handler/permission_handler.dart';
 
 class NotificationServices {
   final _firebaseMessaging = FirebaseMessaging.instance;
-
+  String? fCMToken;
   Future<void> initNotifications() async {
     await _requestPermission();
     await _firebaseMessaging.requestPermission();
-    final fCMToken = await _firebaseMessaging.getToken();
+     fCMToken = await _firebaseMessaging.getToken();
     print("Token : $fCMToken");
 
     FirebaseMessaging.onBackgroundMessage(
@@ -33,8 +33,7 @@ class NotificationServices {
   Future<void> handelBackgroundMessage(RemoteMessage message) async {}
 
   Future<void> _requestPermission() async {
-    // Request permission for notification and overlay
-    await [
+     await [
       Permission.notification,
       Permission.systemAlertWindow,
       Permission.storage,
