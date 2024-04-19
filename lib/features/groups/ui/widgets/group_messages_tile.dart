@@ -1,3 +1,4 @@
+import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
@@ -6,11 +7,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class GroupMessagesTile extends StatefulWidget {
   final bool sentByMe;
   final GroupMessage groupMessage;
+  final String groupId;
 
   const GroupMessagesTile({
     super.key,
     required this.sentByMe,
     required this.groupMessage,
+    required this.groupId,
   });
 
   @override
@@ -41,7 +44,14 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                       TextButton(
                         child: const Text('Delete for everyone'),
                         onPressed: () {
-                          Navigator.pop(context);
+                          GroupCubit.get(context)
+                              .deleteMessageForeAll(
+                                widget.groupId,
+                                widget.groupMessage.messageId,
+                              )
+                              .whenComplete(
+                                () => Navigator.pop(context),
+                              );
                         },
                       ),
                     ],

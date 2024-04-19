@@ -1,6 +1,5 @@
 import 'package:chat_app/features/auth/data/models/login_data.dart';
 import 'package:chat_app/features/auth/data/models/register_data.dart';
-import 'package:chat_app/helper/notification_services.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,36 +15,51 @@ class AuthFirebaseService {
       email: registerModel.email,
       password: registerModel.password,
     );
-    await userCredential.user?.sendEmailVerification();
     final uId = userCredential.user!.uid;
     final userModel = User(
       id: uId,
-      userName: registerModel.userName,
-      fCMToken: NotificationServices().fCMToken,
       email: registerModel.email,
+      userName: registerModel.userName,
+      fCMToken: registerModel.fCMToken,
+      phoneNumber: registerModel.phoneNumber,
+      city: registerModel.city,
+      bio: 'Hello my friends!',
+      profileImage: FirebasePath.defaultImage,
     );
-    await _usersCollection.doc(uId).set(userModel.toJson());
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final DocumentReference userDocRef = _usersCollection.doc(uId);
+      transaction.set(userDocRef, userModel.toJson());
+    });
+    await userCredential.user?.sendEmailVerification();
     return userModel;
   }
 
   Future<User> login(LoginData loginData) async {
-    final userCredential =
+    final UserCredential userCredential =
         await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: loginData.email,
       password: loginData.password,
     );
-    if (userCredential.user!.emailVerified) {
-      final uId = userCredential.user!.uid;
-      await _usersCollection.doc(uId).update({
-        'fcmToken': NotificationServices().fCMToken,
-      });
-      final docSnapShot = await _usersCollection.doc(uId).get();
 
-      final userModel = User.fromJson(docSnapShot.data()!);
-      return userModel;
-    } else {
+    if (!userCredential.user!.emailVerified) {
       throw Exception("Email not verified");
     }
+
+    final String uId = userCredential.user!.uid;
+
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final DocumentReference userDocRef = _usersCollection.doc(uId);
+      final DocumentSnapshot userSnapshot = await transaction.get(userDocRef);
+
+      if (userSnapshot.exists) {
+        transaction.update(userDocRef, {'fCMToken': loginData.fCMToken});
+      }
+    });
+
+    final DocumentSnapshot docSnapshot = await _usersCollection.doc(uId).get();
+    final userModel =
+        User.fromJson(docSnapshot.data()! as Map<String, dynamic>);
+    return userModel;
   }
 
   Future<void> logout() => FirebaseAuth.instance.signOut();

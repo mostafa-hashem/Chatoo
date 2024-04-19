@@ -31,82 +31,86 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        toolbarHeight: 60,
-        elevation: 0,
-        backgroundColor: AppColors.primary,
-        title: Text(
-          "Search",
-          style: GoogleFonts.ubuntu(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w400,
-            color: Colors.white,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          toolbarHeight: 60,
+          elevation: 0,
+          backgroundColor: AppColors.primary,
+          title: Text(
+            "Search",
+            style: GoogleFonts.ubuntu(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w400,
+              color: Colors.white,
+            ),
           ),
         ),
-      ),
-      body: Column(
-        children: [
-          Container(
-            color: AppColors.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) {
-                      if (value.isEmpty) {
-                        friendCubit.searchedFriends.clear();
-                      }
-                      if (value.isNotEmpty) {
-                        friendCubit.searchOnFriend(value);
-                        friendCubit.checkUserIsFriend(value);
-                        print(friendCubit.isUserFriend);
-                      }
-                    },
-                    style: GoogleFonts.ubuntu(color: Colors.white),
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: "Search friends....",
-                      hintStyle: GoogleFonts.novaFlat(
-                        color: Colors.white,
-                        fontSize: 16,
+        body: Column(
+          children: [
+            Container(
+              color: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) {
+                        if (value.isEmpty) {
+                          friendCubit.searchedFriends.clear();
+                        }
+                        if (value.isNotEmpty) {
+                          friendCubit.searchOnFriend(value);
+                          friendCubit.checkUserIsFriend(value);
+                        }
+                      },
+                      style: GoogleFonts.ubuntu(color: Colors.white),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Search friends....",
+                        hintStyle: GoogleFonts.novaFlat(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(40),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: const Icon(
+                      Icons.search,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.search,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: BlocBuilder<FriendCubit, FriendStates>(
-              builder: (context, state) {
-                return ListView.separated(
-                  itemBuilder: (context, index) => FriendSearchWidget(
-                    friendData: friendCubit.searchedFriends[index],
-                  ),
-                  separatorBuilder: (context, index) => Divider(
-                    thickness: 4.h,
-                  ),
-                  itemCount: friendCubit.searchedFriends.length,
-                );
-              },
+            Expanded(
+              child: BlocBuilder<FriendCubit, FriendStates>(
+                builder: (context, state) {
+                  return ListView.separated(
+                    itemBuilder: (context, index) => FriendSearchWidget(
+                      friendData: friendCubit.searchedFriends[index],
+                    ),
+                    separatorBuilder: (context, index) => Divider(
+                      thickness: 4.h,
+                    ),
+                    itemCount: friendCubit.searchedFriends.length,
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

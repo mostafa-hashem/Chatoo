@@ -1,9 +1,9 @@
 import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
+import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/firebase_options.dart';
-import 'package:chat_app/helper/notification_services.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/my_theme.dart';
@@ -21,7 +21,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await NotificationServices().initNotifications();
   Bloc.observer = AppBlocObserver();
   runApp(
     ChangeNotifierProvider(
@@ -41,10 +40,19 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late MyAppProvider provider;
 
+  // Future<void> _checkForUpdates() async {
+  //   final isUpdateAvailable =
+  //       await shorebirdCodePush.isNewPatchAvailableForDownload();
+  //   if (isUpdateAvailable) {
+  //     await shorebirdCodePush.downloadUpdateIfAvailable();
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     provider = Provider.of<MyAppProvider>(context);
     getPreferences();
+    // _checkForUpdates();
     return ScreenUtilInit(
       minTextAdapt: true,
       splitScreenMode: true,
@@ -53,6 +61,10 @@ class _MyAppState extends State<MyApp> {
           providers: [
             BlocProvider(
               create: (_) => AuthCubit()..getAuthStatus(),
+            ),
+            BlocProvider(
+              create: (_) => NotificationsCubit()..initNotifications(),
+              lazy: false,
             ),
             BlocProvider(
               create: (_) => ProfileCubit(),

@@ -5,6 +5,7 @@ import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/screens/about_us.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/constants.dart';
+import 'package:chat_app/utils/helper_methods.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,7 +20,6 @@ class DrawerTile extends StatefulWidget {
 }
 
 class _DrawerTileState extends State<DrawerTile> {
-  String userName = '';
   String email = '';
 
   @override
@@ -33,13 +33,19 @@ class _DrawerTileState extends State<DrawerTile> {
             builder: (context, state) {
               return profile.user.profileImage != null &&
                       profile.user.profileImage!.isNotEmpty
-                  ? ClipOval(
-                      child: FancyShimmerImage(
-                        imageUrl: profile.user.profileImage!,
-                        height: 150.h,
-                        width: 180.w,
-                        boxFit: BoxFit.contain,
-                        errorWidget: const Icon(Icons.error_outline_outlined),
+                  ? InkWell(
+                      onTap: () => showImageDialog(
+                        context,
+                        profile.user.profileImage!,
+                      ),
+                      child: ClipOval(
+                        child: FancyShimmerImage(
+                          imageUrl: profile.user.profileImage!,
+                          height: 150.h,
+                          width: 180.w,
+                          boxFit: BoxFit.contain,
+                          errorWidget: const Icon(Icons.error_outline_outlined),
+                        ),
                       ),
                     )
                   : ClipOval(
@@ -57,7 +63,7 @@ class _DrawerTileState extends State<DrawerTile> {
             height: MediaQuery.of(context).size.height * 0.02,
           ),
           Text(
-            userName,
+            ProfileCubit.get(context).user.userName!,
             textAlign: TextAlign.center,
             style:
                 GoogleFonts.ubuntu(fontSize: 18, fontWeight: FontWeight.bold),

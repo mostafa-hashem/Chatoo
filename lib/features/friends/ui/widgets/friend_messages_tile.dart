@@ -1,3 +1,4 @@
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class FriendMessagesTile extends StatefulWidget {
 class _FriendMessagesTileState extends State<FriendMessagesTile> {
   @override
   Widget build(BuildContext context) {
+    final friendCubit = FriendCubit.get(context);
     return InkWell(
       onLongPress: () {
         widget.sentByMe
@@ -31,6 +33,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                     content: const Text(
                       'Are you sure you want to delete this message?',
                     ),
+                    actionsOverflowDirection: VerticalDirection.up,
                     actions: [
                       TextButton(
                         child: const Text('Cancel'),
@@ -41,7 +44,27 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                       TextButton(
                         child: const Text('Delete for everyone'),
                         onPressed: () {
-                          Navigator.pop(context);
+                          friendCubit
+                              .deleteMessageForMe(
+                                widget.friendMessage.friendId,
+                                widget.friendMessage.messageId,
+                              )
+                              .whenComplete(
+                                () => Navigator.pop(context),
+                              );
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Delete for me'),
+                        onPressed: () {
+                          friendCubit
+                              .deleteMessageForAll(
+                                widget.friendMessage.friendId,
+                                widget.friendMessage.messageId,
+                              )
+                              .whenComplete(
+                                () => Navigator.pop(context),
+                              );
                         },
                       ),
                     ],
@@ -82,8 +105,8 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
               ? const EdgeInsets.only(left: 30)
               : const EdgeInsets.only(right: 30),
           padding: widget.sentByMe
-              ? const EdgeInsets.only(top: 17, bottom: 17, left: 30, right: 18)
-              : const EdgeInsets.only(top: 17, bottom: 17, left: 18, right: 30),
+              ? const EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 18)
+              : const EdgeInsets.only(top: 10, bottom: 10, left: 18, right: 20),
           decoration: BoxDecoration(
             borderRadius: widget.sentByMe
                 ? const BorderRadius.only(
@@ -105,17 +128,6 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.friendMessage.sender.userName!.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 8.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.01,
-              ),
               Text(
                 widget.friendMessage.message,
                 style: TextStyle(fontSize: 15.sp, color: Colors.white),

@@ -42,6 +42,16 @@ class GetAllGroupsError extends GroupStates {
   GetAllGroupsError(this.message);
 }
 
+class GetAdminNameLoading extends GroupStates {}
+
+class GetAdminNameSuccess extends GroupStates {}
+
+class GetAdminNameError extends GroupStates {
+  final String message;
+
+  GetAdminNameError(this.message);
+}
+
 class GetAllGroupMessagesLoading extends GroupStates {}
 
 class GetAllGroupMessagesSuccess extends GroupStates {}
@@ -62,14 +72,24 @@ class GetAllGroupMembersError extends GroupStates {
   GetAllGroupMembersError(this.message);
 }
 
-class SendMessageLoading extends GroupStates {}
+class GetUserDataLoading extends GroupStates {}
 
-class SendMessageSuccess extends GroupStates {}
+class GetUserDataSuccess extends GroupStates {}
 
-class SendMessageError extends GroupStates {
+class GetUserDataError extends GroupStates {
   final String message;
 
-  SendMessageError(this.message);
+  GetUserDataError(this.message);
+}
+
+class SendMessageToGroupLoading extends GroupStates {}
+
+class SendMessageToGroupSuccess extends GroupStates {}
+
+class SendMessageToGroupError extends GroupStates {
+  final String message;
+
+  SendMessageToGroupError(this.message);
 }
 
 class SearchOnGroupLoading extends GroupStates {}
@@ -110,4 +130,14 @@ class LeaveGroupError extends GroupStates {
   final String message;
 
   LeaveGroupError(this.message);
+}
+
+class DeleteMessageForAllLoading extends GroupStates {}
+
+class DeleteMessageForAllSuccess extends GroupStates {}
+
+class DeleteMessageForAllError extends GroupStates {
+  final String message;
+
+  DeleteMessageForAllError(this.message);
 }

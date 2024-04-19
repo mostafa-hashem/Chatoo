@@ -21,101 +21,107 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final resetPassword = AuthCubit.get(context);
-    return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.only(
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: SafeArea(
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
                 left: 16.0.w,
                 right: 16.0.w,
                 top: 20.h,
-                bottom: MediaQuery.of(context).viewInsets.bottom * 1.1,),
-            child: Form(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 44.w,
-                      height: 42.h,
-                      decoration: ShapeDecoration(
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(11.76.r),
-                        ),
-                        shadows: const [
-                          BoxShadow(
-                            color: Color(0x23EA6A58),
-                            blurRadius: 20,
-                            offset: Offset(0, 4.41),
+                bottom: MediaQuery.of(context).viewInsets.bottom * 1.1,
+              ),
+              child: Form(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 44.w,
+                        height: 42.h,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(11.76.r),
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new_outlined,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                  Align(
-                    child: SizedBox(
-                      height: 200.h,
-                      child: Image.asset("assets/images/forget.jpg"),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 15.h,
-                  ),
-                  Text(
-                    "Reset Password",
-                    style: novaFlat18WhiteLight(),
-                  ),
-                  SizedBox(
-                    height: 5.h,
-                  ),
-                  Text(
-                    "please enter your mail address to resets your password",
-                    style: novaFlat18WhiteLight().copyWith(
-                      letterSpacing: -0.41,
-                      fontSize: 14,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 37.h,
-                  ),
-                  DefaultFormField(
-                    controller: emailController,
-                    type: TextInputType.emailAddress,
-                    validate: validateEmail,
-                    label: "Email",
-                  ),
-                  SizedBox(
-                    height: 31.h,
-                  ),
-                  BlocListener<AuthCubit, AuthState>(
-                    listener: (_, state) {
-                      if (state is PasswordResetRequestSent) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'A password reset code has been sent to your email.',
+                          shadows: const [
+                            BoxShadow(
+                              color: Color(0x23EA6A58),
+                              blurRadius: 20,
+                              offset: Offset(0, 4.41),
                             ),
-                          ),
-                        );
-                      }
-                    },
-                    child: DefaultTextButton(
-                      function: () {
-                        resetPassword
-                            .requestPasswordReset(emailController.text);
-                      },
-                      text: "Send",
-                      textStyle: novaFlat12WhiteDark(),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_outlined,
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    Align(
+                      child: SizedBox(
+                        height: 200.h,
+                        child: Image.asset("assets/images/forget.jpg"),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 15.h,
+                    ),
+                    Text(
+                      "Reset Password",
+                      style: novaFlat18WhiteLight(),
+                    ),
+                    SizedBox(
+                      height: 5.h,
+                    ),
+                    Text(
+                      "please enter your mail address to resets your password",
+                      style: novaFlat18WhiteLight().copyWith(
+                        letterSpacing: -0.41,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 37.h,
+                    ),
+                    DefaultFormField(
+                      controller: emailController,
+                      type: TextInputType.emailAddress,
+                      validate: validateEmail,
+                      label: "Email",
+                    ),
+                    SizedBox(
+                      height: 31.h,
+                    ),
+                    BlocListener<AuthCubit, AuthState>(
+                      listener: (_, state) {
+                        if (state is PasswordResetRequestSent) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'A password reset code has been sent to your email.',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: DefaultTextButton(
+                        function: () {
+                          resetPassword
+                              .requestPasswordReset(emailController.text);
+                        },
+                        text: "Send",
+                        textStyle: novaFlat12WhiteDark(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 
 class ChatMessages extends StatefulWidget {
   // Note: Avoid using `const` with constructors.
+  final String groupId;
+
   ChatMessages({
     super.key,
+    required this.groupId,
   });
 
   @override
@@ -28,6 +31,7 @@ class _ChatMessagesState extends State<ChatMessages> {
             groupMessage: groupMessages[index],
             sentByMe: ProfileCubit.get(context).user.id ==
                 groupMessages[index].sender.id,
+            groupId: widget.groupId,
           );
         },
       ),

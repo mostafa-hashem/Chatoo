@@ -13,6 +13,7 @@ class DefaultFormField extends StatelessWidget {
   final IconData? suffix;
   final void Function()? suffixPressed;
   final bool isClickable;
+  final bool isRead;
   final int? maxLines;
 
   const DefaultFormField({
@@ -26,6 +27,7 @@ class DefaultFormField extends StatelessWidget {
     this.suffix,
     this.suffixPressed,
     this.isClickable = true,
+    this.isRead = false,
     this.maxLines,
   });
 
@@ -41,6 +43,7 @@ class DefaultFormField extends StatelessWidget {
           keyboardType: type,
           textInputAction: TextInputAction.next,
           enabled: isClickable,
+          readOnly: isRead,
           onFieldSubmitted: onSubmit,
           onChanged: onChange,
           onTap: onTap,

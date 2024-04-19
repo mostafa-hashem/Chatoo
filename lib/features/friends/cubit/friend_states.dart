@@ -11,6 +11,7 @@ class AddFriendError extends FriendStates {
 
   AddFriendError(this.message);
 }
+
 class CheckIsUserFriendLoading extends FriendStates {}
 
 class CheckIsUserFriendSuccess extends FriendStates {}
@@ -51,16 +52,17 @@ class SearchOnFriendError extends FriendStates {
   SearchOnFriendError(this.message);
 }
 
-class SendMessageLoading extends FriendStates {}
+class SendMessageToFriendLoading extends FriendStates {}
 
-class SendMessageSuccess extends FriendStates {}
+class SendMessageToFriendSuccess extends FriendStates {}
 
-class SendMessageError extends FriendStates {
+class SendMessageToFriendError extends FriendStates {
   final String message;
 
-  SendMessageError(this.message);
+  SendMessageToFriendError(this.message);
 }
- class GetAllFriendMessagesLoading extends FriendStates {}
+
+class GetAllFriendMessagesLoading extends FriendStates {}
 
 class GetAllFriendMessagesSuccess extends FriendStates {}
 
@@ -68,4 +70,24 @@ class GetAllFriendMessagesError extends FriendStates {
   final String message;
 
   GetAllFriendMessagesError(this.message);
+}
+
+class DeleteMessageForMeLoading extends FriendStates {}
+
+class DeleteMessageForMeSuccess extends FriendStates {}
+
+class DeleteMessageForMeError extends FriendStates {
+  final String message;
+
+  DeleteMessageForMeError(this.message);
+}
+
+class DeleteMessageForMeAndFriendLoading extends FriendStates {}
+
+class DeleteMessageForMeAndFriendSuccess extends FriendStates {}
+
+class DeleteMessageForMeAndFriendError extends FriendStates {
+  final String message;
+
+  DeleteMessageForMeAndFriendError(this.message);
 }

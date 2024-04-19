@@ -78,7 +78,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
           ],
           bottom: TabBar(
             controller: _tabController,
-            tabs: <Widget>[
+            tabs: [
               Tab(
                 child:
                     Text("Chats", style: Theme.of(context).textTheme.bodySmall),
@@ -99,7 +99,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
           children: [
             TabBarView(
               controller: _tabController,
-              children: const <Widget>[
+              children: const [
                 FriendsScreen(),
                 GroupsScreen(),
               ],

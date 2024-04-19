@@ -1,5 +1,3 @@
-import 'package:chat_app/utils/data/models/address.dart';
-
 class User {
   String? id;
   String? email;
@@ -9,7 +7,8 @@ class User {
   String? profileImage;
   List<dynamic>? groups;
   List<dynamic>? friends;
-  Address? address;
+  List<dynamic>? requests;
+  String? city;
   String? fCMToken;
 
   User({
@@ -22,7 +21,8 @@ class User {
     this.fCMToken,
     this.groups,
     this.friends,
-    this.address,
+    this.requests,
+    this.city = '',
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -35,14 +35,17 @@ class User {
     if (json['fCMToken'] != null) {
       fCMToken = json['fCMToken'] as String?;
     }
-    if (json['address'] != null) {
-      address = Address.fromJson(json['address'] as Map<String, dynamic>);
+    if (json['city'] != null) {
+      city = json['city'] as String?;
     }
     if (json['groups'] != null && json['groups'] is List<dynamic>) {
       groups = json['groups'] as List<dynamic>;
     }
     if (json['friends'] != null && json['friends'] is List<dynamic>) {
       friends = json['friends'] as List<dynamic>;
+    }
+    if (json['requests'] != null && json['requests'] is List<dynamic>) {
+      requests = json['requests'] as List<dynamic>;
     }
   }
 
@@ -55,9 +58,10 @@ class User {
       'phoneNumber': phoneNumber,
       'profileImage': profileImage,
       if (fCMToken != null) 'fCMToken': fCMToken,
-      if (address != null) 'address': address?.toJson(),
+      if (city != null) 'city': city,
       if (groups != null) 'groups': groups,
       if (friends != null) 'friends': friends,
+      if (requests != null) 'requests': requests,
     };
   }
 }

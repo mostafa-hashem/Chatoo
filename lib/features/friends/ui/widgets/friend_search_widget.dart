@@ -7,8 +7,10 @@ import 'package:chat_app/ui/widgets/error_indicator.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/data/models/user.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FriendSearchWidget extends StatefulWidget {
@@ -27,23 +29,31 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
   @override
   Widget build(BuildContext context) {
     final userdata = ProfileCubit.get(context);
-    final friendData = FriendCubit.get(context);
-    return BlocBuilder<FriendCubit,FriendStates>(
-      builder: (context,state) {
+    final friendCubit = FriendCubit.get(context);
+    return BlocBuilder<FriendCubit, FriendStates>(
+      builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.all(8),
           child: ListTile(
-            leading: CircleAvatar(
-              radius: 30,
-              backgroundColor: AppColors.primary,
-              child: Text(
-                widget.friendData.userName!.substring(0, 1).toUpperCase(),
-                style: GoogleFonts.ubuntu(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            leading: widget.friendData.profileImage == null ||
+                    widget.friendData.profileImage!.isEmpty
+                ? CircleAvatar(
+                    radius: 30.r,
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      widget.friendData.userName!.substring(0, 1).toUpperCase(),
+                      style: GoogleFonts.ubuntu(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                : ClipOval(
+                    child: FancyShimmerImage(
+                      imageUrl: widget.friendData.profileImage!,
+                      width: 50.w,
+                    ),
+                  ),
             title: Text(
               widget.friendData.userName!,
               style: Theme.of(context).textTheme.bodyMedium,
@@ -74,6 +84,7 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                         const LoadingIndicator();
                       } else {
                         if (state is AddFriendSuccess) {
+                          friendCubit.getAllUserFriends();
                           if (Navigator.canPop(context)) {
                             Navigator.pop(context);
                           }
@@ -100,7 +111,7 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                     },
                     child: InkWell(
                       onTap: () async {
-                        friendData.addFriend(widget.friendData, userdata.user);
+                        friendCubit.addFriend(widget.friendData, userdata.user);
                       },
                       child: Container(
                         decoration: BoxDecoration(

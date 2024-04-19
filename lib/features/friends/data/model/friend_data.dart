@@ -1,7 +1,7 @@
 import 'package:chat_app/utils/data/models/user.dart';
 
 class Friend {
-   User? friendData;
+  User? friendData;
   String? recentMessage;
   String? recentMessageSender;
 

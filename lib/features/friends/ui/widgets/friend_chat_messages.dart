@@ -22,6 +22,7 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
       child: ListView.builder(
         reverse: true,
         controller: FriendCubit.get(context).scrollController,
+        itemCount: friendMessages.length,
         itemBuilder: (context, index) {
           return FriendMessagesTile(
             friendMessage: friendMessages[index],
@@ -29,7 +30,6 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
                 friendMessages[index].sender.userName,
           );
         },
-        itemCount: friendMessages.length,
       ),
     );
   }

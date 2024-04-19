@@ -16,6 +16,8 @@ class GroupCubit extends Cubit<GroupStates> {
   static GroupCubit get(BuildContext context) => BlocProvider.of(context);
   final _groupFirebaseServices = GroupFirebaseServices();
   String groupIcon = "";
+  String adminName = "";
+  User? userData;
   List<Group> allUserGroups = [];
   List<User> allGroupMembers = [];
   List<Group> allGroups = [];
@@ -97,6 +99,16 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
+  Future<void> getAdminName(String adminId) async {
+    emit(GetAdminNameLoading());
+    try {
+      adminName = await _groupFirebaseServices.getAdminName(adminId);
+      emit(GetAdminNameSuccess());
+    } catch (e) {
+      emit(GetAdminNameError(Failure.fromException(e).message));
+    }
+  }
+
   Future<void> getAllGroupMembers(String groupId) async {
     emit(GetAllGroupMembersLoading());
     try {
@@ -113,19 +125,31 @@ class GroupCubit extends Cubit<GroupStates> {
     User sender,
     String message,
   ) async {
-    emit(SendMessageLoading());
+    emit(SendMessageToGroupLoading());
     try {
       await _groupFirebaseServices.sendMessageToGroup(group, message, sender);
-      emit(SendMessageSuccess());
+      emit(SendMessageToGroupSuccess());
     } catch (e) {
-      emit(SendMessageError(Failure.fromException(e).message));
+      emit(SendMessageToGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> getUserData(
+    String userId,
+  ) async {
+    emit(GetUserDataLoading());
+    try {
+      userData = await _groupFirebaseServices.getUserData(userId);
+      emit(GetUserDataSuccess());
+    } catch (e) {
+      emit(GetUserDataError(Failure.fromException(e).message));
     }
   }
 
   Future<void> searchOnGroup(String groupName) async {
     emit(SearchOnGroupLoading());
     try {
-      _groupFirebaseServices.getGroups().listen((search) {
+      _groupFirebaseServices.getGroupsForSearch().listen((search) {
         searchedGroups = search
             .where(
               (group) => group.groupName.contains(groupName),
@@ -138,15 +162,14 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
-  Future<void> checkUserInGroup(String groupId) async {
-    emit(CheckUserInGroupLoading());
+  Future<bool> checkUserInGroup(String groupId, String userId) async {
     try {
-      _groupFirebaseServices.isUserInGroup(groupId).listen((isMember) {
-        isUserMember = isMember;
-        emit(CheckUserInGroupSuccess());
-      });
+      final isMember =
+          await _groupFirebaseServices.isUserInGroup(groupId, userId).first;
+      isUserMember = isMember;
+      return isMember;
     } catch (e) {
-      emit(CheckUserInGroupError(Failure.fromException(e).message));
+      throw Failure.fromException(e).message;
     }
   }
 
@@ -167,6 +190,16 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(LeaveGroupSuccess());
     } catch (e) {
       emit(LeaveGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> deleteMessageForeAll(String groupId, String messageId) async {
+    emit(DeleteMessageForAllLoading());
+    try {
+      await _groupFirebaseServices.deleteMessageForeAll(groupId, messageId);
+      emit(DeleteMessageForAllSuccess());
+    } catch (e) {
+      emit(DeleteMessageForAllError(Failure.fromException(e).message));
     }
   }
 }

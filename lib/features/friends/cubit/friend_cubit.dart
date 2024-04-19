@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
-import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/friends/data/services/friend_firebase_services.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
@@ -15,12 +14,11 @@ class FriendCubit extends Cubit<FriendStates> {
   static FriendCubit get(BuildContext context) => BlocProvider.of(context);
   final _friendFirebaseServices = FriendFirebaseServices();
   List<User> allUsers = [];
-  List<Friend> allFriends = [];
+  List<User> allFriends = [];
   List<User> searchedFriends = [];
   List<FriendMessage> filteredMessages = [];
   ScrollController scrollController = ScrollController();
   bool isUserFriend = false;
-
 
   Future<void> addFriend(User friend, User currentUser) async {
     emit(AddFriendLoading());
@@ -31,6 +29,7 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(AddFriendError(Failure.fromException(e).message));
     }
   }
+
   Future<void> checkUserIsFriend(String friendId) async {
     emit(CheckIsUserFriendLoading());
     try {
@@ -46,7 +45,7 @@ class FriendCubit extends Cubit<FriendStates> {
   Future<void> getAllUserFriends() async {
     emit(GetAllUserFriendsLoading());
     try {
-          _friendFirebaseServices.getAllUserFriends().listen((friends) {
+      _friendFirebaseServices.getAllUserFriends().listen((friends) {
         allFriends = friends;
       });
       emit(GetAllUserFriendsSuccess());
@@ -55,15 +54,17 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> searchOnFriend(String friendName) async {
+  Future<void> searchOnFriend(String friendData) async {
     emit(SearchOnFriendLoading());
     try {
-      _friendFirebaseServices.getUsers().listen((search){
-      searchedFriends = search
-          .where(
-            (friend) => friend.userName?.contains(friendName) ?? false,
-          )
-          .toList();
+      _friendFirebaseServices.getUsers().listen((search) {
+        searchedFriends = search
+            .where(
+              (friend) =>
+                  friend.userName == friendData ||
+                  friend.phoneNumber == friendData,
+            )
+            .toList();
       });
       emit(SearchOnFriendSuccess());
     } catch (e) {
@@ -76,31 +77,51 @@ class FriendCubit extends Cubit<FriendStates> {
     String message,
     User sender,
   ) async {
-    emit(SendMessageLoading());
+    emit(SendMessageToFriendLoading());
     try {
       await _friendFirebaseServices.sendMessageToFriend(
         friend,
         message,
         sender,
       );
-      emit(SendMessageSuccess());
+      emit(SendMessageToFriendSuccess());
     } catch (e) {
-      emit(SendMessageError(Failure.fromException(e).message));
+      emit(SendMessageToFriendError(Failure.fromException(e).message));
     }
   }
 
   Future<void> getAllFriendMessages(String friendId) async {
     emit(GetAllFriendMessagesLoading());
     try {
-       _friendFirebaseServices
-          .getAllUserMessages(friendId)
-          .listen((messages) {
-         filteredMessages = messages;
+      _friendFirebaseServices.getAllUserMessages(friendId).listen((
+        messages,
+      ) {
+        filteredMessages = messages;
         filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
       });
       emit(GetAllFriendMessagesSuccess());
     } catch (e) {
       emit(GetAllFriendMessagesError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> deleteMessageForMe(String friendId, String messageId) async {
+    emit(DeleteMessageForMeLoading());
+    try {
+      await _friendFirebaseServices.deleteMessageForMe(friendId, messageId);
+      emit(DeleteMessageForMeSuccess());
+    } catch (e) {
+      emit(DeleteMessageForMeError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> deleteMessageForAll(String friendId, String messageId) async {
+    emit(DeleteMessageForMeAndFriendLoading());
+    try {
+      await _friendFirebaseServices.deleteMessageForAll(friendId, messageId);
+      emit(DeleteMessageForMeAndFriendSuccess());
+    } catch (e) {
+      emit(DeleteMessageForMeAndFriendError(Failure.fromException(e).message));
     }
   }
 }
