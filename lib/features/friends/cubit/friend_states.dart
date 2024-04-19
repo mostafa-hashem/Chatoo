@@ -72,6 +72,16 @@ class GetAllFriendMessagesError extends FriendStates {
   GetAllFriendMessagesError(this.message);
 }
 
+class RemoveFriendLoading extends FriendStates {}
+
+class RemoveFriendSuccess extends FriendStates {}
+
+class RemoveFriendError extends FriendStates {
+  final String message;
+
+  RemoveFriendError(this.message);
+}
+
 class DeleteMessageForMeLoading extends FriendStates {}
 
 class DeleteMessageForMeSuccess extends FriendStates {}

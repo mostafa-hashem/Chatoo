@@ -34,6 +34,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                     content: const Text(
                       'Are you sure you want to delete this message?',
                     ),
+                    actionsOverflowDirection: VerticalDirection.down,
                     actions: [
                       TextButton(
                         child: const Text('Cancel'),

@@ -3,11 +3,11 @@ import 'package:chat_app/ui/resources/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class FriendInfo extends StatelessWidget {
+class FriendInfoTile extends StatelessWidget {
   final String labelText;
   final String info;
 
-  const FriendInfo({
+  const FriendInfoTile({
     super.key,
     required this.labelText,
     required this.info,

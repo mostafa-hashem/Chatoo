@@ -245,7 +245,7 @@ class GroupFirebaseServices {
   }
 
   Future<void> deleteMessageForeAll(String groupId, String messageId) async {
-    _groupsCollection
+    await _groupsCollection
         .doc(groupId)
         .collection(FirebasePath.messages)
         .doc(messageId)

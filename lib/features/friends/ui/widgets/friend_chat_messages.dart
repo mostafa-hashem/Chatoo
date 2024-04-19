@@ -26,8 +26,8 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
         itemBuilder: (context, index) {
           return FriendMessagesTile(
             friendMessage: friendMessages[index],
-            sentByMe: ProfileCubit.get(context).user.userName ==
-                friendMessages[index].sender.userName,
+            sentByMe: ProfileCubit.get(context).user.id ==
+                friendMessages[index].sender,
           );
         },
       ),

@@ -105,6 +105,16 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
+  Future<void> removeFriend(String friendId) async {
+    emit(RemoveFriendLoading());
+    try {
+      await _friendFirebaseServices.removeFriend(friendId);
+      emit(RemoveFriendSuccess());
+    } catch (e) {
+      emit(RemoveFriendError(Failure.fromException(e).message));
+    }
+  }
+
   Future<void> deleteMessageForMe(String friendId, String messageId) async {
     emit(DeleteMessageForMeLoading());
     try {

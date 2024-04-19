@@ -1,6 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
-import 'package:chat_app/features/friends/ui/widgets/friend_info.dart';
+import 'package:chat_app/features/friends/ui/widgets/friend_info_tile.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -38,22 +38,81 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
             backgroundColor: Colors.transparent,
             iconTheme: const IconThemeData.fallback(),
             actions: [
-              if (FriendCubit.get(context).allFriends.contains(friendData))
-                Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.black,
-                      border: Border.all(color: Colors.white),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    child: Text(
-                      "Added",
-                      style: GoogleFonts.ubuntu(color: Colors.white),
+              if (friendCubit.allFriends.contains(friendData))
+                BlocListener<FriendCubit, FriendStates>(
+                  listener: (context, state) {
+                    if (state is RemoveFriendLoading) {
+                      const LoadingIndicator();
+                    } else {
+                      if (state is RemoveFriendSuccess) {
+                        friendCubit.getAllUserFriends();
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        }
+                        showSnackBar(
+                          context,
+                          Colors.green,
+                          "Removed successfully",
+                        );
+                        Future.delayed(const Duration(seconds: 2), () {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            Routes.layout,
+                            (route) => false,
+                          );
+                        });
+                      }
+                      if (state is AddFriendError) {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        }
+                        const ErrorIndicator();
+                      }
+                    }
+                  },
+                  child: InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Remove friend?'),
+                            actionsOverflowDirection: VerticalDirection.down,
+                            actions: [
+                              TextButton(
+                                child: const Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('Remove'),
+                                onPressed: () {
+                                  friendCubit.removeFriend(friendData.id!);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.black,
+                          border: Border.all(color: Colors.white),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        child: Text(
+                          "Remove",
+                          style: GoogleFonts.ubuntu(color: Colors.white),
+                        ),
+                      ),
                     ),
                   ),
                 )
@@ -179,7 +238,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       thickness: 3,
                       color: AppColors.primary,
                     ),
-                    FriendInfo(
+                    FriendInfoTile(
                       labelText: 'User Name',
                       info: friendData.userName!,
                     ),
@@ -187,7 +246,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       thickness: 3,
                       color: AppColors.primary,
                     ),
-                    FriendInfo(
+                    FriendInfoTile(
                       labelText: 'Email',
                       info: friendData.email!,
                     ),
@@ -195,7 +254,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       thickness: 3,
                       color: AppColors.primary,
                     ),
-                    FriendInfo(
+                    FriendInfoTile(
                       labelText: 'Phone',
                       info: friendData.phoneNumber!,
                     ),
@@ -203,7 +262,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       thickness: 3,
                       color: AppColors.primary,
                     ),
-                    FriendInfo(
+                    FriendInfoTile(
                       labelText: 'Phone',
                       info: friendData.city!,
                     ),

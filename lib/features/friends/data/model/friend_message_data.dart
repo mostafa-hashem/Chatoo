@@ -1,11 +1,10 @@
-import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FriendMessage {
   final String friendId;
   final String messageId;
   final String message;
-  final User sender;
+  final String sender;
   final DateTime sentAt;
 
   FriendMessage({
@@ -21,7 +20,7 @@ class FriendMessage {
           friendId: json['friendId'] as String,
           messageId: json['messageId'] as String,
           message: json['message'] as String,
-          sender: User.fromJson(json['sender'] as Map<String, dynamic>),
+          sender: json['sender'] as String,
           sentAt: json['sentAt'] != null
               ? (json['sentAt'] as Timestamp).toDate()
               : DateTime.now(),
@@ -31,7 +30,7 @@ class FriendMessage {
         'friendId': friendId,
         'messageId': messageId,
         'message': message,
-        'sender': sender.toJson(),
+        'sender': sender,
         'sentAt': Timestamp.fromDate(sentAt),
       };
 }

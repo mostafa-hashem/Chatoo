@@ -42,7 +42,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                         },
                       ),
                       TextButton(
-                        child: const Text('Delete for everyone'),
+                        child: const Text('Delete for me'),
                         onPressed: () {
                           friendCubit
                               .deleteMessageForMe(
@@ -55,7 +55,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                         },
                       ),
                       TextButton(
-                        child: const Text('Delete for me'),
+                        child: const Text('Delete for everyone'),
                         onPressed: () {
                           friendCubit
                               .deleteMessageForAll(
