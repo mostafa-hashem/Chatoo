@@ -178,9 +178,7 @@ class FriendFirebaseServices {
 
   Future<void> removeFriend(String friendId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    _usersCollection
-        .doc(currentUserId)
-        .collection(FirebasePath.friends)
+    _friendsCollection
         .doc(friendId)
         .delete();
     _usersCollection
