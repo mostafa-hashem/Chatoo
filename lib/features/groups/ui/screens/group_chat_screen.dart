@@ -43,7 +43,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   @override
   void dispose() {
     messageController.dispose();
-    groupCubit.filteredGroups.clear();
     super.dispose();
   }
 
@@ -198,9 +197,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                         if (messageController.text.isNotEmpty) {
                           GroupCubit.get(context)
                               .sendMessageToGroup(
-                            groupData,
-                            sender,
-                            messageController.text,
+                            group: groupData,
+                            sender: sender,
+                            message: messageController.text,
+                            leave: false,
+                            joined: false,
                           )
                               .whenComplete(() {
                             scrollToBottom();

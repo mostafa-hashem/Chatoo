@@ -2,9 +2,7 @@ import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
-import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
@@ -14,10 +12,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 class GroupSearchWidget extends StatefulWidget {
   final Group searchedGroupData;
+  final bool isUserMember;
 
-   const GroupSearchWidget({
+  const GroupSearchWidget({
     super.key,
     required this.searchedGroupData,
+    required this.isUserMember,
   });
 
   @override
@@ -27,8 +27,7 @@ class GroupSearchWidget extends StatefulWidget {
 class _GroupSearchWidgetState extends State<GroupSearchWidget> {
   @override
   Widget build(BuildContext context) {
-    final groupCubit = GroupCubit.get(context);
-    return BlocBuilder<GroupCubit,GroupStates>(
+    return BlocBuilder<GroupCubit, GroupStates>(
       builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.all(8),
@@ -38,7 +37,9 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                     radius: 30,
                     backgroundColor: AppColors.primary,
                     child: Text(
-                      widget.searchedGroupData.groupName.substring(0, 1).toUpperCase(),
+                      widget.searchedGroupData.groupName
+                          .substring(0, 1)
+                          .toUpperCase(),
                       style: GoogleFonts.ubuntu(
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
@@ -55,14 +56,17 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
               widget.searchedGroupData.groupName,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            subtitle: groupCubit.allUserGroups.contains(widget.searchedGroupData) ? Text(
-              "Joined",
-              style: Theme.of(context).textTheme.bodySmall,
-            ) : Text(
-              "Join as ${ProfileCubit.get(context).user.userName}",
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            trailing: groupCubit.allUserGroups.contains(widget.searchedGroupData)  ? Container(
+            subtitle: widget.isUserMember
+                ? Text(
+                    "Joined",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  )
+                : Text(
+                    "Join as ${ProfileCubit.get(context).user.userName}",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+            trailing: widget.isUserMember
+                ? Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: Colors.black,
@@ -79,24 +83,20 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                   )
                 : BlocListener<GroupCubit, GroupStates>(
                     listener: (c, state) {
-                      if (state is JoinGroupLoading) {
-                        const LoadingIndicator();
-                      } else {
-                        if (Navigator.canPop(context)) {}
                         if (state is JoinGroupSuccess) {
-                          Navigator.pop(context);
+                          GroupCubit.get(context).sendMessageToGroup(
+                            group: widget.searchedGroupData,
+                            sender: ProfileCubit.get(context).user,
+                            message:
+                                '${ProfileCubit.get(context).user.userName} joined the group',
+                            leave: false,
+                            joined: true,
+                          );
                           showSnackBar(
                             context,
                             Colors.green,
                             "Successfully joined he group",
                           );
-                          GroupCubit.get(context).getAllUserGroups().whenComplete(
-                                () => Navigator.pushNamedAndRemoveUntil(
-                                  context,
-                                  Routes.layout,
-                                  (route) => false,
-                                ),
-                              );
                         }
                         if (state is JoinGroupError) {
                           showSnackBar(
@@ -105,7 +105,6 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                             state.message,
                           );
                         }
-                      }
                     },
                     child: InkWell(
                       onTap: () async {

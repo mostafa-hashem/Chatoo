@@ -39,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   TextEditingController bioController = TextEditingController();
   TextEditingController addressController = TextEditingController();
   File? imageFile;
+  final formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -78,44 +79,133 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 top: 22.h,
                 bottom: MediaQuery.of(context).viewInsets.bottom * 0.2,
               ),
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: BlocListener<AuthCubit, AuthState>(
-                      listener: (context, state) {
-                        if (state is AuthLoading) {
+              child: Form(
+                key: formKey,
+                autovalidateMode: AutovalidateMode.always,
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: BlocListener<AuthCubit, AuthState>(
+                        listener: (context, state) {
+                          if (state is AuthLoading) {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            );
+                          } else {
+                            Navigator.pop(context);
+                            if (state is LoggedOut) {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                Routes.login,
+                                (route) => false,
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Successfully logout",
+                                    style: TextStyle(fontSize: 15),
+                                  ),
+                                  backgroundColor: AppColors.snackBar,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            } else if (state is AuthError) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "There is an error",
+                                    style: TextStyle(fontSize: 15),
+                                  ),
+                                  backgroundColor: AppColors.primary,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        child: DefaultButton(
+                          width: 40,
+                          height: 50,
+                          function: () {
+                            showDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text("Logout"),
+                                  content: const Text(
+                                    "Are you sure you want to logout?",
+                                  ),
+                                  actions: [
+                                    IconButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      icon: const Icon(
+                                        Icons.cancel,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        AuthCubit.get(context).logout();
+                                        GroupCubit.get(context)
+                                            .allUserGroups
+                                            .clear();
+                                        FriendCubit.get(context)
+                                            .allFriends
+                                            .clear();
+                                      },
+                                      icon: const Icon(
+                                        Icons.done,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          icon: Icons.logout_outlined,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    BlocConsumer<ProfileCubit, ProfileState>(
+                      listener: (_, state) {
+                        if (state is UploadProfileImageLoading) {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
+                              return const LoadingIndicator();
                             },
                           );
                         } else {
-                          Navigator.pop(context);
-                          if (state is LoggedOut) {
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              Routes.login,
-                              (route) => false,
-                            );
+                          if (state is UploadProfileImageError) {
+                            Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  "Successfully logout",
-                                  style: TextStyle(fontSize: 15),
+                                  state.message,
+                                  style: const TextStyle(fontSize: 15),
                                 ),
-                                backgroundColor: AppColors.snackBar,
-                                duration: Duration(seconds: 3),
+                                backgroundColor: AppColors.error,
+                                duration: const Duration(seconds: 3),
                               ),
                             );
-                          } else if (state is AuthError) {
+                          }
+                          if (state is UploadProfileImageSuccess) {
+                            Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  "There is an error",
+                                  "Successfully Uploaded",
                                   style: TextStyle(fontSize: 15),
                                 ),
                                 backgroundColor: AppColors.primary,
@@ -125,111 +215,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           }
                         }
                       },
-                      child: DefaultButton(
-                        width: 40,
-                        height: 50,
-                        function: () {
-                          showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Text("Logout"),
-                                content: const Text(
-                                  "Are you sure you want to logout?",
-                                ),
-                                actions: [
-                                  IconButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    icon: const Icon(
-                                      Icons.cancel,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      AuthCubit.get(context).logout();
-                                      GroupCubit.get(context)
-                                          .allUserGroups
-                                          .clear();
-                                      FriendCubit.get(context)
-                                          .allFriends
-                                          .clear();
-                                    },
-                                    icon: const Icon(
-                                      Icons.done,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        icon: Icons.logout_outlined,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  BlocConsumer<ProfileCubit, ProfileState>(
-                    listener: (_, state) {
-                      if (state is UploadProfileImageLoading) {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return const LoadingIndicator();
-                          },
-                        );
-                      } else {
-                        if (state is UploadProfileImageError) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                state.message,
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                              backgroundColor: AppColors.error,
-                              duration: const Duration(seconds: 3),
+                      builder: (context, state) => Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Container(
+                            height: 130.h,
+                            width: 145.w,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(40.r),
                             ),
-                          );
-                        }
-                        if (state is UploadProfileImageSuccess) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Successfully Uploaded",
-                                style: TextStyle(fontSize: 15),
-                              ),
-                              backgroundColor: AppColors.primary,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    builder: (context, state) => Stack(
-                      alignment: Alignment.topRight,
-                      children: [
-                        Container(
-                          height: 130.h,
-                          width: 145.w,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(40.r),
-                          ),
-                          child: profile.user.profileImage != null &&
-                                  profile.user.profileImage!.isNotEmpty
-                              ? InkWell(
-                                  onTap: () => showImageDialog(
-                                    context,
-                                    profile.user.profileImage!,
-                                  ),
-                                  child: ClipOval(
+                            child: profile.user.profileImage != null &&
+                                    profile.user.profileImage!.isNotEmpty
+                                ? InkWell(
+                                    onTap: () => showImageDialog(
+                                      context,
+                                      profile.user.profileImage!,
+                                    ),
+                                    child: ClipOval(
+                                      child: FancyShimmerImage(
+                                        imageUrl: profile.user.profileImage!,
+                                        height: 150.h,
+                                        width: 180.w,
+                                        boxFit: BoxFit.contain,
+                                        errorWidget: const Icon(
+                                          Icons.error_outline_outlined,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : ClipOval(
                                     child: FancyShimmerImage(
-                                      imageUrl: profile.user.profileImage!,
+                                      imageUrl: FirebasePath.defaultImage,
                                       height: 150.h,
                                       width: 180.w,
                                       boxFit: BoxFit.contain,
@@ -238,133 +254,133 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                     ),
                                   ),
-                                )
-                              : ClipOval(
-                                  child: FancyShimmerImage(
-                                    imageUrl: FirebasePath.defaultImage,
-                                    height: 150.h,
-                                    width: 180.w,
-                                    boxFit: BoxFit.contain,
-                                    errorWidget: const Icon(
-                                      Icons.error_outline_outlined,
-                                    ),
-                                  ),
-                                ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            final ImagePicker picker = ImagePicker();
-                            final XFile? xFile = await picker.pickImage(
-                              source: ImageSource.gallery,
-                            );
-                            if (xFile != null) {
-                              File xFilePathToFile(XFile xFile) {
-                                return File(xFile.path);
-                              }
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              final ImagePicker picker = ImagePicker();
+                              final XFile? xFile = await picker.pickImage(
+                                source: ImageSource.gallery,
+                              );
+                              if (xFile != null) {
+                                File xFilePathToFile(XFile xFile) {
+                                  return File(xFile.path);
+                                }
 
-                              imageFile = xFilePathToFile(xFile);
-                              if (context.mounted) {
-                                profile.uploadProfileImageToFireStorage(
-                                  profile.user.id!,
-                                  imageFile!,
-                                );
+                                imageFile = xFilePathToFile(xFile);
+                                if (context.mounted) {
+                                  profile.uploadProfileImageToFireStorage(
+                                    profile.user.id!,
+                                    imageFile!,
+                                  );
+                                }
                               }
-                            }
-                          },
-                          child: const Icon(Icons.edit),
-                        ),
-                      ],
+                            },
+                            child: const Icon(Icons.edit),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.05,
-                  ),
-                  BlocBuilder<ProfileCubit, ProfileState>(
-                    builder: (context, state) => CustomProfileContainer(
-                      labelText: "User Name",
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.05,
+                    ),
+                    BlocBuilder<ProfileCubit, ProfileState>(
+                      builder: (context, state) => CustomProfileContainer(
+                        labelText: "User Name",
+                        textInputType: TextInputType.name,
+                        controller: userNameController,
+                        // isReadOnly: true,
+                        validator: (value) =>
+                            validateGeneral(value, 'user name'),
+                      ),
+                    ),
+                    Divider(
+                      height: 30.h,
+                    ),
+                    CustomProfileContainer(
+                      labelText: "Email",
+                      isClickable: false,
                       textInputType: TextInputType.name,
-                      controller: userNameController,
+                      controller: emailController,
+                      validator: validateEmail,
                     ),
-                  ),
-                  Divider(
-                    height: 30.h,
-                  ),
-                  CustomProfileContainer(
-                    labelText: "Email",
-                    isClickable: false,
-                    textInputType: TextInputType.name,
-                    controller: emailController,
-                  ),
-                  Divider(
-                    height: 30.h,
-                  ),
-                  BlocBuilder<ProfileCubit, ProfileState>(
-                    builder: (context, state) => CustomProfileContainer(
-                      labelText: "Phone Num",
-                      textInputType: TextInputType.number,
-                      controller: phoneNumberController,
+                    Divider(
+                      height: 30.h,
                     ),
-                  ),
-                  BlocBuilder<ProfileCubit, ProfileState>(
-                    builder: (context, state) => CustomProfileContainer(
-                      labelText: "Country",
-                      textInputType: TextInputType.name,
-                      isReadOnly: true,
-                      controller: addressController,
-                      onSelectCountry: (country) {
-                        setState(() {
-                          addressController.text = country;
-                        });
-                      },
+                    BlocBuilder<ProfileCubit, ProfileState>(
+                      builder: (context, state) => CustomProfileContainer(
+                        labelText: "Phone Num",
+                        textInputType: TextInputType.number,
+                        controller: phoneNumberController,
+                        validator: validatePhoneNumber,
+                      ),
                     ),
-                  ),
-                  Divider(
-                    height: 30.h,
-                  ),
-                  // InfoRow(text: "Phone Num: ", info: phoneNumberController.text),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                  BlocListener<ProfileCubit, ProfileState>(
-                    listener: (_, state) {
-                      if (state is UpdateUserSuccess) {
-                        profile.getUser();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Successfully Updated",
-                              style: TextStyle(fontSize: 15),
+                    BlocBuilder<ProfileCubit, ProfileState>(
+                      builder: (context, state) => CustomProfileContainer(
+                        labelText: "Country",
+                        textInputType: TextInputType.name,
+                        isReadOnly: true,
+                        controller: addressController,
+                        onSelectCountry: (country) {
+                          setState(() {
+                            addressController.text = country;
+                          });
+                        },
+                        validator: (value) {
+                          return null;
+                        },
+                      ),
+                    ),
+                    Divider(
+                      height: 30.h,
+                    ),
+                    // InfoRow(text: "Phone Num: ", info: phoneNumberController.text),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                    BlocListener<ProfileCubit, ProfileState>(
+                      listener: (_, state) {
+                        if (state is UpdateUserSuccess) {
+                          profile.getUser();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Successfully Updated",
+                                style: TextStyle(fontSize: 15),
+                              ),
+                              backgroundColor: AppColors.primary,
+                              duration: Duration(seconds: 3),
                             ),
-                            backgroundColor: AppColors.primary,
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      }
-                    },
-                    child: DefaultTextButton(
-                      function: () {
-                        profile.updateUser(
-                          User(
-                            fCMToken: NotificationsCubit.get(context).fCMToken,
-                            id: profile.user.id,
-                            userName: userNameController.text,
-                            email: profile.user.email,
-                            phoneNumber: phoneNumberController.text,
-                            bio: profile.user.bio,
-                            friends: profile.user.friends,
-                            groups: profile.user.friends,
-                            profileImage: profile.user.profileImage,
-                            city: addressController.text,
-                          ),
-                        );
+                          );
+                        }
                       },
-                      text: provider.language == "en"
-                          ? "Save changes"
-                          : "حفظ التعديلات",
+                      child: DefaultTextButton(
+                        function: () {
+                          if (formKey.currentState!.validate()) {
+                            profile.updateUser(
+                              User(
+                                fCMToken:
+                                    NotificationsCubit.get(context).fCMToken,
+                                id: profile.user.id,
+                                userName: userNameController.text,
+                                email: profile.user.email,
+                                phoneNumber: phoneNumberController.text,
+                                bio: profile.user.bio,
+                                friends: profile.user.friends,
+                                groups: profile.user.friends,
+                                profileImage: profile.user.profileImage,
+                                city: addressController.text,
+                              ),
+                            );
+                          }
+                        },
+                        text: provider.language == "en"
+                            ? "Save changes"
+                            : "حفظ التعديلات",
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 18.h,
-                  ),
-                ],
+                    SizedBox(
+                      height: 18.h,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

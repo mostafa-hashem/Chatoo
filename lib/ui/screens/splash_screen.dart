@@ -1,5 +1,6 @@
 import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/route_manager.dart';
@@ -21,6 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Future.wait([
         ProfileCubit.get(context).getUser(),
         FriendCubit.get(context).getAllUserFriends(),
+        FriendCubit.get(context).getRecentMessageData(),
+        NotificationsCubit.get(context).initNotifications(),
       ]);
     } else {
       Future.delayed(const Duration(seconds: 3), () {

@@ -70,6 +70,14 @@ class _GroupInfoState extends State<GroupInfo> {
                               Navigator.pop(context);
                             }
                             if (state is LeaveGroupSuccess) {
+                              groupCubit.sendMessageToGroup(
+                                group: groupData,
+                                sender: ProfileCubit.get(context).user,
+                                message:
+                                    '${ProfileCubit.get(context).user.userName} left the group',
+                                leave: true,
+                                joined: false,
+                              );
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
                                 Routes.layout,
@@ -149,64 +157,66 @@ class _GroupInfoState extends State<GroupInfo> {
                           }
                         }
                       },
-                      child: GestureDetector(
-                        onTap: () async {
-                          final ImagePicker picker = ImagePicker();
-                          final XFile? xFile = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
-                          if (xFile != null) {
-                            File xFilePathToFile(XFile xFile) {
-                              return File(xFile.path);
-                            }
-
-                            imageFile = xFilePathToFile(xFile);
-                            if (context.mounted) {
-                              GroupCubit.get(context)
-                                  .uploadImageAndUpdateGroupIcon(
-                                imageFile!,
-                                groupData.groupId,
-                              )
-                                  .then((downloadUrl) {
-                                setState(() {
-                                  groupData.groupIcon = downloadUrl!;
-                                });
-                              });
-                            }
-                          }
-                        },
-                        child: Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            if (groupData.groupIcon.isNotEmpty)
-                              InkWell(
-                                onTap: () => showImageDialog(
-                                  context,
-                                  groupData.groupIcon,
-                                ),
-                                child: FancyShimmerImage(
-                                  imageUrl: groupData.groupIcon,
-                                  height: 140.h,
-                                  width: 170.w,
-                                  boxFit: BoxFit.contain,
-                                  errorWidget:
-                                      const Icon(Icons.error_outline_outlined),
-                                ),
-                              )
-                            else
-                              ClipOval(
-                                child: SizedBox(
-                                  height: 140.h,
-                                  width: 170.w,
-                                  child: const Icon(
-                                    Icons.groups_outlined,
-                                    size: 90,
-                                  ),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          if (groupData.groupIcon.isNotEmpty)
+                            InkWell(
+                              onTap: () => showImageDialog(
+                                context,
+                                groupData.groupIcon,
+                              ),
+                              child: FancyShimmerImage(
+                                imageUrl: groupData.groupIcon,
+                                height: 140.h,
+                                width: 170.w,
+                                boxFit: BoxFit.contain,
+                                errorWidget:
+                                    const Icon(Icons.error_outline_outlined),
+                              ),
+                            )
+                          else
+                            ClipOval(
+                              child: SizedBox(
+                                height: 140.h,
+                                width: 170.w,
+                                child: const Icon(
+                                  Icons.groups_outlined,
+                                  size: 90,
                                 ),
                               ),
-                            const Icon(Icons.edit),
-                          ],
-                        ),
+                            ),
+                          if (groupData.adminId ==
+                              ProfileCubit.get(context).user.id!)
+                            GestureDetector(
+                              onTap: () async {
+                                final ImagePicker picker = ImagePicker();
+                                final XFile? xFile = await picker.pickImage(
+                                  source: ImageSource.gallery,
+                                );
+                                if (xFile != null) {
+                                  File xFilePathToFile(XFile xFile) {
+                                    return File(xFile.path);
+                                  }
+
+                                  imageFile = xFilePathToFile(xFile);
+                                  if (context.mounted) {
+                                    GroupCubit.get(context)
+                                        .uploadImageAndUpdateGroupIcon(
+                                      imageFile!,
+                                      groupData.groupId,
+                                    )
+                                        .then((downloadUrl) {
+                                      setState(() {
+                                        groupData.groupIcon = downloadUrl!;
+                                      });
+                                    });
+                                  }
+                                }
+                              },
+                              child: const Icon(Icons.edit),
+                            ),
+                        ],
                       ),
                     ),
                     SizedBox(
@@ -286,7 +296,11 @@ class _GroupInfoState extends State<GroupInfo> {
                         } else if (state is GetAllGroupMembersLoading) {
                           return const ErrorIndicator();
                         }
-                        return GroupMembers();
+                        return GroupMembers(
+                          isAdmin: groupData.adminId ==
+                              ProfileCubit.get(context).user.id!,
+                          group: groupData,
+                        );
                       },
                     ),
                   ],

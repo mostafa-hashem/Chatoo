@@ -104,14 +104,6 @@ class SearchOnGroupError extends GroupStates {
 
 class CheckUserInGroupLoading extends GroupStates {}
 
-class CheckUserInGroupSuccess extends GroupStates {}
-
-class CheckUserInGroupError extends GroupStates {
-  final String message;
-
-  CheckUserInGroupError(this.message);
-}
-
 class JoinGroupLoading extends GroupStates {}
 
 class JoinGroupSuccess extends GroupStates {}
@@ -130,6 +122,16 @@ class LeaveGroupError extends GroupStates {
   final String message;
 
   LeaveGroupError(this.message);
+}
+
+class KickUserFromGroupLoading extends GroupStates {}
+
+class KickUserFromGroupSuccess extends GroupStates {}
+
+class KickUserFromGroupError extends GroupStates {
+  final String message;
+
+  KickUserFromGroupError(this.message);
 }
 
 class DeleteMessageForAllLoading extends GroupStates {}

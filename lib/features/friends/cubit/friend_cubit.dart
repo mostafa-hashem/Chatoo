@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
+import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/friends/data/services/friend_firebase_services.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
@@ -17,8 +18,8 @@ class FriendCubit extends Cubit<FriendStates> {
   List<User> allFriends = [];
   List<User> searchedFriends = [];
   List<FriendMessage> filteredMessages = [];
+  List<Friend> recentMessageData = [];
   ScrollController scrollController = ScrollController();
-  bool isUserFriend = false;
 
   Future<void> addFriend(User friend, User currentUser) async {
     emit(AddFriendLoading());
@@ -27,18 +28,6 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(AddFriendSuccess());
     } catch (e) {
       emit(AddFriendError(Failure.fromException(e).message));
-    }
-  }
-
-  Future<void> checkUserIsFriend(String friendId) async {
-    emit(CheckIsUserFriendLoading());
-    try {
-      _friendFirebaseServices.isUserFriend(friendId).listen((isFriend) {
-        isUserFriend = isFriend;
-        emit(CheckIsUserFriendSuccess());
-      });
-    } catch (e) {
-      emit(CheckIsUserFriendError(Failure.fromException(e).message));
     }
   }
 
@@ -102,6 +91,21 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(GetAllFriendMessagesSuccess());
     } catch (e) {
       emit(GetAllFriendMessagesError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> getRecentMessageData() async {
+    emit(GetRecentMessageDataLoading());
+    try {
+      _friendFirebaseServices.getRecentMessageData().listen((
+        messages,
+      ) {
+        recentMessageData = messages;
+        recentMessageData.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
+      });
+      emit(GetRecentMessageDataSuccess());
+    } catch (e) {
+      emit(GetRecentMessageDataError(Failure.fromException(e).message));
     }
   }
 

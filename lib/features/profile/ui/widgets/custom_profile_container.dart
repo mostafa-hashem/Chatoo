@@ -15,6 +15,7 @@ class CustomProfileContainer extends StatefulWidget {
   final TextInputType textInputType;
   final String labelText;
   final IconData? icon;
+  final String? Function(String?) validator;
 
   const CustomProfileContainer({
     required this.labelText,
@@ -27,6 +28,7 @@ class CustomProfileContainer extends StatefulWidget {
     this.isClickable = true,
     this.isReadOnly = false,
     this.maxLines,
+    required this.validator,
   });
 
   @override
@@ -49,7 +51,8 @@ class _CustomProfileContainerState extends State<CustomProfileContainer> {
         Row(
           children: [
             Expanded(
-              child: TextField(
+              child: TextFormField(
+                validator: widget.validator,
                 controller: widget.controller,
                 readOnly: widget.isReadOnly!,
                 enabled: widget.isClickable,

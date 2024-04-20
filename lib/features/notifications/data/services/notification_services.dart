@@ -29,7 +29,7 @@ class NotificationsServices {
     // Handle notification when app is opened from terminated state
     await _firebaseMessaging.getInitialMessage();
 
-    await FirebaseMessaging.instance.setAutoInitEnabled(true);
+    // await FirebaseMessaging.instance.setAutoInitEnabled(true);
     return fCMToken;
   }
 

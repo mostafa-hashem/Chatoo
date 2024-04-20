@@ -8,7 +8,6 @@ import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/drawer_tile.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class HomeLayout extends StatefulWidget {
@@ -19,25 +18,18 @@ class HomeLayout extends StatefulWidget {
 }
 
 class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
-  late final TabController _tabController;
-  String appBarTitle = "Chats";
+  late final TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_handleTabChange);
+    tabController = TabController(length: 2, vsync: this);
+    tabController.addListener(_handleTabChange);
     GroupCubit.get(context).getAllUserGroups();
   }
 
   void _handleTabChange() {
-    setState(() {
-      if (_tabController.index == 0) {
-        appBarTitle = AppLocalizations.of(context)!.chats;
-      } else {
-        appBarTitle = AppLocalizations.of(context)!.groups;
-      }
-    });
+    setState(() {});
   }
 
   @override
@@ -67,7 +59,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
             ),
             IconButton(
               onPressed: () {
-                _tabController.index == 0
+                tabController.index == 0
                     ? Navigator.pushNamed(context, Routes.friendSearchScreen)
                     : Navigator.pushNamed(context, Routes.groupSearchScreen);
               },
@@ -77,7 +69,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
             ),
           ],
           bottom: TabBar(
-            controller: _tabController,
+            controller: tabController,
             tabs: [
               Tab(
                 child:
@@ -98,7 +90,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
         body: Stack(
           children: [
             TabBarView(
-              controller: _tabController,
+              controller: tabController,
               children: const [
                 FriendsScreen(),
                 GroupsScreen(),
@@ -106,7 +98,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
             ),
           ],
         ),
-        floatingActionButton: _tabController.index == 1
+        floatingActionButton: tabController.index == 1
             ? FloatingActionButton(
                 onPressed: () {
                   showDialog(

@@ -2,7 +2,6 @@ import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
 import 'package:chat_app/features/auth/cubit/auth_state.dart';
 import 'package:chat_app/features/auth/data/models/login_data.dart';
 import 'package:chat_app/features/auth/ui/screens/register_screen.dart';
-import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
@@ -37,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final authCubit = AuthCubit.get(context);
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         FocusScope.of(context).unfocus();
       },
       child: SafeArea(
@@ -120,16 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.of(context).pop();
                               if (state is AuthSuccess) {
                                 ProfileCubit.get(context).getUser();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Successfully login",
-                                      style: TextStyle(fontSize: 15),
-                                    ),
-                                    backgroundColor: AppColors.primary,
-                                    duration: Duration(seconds: 3),
-                                  ),
-                                );
                               } else if (state is AuthError) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -148,17 +137,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         BlocListener<ProfileCubit, ProfileState>(
                           listener: (context, state) {
                             if (state is GetUserSuccess) {
-                              FriendCubit.get(context)
-                                  .getAllUserFriends()
-                                  .whenComplete(
-                                    () => Future.delayed(
-                                      const Duration(milliseconds: 30),
-                                      () => Navigator.pushReplacementNamed(
-                                        context,
-                                        Routes.layout,
-                                      ),
-                                    ),
-                                  );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Successfully login",
+                                    style: TextStyle(fontSize: 15),
+                                  ),
+                                  backgroundColor: AppColors.primary,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                              Navigator.pushReplacementNamed(
+                                context,
+                                Routes.layout,
+                              );
                             }
                           },
                         ),
@@ -171,9 +163,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 email: emailController.text,
                                 password: passwordController.text,
                                 fCMToken:
-                                    NotificationsCubit.get(context).fCMToken!,
+                                    NotificationsCubit.get(context).fCMToken ??
+                                        "",
                               ),
                             );
+                            NotificationsCubit.get(context).initNotifications();
                           }
                         },
                         text: "Login",

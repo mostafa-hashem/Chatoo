@@ -1,4 +1,4 @@
-import 'package:chat_app/features/groups/cubit/group_cubit.dart';
+import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
@@ -10,15 +10,13 @@ class GroupTile extends StatefulWidget {
   const GroupTile({
     super.key,
     required this.userName,
-    required this.groupId,
-    required this.groupName,
-    required this.groupIcon,
+    required this.groupData,
+    required this.isLeftOrJoined,
   });
 
   final String userName;
-  final String groupId;
-  final String groupName;
-  final String groupIcon;
+  final Group groupData;
+  final bool isLeftOrJoined;
 
   @override
   State<GroupTile> createState() => _GroupTileState();
@@ -30,12 +28,12 @@ class _GroupTileState extends State<GroupTile> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
       child: ListTile(
-        leading: widget.groupIcon.isEmpty
+        leading: widget.groupData.groupIcon.isEmpty
             ? CircleAvatar(
                 radius: 30,
                 backgroundColor: AppColors.primary,
                 child: Text(
-                  widget.groupName.substring(0, 1).toUpperCase(),
+                  widget.groupData.groupName.substring(0, 1).toUpperCase(),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.ubuntu(
                     fontWeight: FontWeight.w500,
@@ -44,32 +42,29 @@ class _GroupTileState extends State<GroupTile> {
                 ),
               )
             : InkWell(
-                onTap: () => showImageDialog(context, widget.groupIcon),
+                onTap: () =>
+                    showImageDialog(context, widget.groupData.groupIcon),
                 child: ClipOval(
                   child: FancyShimmerImage(
-                    imageUrl: widget.groupIcon,
+                    imageUrl: widget.groupData.groupIcon,
                     width: 50.w,
                   ),
                 ),
               ),
         title: Text(
-          widget.groupName,
+          widget.groupData.groupName,
           style: GoogleFonts.novaSquare(fontWeight: FontWeight.bold),
         ),
-        subtitle: Row(
-          children: [
-            Text(
-              GroupCubit.get(context).filteredMessages.isNotEmpty
-                  ? '${GroupCubit.get(context).filteredMessages.last.sender.userName}: ${GroupCubit.get(context).filteredMessages.last.message}'
-                  : '',
-              style: GoogleFonts.ubuntu(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+        subtitle: widget.isLeftOrJoined
+            ? const SizedBox.shrink()
+            : Text(
+                "${widget.groupData.recentMessageSender}: ${widget.groupData.recentMessage}",
+                style: GoogleFonts.ubuntu(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
       ),
     );
   }

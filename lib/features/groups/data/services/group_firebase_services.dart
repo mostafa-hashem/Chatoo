@@ -166,38 +166,28 @@ class GroupFirebaseServices {
     Group group,
     String message,
     User sender,
+    bool left,
+    bool joined,
   ) async {
     if (message.isEmpty) {
       return;
     }
     final String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
-    final DocumentReference userMessageDocRef = _usersCollection
-        .doc(currentUserUid)
-        .collection(FirebasePath.groups)
-        .doc(group.groupId)
-        .collection(FirebasePath.messages)
-        .doc();
+
     final DocumentReference groupMessageDocRef = _groupsCollection
         .doc(group.groupId)
         .collection(FirebasePath.messages)
-        .doc(userMessageDocRef.id);
-
-    final String messageId = userMessageDocRef.id;
-
-    userMessageDocRef.set({
-      'groupId': group.groupId,
-      'messageId': messageId,
-      'message': message,
-      'sender': sender.toJson(),
-      'sentAt': FieldValue.serverTimestamp(),
-    });
-
+        .doc();
+    final messageId = groupMessageDocRef.id;
     groupMessageDocRef.set({
       'groupId': group.groupId,
       'messageId': messageId,
+      'senderId': currentUserUid,
       'message': message,
       'sender': sender.toJson(),
       'sentAt': FieldValue.serverTimestamp(),
+      'left': left,
+      'joined': joined,
     });
 
     _groupsCollection.doc(group.groupId).update({
@@ -241,6 +231,15 @@ class GroupFirebaseServices {
           }
         }
       }
+    });
+  }
+
+  Future<void> kickUserFromGroup(String groupId, String userId) async {
+    await _usersCollection.doc(userId).update({
+      "groups": FieldValue.arrayRemove([groupId]),
+    });
+    await _groupsCollection.doc(groupId).update({
+      "members": FieldValue.arrayRemove([userId]),
     });
   }
 

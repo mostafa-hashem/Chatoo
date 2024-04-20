@@ -30,6 +30,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
   bool emojiShowing = false;
   late User friendData;
   late FriendCubit friendCubit;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
@@ -39,11 +40,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
   }
 
   @override
-  void deactivate() {
-    friendCubit.filteredMessages.clear();
-    super.deactivate();
+  void dispose() {
+    messageController.dispose();
+    super.dispose();
   }
-
   void scrollToBottom() {
     FriendCubit.get(context).scrollController.animateTo(
           0.0,
@@ -61,6 +61,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           centerTitle: false,
           title: Row(
@@ -112,6 +113,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
         body: Column(
           children: [
             BlocBuilder<FriendCubit, FriendStates>(
+              buildWhen: (_, currentState) =>
+              currentState is SearchOnFriendSuccess ||
+                  currentState is SearchOnFriendError ||
+                  currentState is SearchOnFriendLoading,
               builder: (context, state) {
                 return FriendChatMessages();
               },

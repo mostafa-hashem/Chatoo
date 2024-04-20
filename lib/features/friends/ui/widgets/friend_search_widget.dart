@@ -15,10 +15,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 class FriendSearchWidget extends StatefulWidget {
   final User friendData;
+  final bool isUserFriend;
 
   const FriendSearchWidget({
     super.key,
     required this.friendData,
+    required this.isUserFriend,
   });
 
   @override
@@ -59,23 +61,75 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             subtitle: Text(
-              widget.friendData.bio!,
+              "Bio: ${widget.friendData.bio!}",
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            trailing: FriendCubit.get(context).isUserFriend
-                ? Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.black,
-                      border: Border.all(color: Colors.white),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    child: Text(
-                      "Added",
-                      style: GoogleFonts.ubuntu(color: Colors.white),
+            trailing: widget.isUserFriend
+                ? BlocListener<FriendCubit, FriendStates>(
+                    listener: (context, state) {
+                      if (state is RemoveFriendLoading) {
+                        const LoadingIndicator();
+                      } else {
+                        if (state is RemoveFriendSuccess) {
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          }
+                          showSnackBar(
+                            context,
+                            Colors.green,
+                            "Removed successfully",
+                          );
+                        }
+                        if (state is AddFriendError) {
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          }
+                          const ErrorIndicator();
+                        }
+                      }
+                    },
+                    child: InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Remove friend?'),
+                              actionsOverflowDirection: VerticalDirection.down,
+                              actions: [
+                                TextButton(
+                                  child: const Text('Cancel'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                                TextButton(
+                                  child: const Text('Remove'),
+                                  onPressed: () {
+                                    friendCubit
+                                        .removeFriend(widget.friendData.id!);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.black,
+                          border: Border.all(color: Colors.white),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        child: Text(
+                          "Remove",
+                          style: GoogleFonts.ubuntu(color: Colors.white),
+                        ),
+                      ),
                     ),
                   )
                 : BlocListener<FriendCubit, FriendStates>(
@@ -84,22 +138,11 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                         const LoadingIndicator();
                       } else {
                         if (state is AddFriendSuccess) {
-                          friendCubit.getAllUserFriends();
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          }
                           showSnackBar(
                             context,
                             Colors.green,
                             "Successfully added the friend",
                           );
-                          Future.delayed(const Duration(seconds: 2), () {
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              Routes.layout,
-                              (route) => false,
-                            );
-                          });
                         }
                         if (state is AddFriendError) {
                           if (Navigator.canPop(context)) {

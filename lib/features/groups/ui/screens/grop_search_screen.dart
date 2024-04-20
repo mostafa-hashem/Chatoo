@@ -67,12 +67,6 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                             }
                             if (value.isNotEmpty) {
                               groupCubit.searchOnGroup(value);
-                              print("*****************************");
-                              print("All User Groups : ${groupCubit.allUserGroups.length}");
-                              print("*****************************");
-                              print("*****************************");
-                              print("Searched Groups : ${groupCubit.searchedGroups.length}");
-                              print("*****************************");
                             }
                           },
                           style: GoogleFonts.ubuntu(color: Colors.white),
@@ -110,6 +104,11 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                     itemBuilder: (context, index) {
                       return GroupSearchWidget(
                         searchedGroupData: groupCubit.searchedGroups[index],
+                        isUserMember: groupCubit.allUserGroups.any(
+                          (group) => group.groupId.contains(
+                            groupCubit.searchedGroups[index].groupId,
+                          ),
+                        ),
                       );
                     },
                     separatorBuilder: (context, index) => Divider(

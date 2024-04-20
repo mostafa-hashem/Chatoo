@@ -1,6 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_messages_tile.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter/material.dart';
 
 class FriendChatMessages extends StatefulWidget {

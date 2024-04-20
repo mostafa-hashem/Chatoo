@@ -45,7 +45,6 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       const LoadingIndicator();
                     } else {
                       if (state is RemoveFriendSuccess) {
-                        friendCubit.getAllUserFriends();
                         if (Navigator.canPop(context)) {
                           Navigator.pop(context);
                         }
@@ -123,10 +122,6 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       const LoadingIndicator();
                     } else {
                       if (state is AddFriendSuccess) {
-                        friendCubit.getAllUserFriends();
-                        if (Navigator.canPop(context)) {
-                          Navigator.pop(context);
-                        }
                         showSnackBar(
                           context,
                           Colors.green,

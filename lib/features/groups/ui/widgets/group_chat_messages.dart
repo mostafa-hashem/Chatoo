@@ -32,6 +32,8 @@ class _ChatMessagesState extends State<ChatMessages> {
             sentByMe: ProfileCubit.get(context).user.id ==
                 groupMessages[index].sender.id,
             groupId: widget.groupId,
+            isUserLeft: groupMessages[index].left,
+            isUserJoined: groupMessages[index].joined,
           );
         },
       ),

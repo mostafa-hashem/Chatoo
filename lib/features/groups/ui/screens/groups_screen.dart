@@ -25,73 +25,88 @@ class _GroupsScreenState extends State<GroupsScreen> {
             onTap: () {
               FocusScope.of(context).unfocus();
             },
-            child: BlocConsumer<GroupCubit, GroupStates>(
-              listener: (_, state) {
-                if (state is CreateGroupLoading) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return const LoadingIndicator();
-                    },
-                  );
-                } else {
-                  if (state is CreateGroupError) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          state.message,
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                        backgroundColor: AppColors.error,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                  if (state is CreateGroupSuccess) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          "Successfully Created",
-                          style: TextStyle(fontSize: 15),
-                        ),
-                        backgroundColor: AppColors.primary,
-                        duration: Duration(seconds: 3),
-                      ),
-                    );
-                    // GroupCubit.get(context).getAllUserGroups();
-                  }
-                }
-              },
-              builder: (context, state) => ListView.builder(
-                itemCount: groupsCubit.allUserGroups.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      groupsCubit
-                          .getAllGroupMessages(
-                            groupsCubit.allUserGroups[index].groupId,
-                          )
-                          .whenComplete(
-                            () => Future.delayed(
-                              const Duration(
-                                milliseconds: 55,
-                              ),
-                              () => Navigator.pushNamed(
-                                context,
-                                Routes.groupChatScreen,
-                                arguments: groupsCubit.allUserGroups[index],
-                              ),
+            child: MultiBlocListener(
+              listeners: [
+                BlocListener<GroupCubit, GroupStates>(
+                  listener: (_, state) {
+                    if (state is CreateGroupLoading) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return const LoadingIndicator();
+                        },
+                      );
+                    } else {
+                      if (state is CreateGroupError) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              state.message,
+                              style: const TextStyle(fontSize: 15),
                             ),
-                          );
+                            backgroundColor: AppColors.error,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                      if (state is CreateGroupSuccess) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Successfully Created",
+                              style: TextStyle(fontSize: 15),
+                            ),
+                            backgroundColor: AppColors.primary,
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                        // GroupCubit.get(context).getAllUserGroups();
+                      }
+                    }
+                  },
+                ),
+                BlocListener<GroupCubit, GroupStates>(
+                  listener: (_, state) {
+                    if (state is GetAllGroupMessagesSuccess) {
+                      GroupCubit.get(context).getAllUserGroups();
+                    }
+                  },
+                ),
+              ],
+              child: BlocBuilder<GroupCubit, GroupStates>(
+                builder: (context, state) {
+                  return ListView.builder(
+                    itemCount: groupsCubit.allUserGroups.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          groupsCubit
+                              .getAllGroupMessages(
+                                groupsCubit.allUserGroups[index].groupId,
+                              )
+                              .whenComplete(
+                                () => Future.delayed(
+                                  const Duration(
+                                    milliseconds: 55,
+                                  ),
+                                  () => Navigator.pushNamed(
+                                    context,
+                                    Routes.groupChatScreen,
+                                    arguments: groupsCubit.allUserGroups[index],
+                                  ),
+                                ),
+                              );
+                        },
+                        child: GroupTile(
+                          groupData: groupsCubit.allUserGroups[index],
+                          userName: ProfileCubit.get(context).user.userName!,
+                          isLeftOrJoined: groupsCubit
+                              .allUserGroups[index].recentMessage.isEmpty,
+                        ),
+                      );
                     },
-                    child: GroupTile(
-                      groupId: groupsCubit.allUserGroups[index].groupId,
-                      groupName: groupsCubit.allUserGroups[index].groupName,
-                      userName: ProfileCubit.get(context).user.userName!,
-                      groupIcon: groupsCubit.allUserGroups[index].groupIcon,
-                    ),
                   );
                 },
               ),

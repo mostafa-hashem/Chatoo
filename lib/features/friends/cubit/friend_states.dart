@@ -72,6 +72,16 @@ class GetAllFriendMessagesError extends FriendStates {
   GetAllFriendMessagesError(this.message);
 }
 
+class GetRecentMessageDataLoading extends FriendStates {}
+
+class GetRecentMessageDataSuccess extends FriendStates {}
+
+class GetRecentMessageDataError extends FriendStates {
+  final String message;
+
+  GetRecentMessageDataError(this.message);
+}
+
 class RemoveFriendLoading extends FriendStates {}
 
 class RemoveFriendSuccess extends FriendStates {}

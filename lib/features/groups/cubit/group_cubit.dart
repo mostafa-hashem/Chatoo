@@ -20,7 +20,6 @@ class GroupCubit extends Cubit<GroupStates> {
   User? userData;
   List<Group> allUserGroups = [];
   List<User> allGroupMembers = [];
-  List<Group> allGroups = [];
   List<Group> searchedGroups = [];
   List<Group> filteredGroups = [];
   List<GroupMessage> allMessages = [];
@@ -79,6 +78,7 @@ class GroupCubit extends Cubit<GroupStates> {
       _groupFirebaseServices.getAllUserGroups().listen((groups) {
         allUserGroups = groups;
       });
+
       emit(GetAllGroupsSuccess());
     } catch (e) {
       emit(GetAllGroupsError(Failure.fromException(e).message));
@@ -89,8 +89,7 @@ class GroupCubit extends Cubit<GroupStates> {
     emit(GetAllGroupMessagesLoading());
     try {
       _groupFirebaseServices.getAllGroupMessages(groupId).listen((messages) {
-        filteredMessages =
-            messages.where((message) => message.groupId == groupId).toList();
+        filteredMessages = messages;
         filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
         emit(GetAllGroupMessagesSuccess());
       });
@@ -120,14 +119,22 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
-  Future<void> sendMessageToGroup(
-    Group group,
-    User sender,
-    String message,
-  ) async {
+  Future<void> sendMessageToGroup({
+    required Group group,
+    User? sender,
+    required String message,
+    required bool leave,
+    required bool joined,
+  }) async {
     emit(SendMessageToGroupLoading());
     try {
-      await _groupFirebaseServices.sendMessageToGroup(group, message, sender);
+      await _groupFirebaseServices.sendMessageToGroup(
+        group,
+        message,
+        sender!,
+        leave,
+        joined,
+      );
       emit(SendMessageToGroupSuccess());
     } catch (e) {
       emit(SendMessageToGroupError(Failure.fromException(e).message));
@@ -162,17 +169,6 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
-  Future<bool> checkUserInGroup(String groupId, String userId) async {
-    try {
-      final isMember =
-          await _groupFirebaseServices.isUserInGroup(groupId, userId).first;
-      isUserMember = isMember;
-      return isMember;
-    } catch (e) {
-      throw Failure.fromException(e).message;
-    }
-  }
-
   Future<void> joinGroup(Group group, User user) async {
     emit(JoinGroupLoading());
     try {
@@ -190,6 +186,16 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(LeaveGroupSuccess());
     } catch (e) {
       emit(LeaveGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> kickUserFromGroup(String groupId, String userId) async {
+    emit(KickUserFromGroupLoading());
+    try {
+      await _groupFirebaseServices.kickUserFromGroup(groupId, userId);
+      emit(KickUserFromGroupSuccess());
+    } catch (e) {
+      emit(KickUserFromGroupError(Failure.fromException(e).message));
     }
   }
 

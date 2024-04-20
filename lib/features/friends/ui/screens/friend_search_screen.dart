@@ -65,7 +65,6 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                         }
                         if (value.isNotEmpty) {
                           friendCubit.searchOnFriend(value);
-                          friendCubit.checkUserIsFriend(value);
                         }
                       },
                       style: GoogleFonts.ubuntu(color: Colors.white),
@@ -100,6 +99,11 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                   return ListView.separated(
                     itemBuilder: (context, index) => FriendSearchWidget(
                       friendData: friendCubit.searchedFriends[index],
+                      isUserFriend: friendCubit.allFriends.any(
+                        (friend) => friend.id!.contains(
+                          friendCubit.searchedFriends[index].id!,
+                        ),
+                      ),
                     ),
                     separatorBuilder: (context, index) => Divider(
                       thickness: 4.h,

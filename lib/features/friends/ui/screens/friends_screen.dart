@@ -25,47 +25,66 @@ class _FriendsScreenState extends State<FriendsScreen> {
             onTap: () {
               FocusScope.of(context).unfocus();
             },
-            child: BlocBuilder<FriendCubit, FriendStates>(
-              buildWhen: (_, currentState) =>
-                  currentState is AddFriendError ||
-                  currentState is AddFriendSuccess ||
-                  currentState is AddFriendLoading,
-              builder: (context, state) {
-                if (state is GetAllUserFriendsLoading) {
-                  return const LoadingIndicator();
-                } else if (state is GetAllUserFriendsError) {
-                  return const ErrorIndicator();
-                } else {
-                  return ListView.builder(
-                    itemCount: friends.allFriends.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          friends
-                              .getAllFriendMessages(
-                                friends.allFriends[index].id!,
-                              )
-                              .whenComplete(
-                                () => Future.delayed(
-                                  const Duration(
-                                    milliseconds: 50,
-                                  ),
-                                  () => Navigator.pushNamed(
-                                    context,
-                                    Routes.friendChatScreen,
-                                    arguments: friends.allFriends[index],
-                                  ),
+            child: MultiBlocListener(
+              listeners: [
+                BlocListener<FriendCubit, FriendStates>(
+                  listener: (_, state) {
+                    if (state is SearchOnFriendSuccess) {
+
+                    }
+                  },
+                ),
+                BlocListener<FriendCubit, FriendStates>(
+                  listener: (_, state) {
+                    if (state is GetAllFriendMessagesSuccess) {
+                      FriendCubit.get(context).getRecentMessageData();
+                    }
+                  },
+                ),
+              ],
+              child: BlocBuilder<FriendCubit, FriendStates>(
+                buildWhen: (_, currentState) =>
+                currentState is AddFriendError ||
+                    currentState is AddFriendSuccess ||
+                    currentState is AddFriendLoading,
+                builder: (context, state) {
+                  if (state is GetAllUserFriendsLoading) {
+                    return const LoadingIndicator();
+                  } else if (state is GetAllUserFriendsError) {
+                    return const ErrorIndicator();
+                  } else {
+                    return ListView.builder(
+                      itemCount: friends.allFriends.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            friends
+                                .getAllFriendMessages(
+                              friends.allFriends[index].id!,
+                            )
+                                .whenComplete(() {
+                              Future.delayed(
+                                const Duration(
+                                  milliseconds: 50,
+                                ),
+                                () => Navigator.pushNamed(
+                                  context,
+                                  Routes.friendChatScreen,
+                                  arguments: friends.allFriends[index],
                                 ),
                               );
-                        },
-                        child: FriendTile(
-                          friendData: friends.allFriends[index],
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
+                            });
+                          },
+                          child: FriendTile(
+                            friendData: friends.allFriends[index],
+                            lastMessageData: friends.recentMessageData[index],
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
           )
         : GestureDetector(
