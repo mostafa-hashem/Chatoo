@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,19 +41,32 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late MyAppProvider provider;
 
-  // Future<void> _checkForUpdates() async {
-  //   final isUpdateAvailable =
-  //       await shorebirdCodePush.isNewPatchAvailableForDownload();
-  //   if (isUpdateAvailable) {
-  //     await shorebirdCodePush.downloadUpdateIfAvailable();
-  //   }
-  //
+  @override
+  void initState() {
+    _initPackageInfo();
+    super.initState();
+  }
+
+  final String requiredVersion = '1.0.1';
+  String? appVersion;
+  String routeName = Routes.updateScreen;
+
+  Future<void> _initPackageInfo() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      appVersion = packageInfo.version;
+      if (appVersion!.compareTo(requiredVersion) < 0) {
+        routeName = Routes.updateScreen;
+      } else {
+        routeName = Routes.splash;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     provider = Provider.of<MyAppProvider>(context);
     getPreferences();
-    // _checkForUpdates();
     return ScreenUtilInit(
       minTextAdapt: true,
       splitScreenMode: true,
@@ -62,10 +76,11 @@ class _MyAppState extends State<MyApp> {
             BlocProvider(
               create: (_) => AuthCubit()..getAuthStatus(),
             ),
-            BlocProvider(
-              create: (_) => NotificationsCubit()..initNotifications(),
-              lazy: false,
-            ),
+            if (routeName == Routes.splash)
+              BlocProvider(
+                create: (_) => NotificationsCubit()..initNotifications(),
+                lazy: false,
+              ),
             BlocProvider(
               create: (_) => ProfileCubit(),
             ),
@@ -84,7 +99,7 @@ class _MyAppState extends State<MyApp> {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             locale: Locale(provider.language),
-            initialRoute: Routes.splash,
+            initialRoute: routeName,
             onGenerateRoute: onGenerateRoute,
           ),
         );

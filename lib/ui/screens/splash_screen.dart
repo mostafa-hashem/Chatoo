@@ -17,7 +17,11 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
+    _initStart();
     super.initState();
+  }
+
+  Future<void> _initStart() async {
     if (AuthCubit.get(context).isLoggedIn) {
       Future.wait([
         ProfileCubit.get(context).getUser(),

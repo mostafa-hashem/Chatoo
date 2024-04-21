@@ -15,19 +15,20 @@ class FriendCubit extends Cubit<FriendStates> {
   static FriendCubit get(BuildContext context) => BlocProvider.of(context);
   final _friendFirebaseServices = FriendFirebaseServices();
   List<User> allFriends = [];
+  List<User> allUserRequests = [];
   List<User> searchedFriends = [];
   List<FriendMessage> filteredMessages = [];
   List<Friend> recentMessageData = [];
   ScrollController scrollController = ScrollController();
   TextEditingController messageController = TextEditingController();
 
-  Future<void> addFriend(User friend, User currentUser) async {
-    emit(AddFriendLoading());
+  Future<void> requestToAddFriend(String friendId) async {
+    emit(RequestToAddFriendLoading());
     try {
-      await _friendFirebaseServices.addFriend(friend, currentUser);
-      emit(AddFriendSuccess());
+      await _friendFirebaseServices.requestToAddFriend(friendId);
+      emit(RequestToAddFriendSuccess());
     } catch (e) {
-      emit(AddFriendError(Failure.fromException(e).message));
+      emit(RequestToAddFriendError(Failure.fromException(e).message));
     }
   }
 
@@ -36,10 +37,42 @@ class FriendCubit extends Cubit<FriendStates> {
     try {
       _friendFirebaseServices.getAllUserFriends().listen((friends) {
         allFriends = friends;
-      emit(GetAllUserFriendsSuccess());
+        emit(GetAllUserFriendsSuccess());
       });
     } catch (e) {
       emit(GetAllUserFriendsError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> getAllUserRequests() async {
+    emit(GetAllUserRequestsLoading());
+    try {
+      _friendFirebaseServices.getAllUserRequests().listen((requests) {
+        allUserRequests = requests;
+        emit(GetAllUserRequestsSuccess());
+      });
+    } catch (e) {
+      emit(GetAllUserRequestsError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> approveToAddFriend(String friendId) async {
+    emit(ApproveToAddFriendLoading());
+    try {
+      await _friendFirebaseServices.approveFriendRequest(friendId);
+      emit(ApproveToAddFriendSuccess());
+    } catch (e) {
+      emit(ApproveToAddFriendError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> declineToAddFriend(String friendId) async {
+    emit(DeclineToAddFriendLoading());
+    try {
+      await _friendFirebaseServices.declineFriendRequest(friendId);
+      emit(DeclineToAddFriendSuccess());
+    } catch (e) {
+      emit(DeclineToAddFriendError(Failure.fromException(e).message));
     }
   }
 
@@ -54,7 +87,7 @@ class FriendCubit extends Cubit<FriendStates> {
                   friend.phoneNumber == friendData,
             )
             .toList();
-      emit(SearchOnFriendSuccess());
+        emit(SearchOnFriendSuccess());
       });
     } catch (e) {
       emit(SearchOnFriendError(Failure.fromException(e).message));
@@ -87,7 +120,7 @@ class FriendCubit extends Cubit<FriendStates> {
       ) {
         filteredMessages = messages;
         filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
-      emit(GetAllFriendMessagesSuccess());
+        emit(GetAllFriendMessagesSuccess());
       });
     } catch (e) {
       emit(GetAllFriendMessagesError(Failure.fromException(e).message));

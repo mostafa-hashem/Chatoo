@@ -1,6 +1,4 @@
-import 'package:chat_app/features/groups/cubit/group_cubit.dart';
-import 'package:chat_app/features/groups/data/model/group_data.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/utils/data/models/user.dart';
@@ -10,20 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class GroupRequestsTile extends StatelessWidget {
+class FriendRequestsTile extends StatelessWidget {
   // Note: Avoid using `const` with constructors.
-  GroupRequestsTile({
-    required this.group,
+  FriendRequestsTile({
     required this.requesterData,
     super.key,
   });
 
-  final Group group;
   final User requesterData;
 
   @override
   Widget build(BuildContext context) {
-    final groupCubit = GroupCubit.get(context);
+    final friendCubit = FriendCubit.get(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 5,
@@ -91,26 +87,10 @@ class GroupRequestsTile extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  groupCubit
-                      .declineToJoinGroup(
-                    group.groupId!,
+                  friendCubit.declineToAddFriend(
                     requesterData.id!,
-                  )
-                      .whenComplete(
-                    () {
-                      groupCubit.sendMessageToGroup(
-                        group: group,
-                        sender: ProfileCubit.get(context).user,
-                        message:
-                            '${ProfileCubit.get(context).user.userName!} Declined ${requesterData.userName}',
-                        leave: false,
-                        joined: false,
-                        requested: false,
-                        declined: true,
-                      );
-                      Navigator.pop(context);
-                    },
                   );
+                  Navigator.pop(context);
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -130,24 +110,13 @@ class GroupRequestsTile extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  groupCubit
-                      .approveToJoinGroup(
-                    group.groupId!,
+                  friendCubit
+                      .approveToAddFriend(
                     requesterData.id!,
                   )
                       .whenComplete(
                     () {
-                      groupCubit.sendMessageToGroup(
-                        group: group,
-                        sender: ProfileCubit.get(context).user,
-                        message:
-                            '${ProfileCubit.get(context).user.userName!} Approved ${requesterData.userName}',
-                        leave: false,
-                        joined: false,
-                        requested: true,
-                        declined: false,
-                      );
-                      groupCubit.getAllGroupMembers(group.groupId!);
+                      friendCubit.getAllUserFriends();
                       Navigator.pop(context);
                     },
                   );

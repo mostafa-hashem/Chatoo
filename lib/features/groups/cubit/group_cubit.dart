@@ -100,7 +100,7 @@ class GroupCubit extends Cubit<GroupStates> {
     try {
       _groupFirebaseServices.getAllGroupMessages(groupId).listen((messages) {
         filteredMessages = messages;
-        filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+        filteredMessages.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
         emit(GetAllGroupMessagesSuccess());
       });
     } catch (e) {
@@ -256,10 +256,10 @@ class GroupCubit extends Cubit<GroupStates> {
         groupId,
         messageId,
         senderName,
-        filteredMessages.elementAt(filteredMessages.length - 2).message,
+        filteredMessages.elementAt(filteredMessages.length - 2).message!,
         filteredMessages
             .elementAt(filteredMessages.length - 2)
-            .sender
+            .sender!
             .userName!,
       );
       emit(DeleteMessageForAllSuccess());

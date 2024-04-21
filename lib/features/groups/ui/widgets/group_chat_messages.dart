@@ -30,12 +30,12 @@ class _ChatMessagesState extends State<ChatMessages> {
           return GroupMessagesTile(
             groupMessage: groupMessages[index],
             sentByMe: ProfileCubit.get(context).user.id ==
-                groupMessages[index].sender.id,
+                groupMessages[index].sender!.id,
             groupId: widget.groupId,
-            isUserLeft: groupMessages[index].left,
-            isUserJoined: groupMessages[index].joined,
-            isUserRequested: groupMessages[index].requested,
-            isUserUserDeclined: groupMessages[index].declined,
+            isUserLeft: groupMessages[index].left!,
+            isUserJoined: groupMessages[index].joined!,
+            isUserRequested: groupMessages[index].requested!,
+            isUserUserDeclined: groupMessages[index].declined!,
           );
         },
       ),

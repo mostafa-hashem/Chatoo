@@ -1,7 +1,5 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/error_indicator.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
@@ -16,11 +14,13 @@ import 'package:google_fonts/google_fonts.dart';
 class FriendSearchWidget extends StatefulWidget {
   final User friendData;
   final bool isUserFriend;
+  final bool isRequested;
 
   const FriendSearchWidget({
     super.key,
     required this.friendData,
     required this.isUserFriend,
+    required this.isRequested,
   });
 
   @override
@@ -30,7 +30,6 @@ class FriendSearchWidget extends StatefulWidget {
 class _FriendSearchWidgetState extends State<FriendSearchWidget> {
   @override
   Widget build(BuildContext context) {
-    final userdata = ProfileCubit.get(context);
     final friendCubit = FriendCubit.get(context);
     return BlocBuilder<FriendCubit, FriendStates>(
       builder: (context, state) {
@@ -58,120 +57,142 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                   ),
             title: Text(
               widget.friendData.userName!,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
             subtitle: Text(
               "Bio: ${widget.friendData.bio!}",
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall!
+                  .copyWith(fontSize: 10.sp),
+              overflow: TextOverflow.ellipsis,
             ),
-            trailing: widget.isUserFriend
-                ? BlocListener<FriendCubit, FriendStates>(
-                    listener: (context, state) {
-                      if (state is RemoveFriendLoading) {
-                        const LoadingIndicator();
-                      } else {
-                        if (state is RemoveFriendSuccess) {
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          }
-                          showSnackBar(
-                            context,
-                            Colors.green,
-                            "Removed successfully",
-                          );
-                        }
-                        if (state is AddFriendError) {
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          }
-                          const ErrorIndicator();
-                        }
-                      }
-                    },
-                    child: InkWell(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Remove friend?'),
-                              actionsOverflowDirection: VerticalDirection.down,
-                              actions: [
-                                TextButton(
-                                  child: const Text('Cancel'),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                                TextButton(
-                                  child: const Text('Remove'),
-                                  onPressed: () {
-                                    friendCubit
-                                        .removeFriend(widget.friendData.id!);
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.black,
-                          border: Border.all(color: Colors.white),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        child: Text(
-                          "Remove",
-                          style: GoogleFonts.ubuntu(color: Colors.white),
-                        ),
-                      ),
+            trailing: widget.isRequested
+                ? Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: AppColors.primary,
+                      border: Border.all(color: Colors.white),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    child: Text(
+                      "Requested",
+                      style: GoogleFonts.ubuntu(color: Colors.white),
                     ),
                   )
-                : BlocListener<FriendCubit, FriendStates>(
-                    listener: (context, state) {
-                      if (state is AddFriendLoading) {
-                        const LoadingIndicator();
-                      } else {
-                        if (state is AddFriendSuccess) {
-                          showSnackBar(
-                            context,
-                            Colors.green,
-                            "Successfully added the friend",
-                          );
-                        }
-                        if (state is AddFriendError) {
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
+                : widget.isUserFriend
+                    ? BlocListener<FriendCubit, FriendStates>(
+                        listener: (context, state) {
+                          if (state is RemoveFriendLoading) {
+                            const LoadingIndicator();
+                          } else {
+                            if (state is RemoveFriendSuccess) {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
+                              showSnackBar(
+                                context,
+                                Colors.green,
+                                "Removed successfully",
+                              );
+                            }
+                            if (state is RequestToAddFriendError) {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
+                              const ErrorIndicator();
+                            }
                           }
-                          const ErrorIndicator();
-                        }
-                      }
-                    },
-                    child: InkWell(
-                      onTap: () async {
-                        friendCubit.addFriend(widget.friendData, userdata.user);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: AppColors.primary,
+                        },
+                        child: InkWell(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Remove friend?'),
+                                  actionsOverflowDirection:
+                                      VerticalDirection.down,
+                                  actions: [
+                                    TextButton(
+                                      child: const Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('Remove'),
+                                      onPressed: () {
+                                        friendCubit.removeFriend(
+                                            widget.friendData.id!);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.black,
+                              border: Border.all(color: Colors.white),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            child: Text(
+                              "Remove",
+                              style: GoogleFonts.ubuntu(color: Colors.white),
+                            ),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        child: Text(
-                          "Add",
-                          style: GoogleFonts.ubuntu(color: Colors.white),
+                      )
+                    : BlocListener<FriendCubit, FriendStates>(
+                        listener: (context, state) {
+                          if (state is RequestToAddFriendLoading) {
+                            const LoadingIndicator();
+                          } else {
+                            if (state is RequestToAddFriendSuccess) {
+                              showSnackBar(
+                                context,
+                                Colors.green,
+                                "Requested successfully",
+                              );
+                            }
+                            if (state is RequestToAddFriendError) {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
+                              const ErrorIndicator();
+                            }
+                          }
+                        },
+                        child: InkWell(
+                          onTap: () async {
+                            friendCubit
+                                .requestToAddFriend(widget.friendData.id!);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: AppColors.primary,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            child: Text(
+                              "Send Request",
+                              style: GoogleFonts.ubuntu(color: Colors.white),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
           ),
         );
       },

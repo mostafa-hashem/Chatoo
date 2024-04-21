@@ -1,6 +1,7 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_search_widget.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -110,6 +111,13 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                       isUserFriend: friendCubit.allFriends.any(
                         (friend) => friend.id!.contains(
                           friendCubit.searchedFriends[index].id!,
+                        ),
+                      ),
+                      isRequested: friendCubit.searchedFriends.any(
+                        (friend) => friend.requests!.any(
+                          (id) => id.toString().contains(
+                                ProfileCubit.get(context).user.id ?? "",
+                              ),
                         ),
                       ),
                     ),

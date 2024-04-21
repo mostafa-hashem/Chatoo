@@ -2,14 +2,14 @@ abstract class FriendStates {}
 
 class FriendInit extends FriendStates {}
 
-class AddFriendLoading extends FriendStates {}
+class RequestToAddFriendLoading extends FriendStates {}
 
-class AddFriendSuccess extends FriendStates {}
+class RequestToAddFriendSuccess extends FriendStates {}
 
-class AddFriendError extends FriendStates {
+class RequestToAddFriendError extends FriendStates {
   final String message;
 
-  AddFriendError(this.message);
+  RequestToAddFriendError(this.message);
 }
 
 class CheckIsUserFriendLoading extends FriendStates {}
@@ -40,6 +40,36 @@ class GetAllUserFriendsError extends FriendStates {
   final String message;
 
   GetAllUserFriendsError(this.message);
+}
+
+class GetAllUserRequestsLoading extends FriendStates {}
+
+class GetAllUserRequestsSuccess extends FriendStates {}
+
+class GetAllUserRequestsError extends FriendStates {
+  final String message;
+
+  GetAllUserRequestsError(this.message);
+}
+
+class ApproveToAddFriendLoading extends FriendStates {}
+
+class ApproveToAddFriendSuccess extends FriendStates {}
+
+class ApproveToAddFriendError extends FriendStates {
+  final String message;
+
+  ApproveToAddFriendError(this.message);
+}
+
+class DeclineToAddFriendLoading extends FriendStates {}
+
+class DeclineToAddFriendSuccess extends FriendStates {}
+
+class DeclineToAddFriendError extends FriendStates {
+  final String message;
+
+  DeclineToAddFriendError(this.message);
 }
 
 class SearchOnFriendLoading extends FriendStates {}

@@ -1,3 +1,5 @@
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/friends/ui/screens/requests_screen.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
@@ -87,6 +89,40 @@ class _DrawerTileState extends State<DrawerTile> {
               "Profile",
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: ListTile(
+                  onTap: () {
+                    nextScreen(context, const RequestsScreen());
+                  },
+                  selected: true,
+                  selectedColor: AppColors.primary,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  leading: const Icon(Icons.person_add_alt_1),
+                  title: Text(
+                    "Requests",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: CircleAvatar(
+                  radius: 18.r,
+                  backgroundColor: AppColors.primary,
+                  child: Text(
+                    FriendCubit.get(context).allUserRequests.length.toString(),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .copyWith(fontSize: 14.sp),
+                  ),
+                ),
+              ),
+            ],
           ),
           ListTile(
             onTap: () {

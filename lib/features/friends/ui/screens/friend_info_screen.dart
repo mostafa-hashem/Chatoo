@@ -1,7 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_info_tile.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/error_indicator.dart';
@@ -63,7 +62,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                           );
                         });
                       }
-                      if (state is AddFriendError) {
+                      if (state is RequestToAddFriendError) {
                         if (Navigator.canPop(context)) {
                           Navigator.pop(context);
                         }
@@ -120,10 +119,10 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
               else
                 BlocListener<FriendCubit, FriendStates>(
                   listener: (context, state) {
-                    if (state is AddFriendLoading) {
+                    if (state is RequestToAddFriendLoading) {
                       const LoadingIndicator();
                     } else {
-                      if (state is AddFriendSuccess) {
+                      if (state is RequestToAddFriendSuccess) {
                         showSnackBar(
                           context,
                           Colors.green,
@@ -137,7 +136,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                           );
                         });
                       }
-                      if (state is AddFriendError) {
+                      if (state is RequestToAddFriendError) {
                         if (Navigator.canPop(context)) {
                           Navigator.pop(context);
                         }
@@ -149,9 +148,8 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                     padding: const EdgeInsets.all(14),
                     child: InkWell(
                       onTap: () async {
-                        friendCubit.addFriend(
-                          friendData,
-                          ProfileCubit.get(context).user,
+                        friendCubit.requestToAddFriend(
+                          friendData.id!,
                         );
                       },
                       child: Container(
@@ -261,7 +259,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       color: AppColors.primary,
                     ),
                     FriendInfoTile(
-                      labelText: 'Phone',
+                      labelText: 'City',
                       info: friendData.city!,
                     ),
                   ],

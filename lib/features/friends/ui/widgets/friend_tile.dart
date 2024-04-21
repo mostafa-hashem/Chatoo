@@ -66,12 +66,12 @@ class _FriendTileState extends State<FriendTile> {
               widget.friendData.userName ?? 'Unknown',
               style: GoogleFonts.novaSquare(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
+            subtitle: widget.lastMessageData.recentMessage != null ? Text(
               widget.lastMessageData.recentMessage!,
               style:
                   GoogleFonts.novaSquare(fontWeight: FontWeight.w700, fontSize: 14),
               overflow: TextOverflow.ellipsis,
-            ),
+            ) : const SizedBox.shrink(),
           ),
         );
       },

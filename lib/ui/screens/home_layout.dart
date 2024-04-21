@@ -1,3 +1,4 @@
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/ui/screens/friends_screen.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
@@ -26,6 +27,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(_handleTabChange);
     GroupCubit.get(context).getAllUserGroups();
+    FriendCubit.get(context).getAllUserRequests();
   }
 
   void _handleTabChange() {

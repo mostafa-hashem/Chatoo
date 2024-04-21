@@ -41,7 +41,10 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
     final provider = Provider.of<MyAppProvider>(context);
     return InkWell(
       onLongPress: () {
-        widget.isUserLeft || widget.isUserJoined || widget.isUserRequested || widget.isUserUserDeclined
+        widget.isUserLeft ||
+                widget.isUserJoined ||
+                widget.isUserRequested ||
+                widget.isUserUserDeclined
             ? const SizedBox.shrink()
             : widget.sentByMe
                 ? showDialog(
@@ -72,7 +75,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                                 GroupCubit.get(context)
                                     .deleteMessageForeAll(
                                       widget.groupId,
-                                      widget.groupMessage.messageId,
+                                      widget.groupMessage.messageId!,
                                       ProfileCubit.get(context).user.userName!,
                                     )
                                     .whenComplete(
@@ -110,7 +113,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
               padding: const EdgeInsets.all(6.0),
               child: Center(
                 child: Text(
-                  '${widget.groupMessage.sender.userName} joined the group',
+                  '${widget.groupMessage.sender!.userName} joined the group',
                   style: GoogleFonts.alexandria(
                     fontSize: 12,
                     color: AppColors.primary,
@@ -118,12 +121,14 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                 ),
               ),
             )
-          : widget.isUserRequested || widget.isUserLeft || widget.isUserUserDeclined
+          : widget.isUserRequested ||
+                  widget.isUserLeft ||
+                  widget.isUserUserDeclined
               ? Padding(
                   padding: const EdgeInsets.all(6.0),
                   child: Center(
                     child: Text(
-                      widget.groupMessage.message,
+                      widget.groupMessage.message!,
                       style: GoogleFonts.alexandria(
                         fontSize: 12,
                         color: widget.isUserRequested
@@ -184,7 +189,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                           : CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.groupMessage.sender.userName!.toUpperCase(),
+                          widget.groupMessage.sender!.userName!.toUpperCase(),
                           style: TextStyle(
                             fontSize: 8.sp,
                             fontWeight: FontWeight.bold,
@@ -195,7 +200,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                           height: MediaQuery.of(context).size.height * 0.01,
                         ),
                         Text(
-                          widget.groupMessage.message,
+                          widget.groupMessage.message!,
                           style: TextStyle(
                             fontSize: 15.sp,
                             color: Colors.white,
@@ -206,7 +211,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                         ),
                         Text(
                           getFormattedTime(
-                            widget.groupMessage.sentAt.millisecondsSinceEpoch,
+                            widget.groupMessage.sentAt!.millisecondsSinceEpoch,
                           ),
                           style: TextStyle(
                             fontSize: 9.sp,

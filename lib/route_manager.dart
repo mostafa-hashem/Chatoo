@@ -12,9 +12,11 @@ import 'package:chat_app/features/groups/ui/screens/join_group_request_screen.da
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
 import 'package:chat_app/ui/screens/home_layout.dart';
 import 'package:chat_app/ui/screens/splash_screen.dart';
+import 'package:chat_app/ui/screens/update_screen.dart';
 import 'package:flutter/material.dart';
 
 class Routes {
+  static const String updateScreen = "/updateScreen";
   static const String layout = "/layout";
   static const String splash = "/splashScreen";
   static const String login = "/login";
@@ -33,7 +35,12 @@ class Routes {
 
 Route? onGenerateRoute(RouteSettings routeSettings) {
   switch (routeSettings.name) {
-    case Routes.layout:
+    case Routes.updateScreen:
+      return MaterialPageRoute(
+        builder: (_) => const UpdateScreen(),
+        settings: routeSettings,
+      );
+      case Routes.layout:
       return MaterialPageRoute(
         builder: (_) => const HomeLayout(),
         settings: routeSettings,

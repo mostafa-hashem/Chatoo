@@ -76,6 +76,10 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
               ],
               child: BlocBuilder<GroupCubit, GroupStates>(
+                buildWhen: (_, currentState) =>
+                currentState is GetAllGroupsSuccess ||
+                    currentState is GetAllGroupsError ||
+                    currentState is GetAllGroupsLoading,
                 builder: (context, state) {
                   return ListView.builder(
                     itemCount: groupsCubit.allUserGroups.length,
