@@ -35,6 +35,8 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
       child: SafeArea(
         child: Scaffold(
           appBar: AppBar(
+
+            toolbarHeight: MediaQuery.sizeOf(context).height * 0.1,
             backgroundColor: Colors.transparent,
             iconTheme: const IconThemeData.fallback(),
             actions: [
@@ -53,7 +55,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                           Colors.green,
                           "Removed successfully",
                         );
-                        Future.delayed(const Duration(seconds: 2), () {
+                        Future.delayed(const Duration(seconds: 1), () {
                           Navigator.pushNamedAndRemoveUntil(
                             context,
                             Routes.layout,
@@ -175,6 +177,7 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
             padding: const EdgeInsets.all(16),
             child: Center(
               child: SingleChildScrollView(
+                padding: EdgeInsets.zero,
                 child: Column(
                   children: [
                     SizedBox(

@@ -72,6 +72,16 @@ class GetAllGroupMembersError extends GroupStates {
   GetAllGroupMembersError(this.message);
 }
 
+class GetAllGroupRequestsLoading extends GroupStates {}
+
+class GetAllGroupRequestsSuccess extends GroupStates {}
+
+class GetAllGroupRequestsError extends GroupStates {
+  final String message;
+
+  GetAllGroupRequestsError(this.message);
+}
+
 class GetUserDataLoading extends GroupStates {}
 
 class GetUserDataSuccess extends GroupStates {}
@@ -104,14 +114,34 @@ class SearchOnGroupError extends GroupStates {
 
 class CheckUserInGroupLoading extends GroupStates {}
 
-class JoinGroupLoading extends GroupStates {}
+class RequestToJoinGroupLoading extends GroupStates {}
 
-class JoinGroupSuccess extends GroupStates {}
+class RequestToJoinGroupSuccess extends GroupStates {}
 
-class JoinGroupError extends GroupStates {
+class RequestToJoinGroupError extends GroupStates {
   final String message;
 
-  JoinGroupError(this.message);
+  RequestToJoinGroupError(this.message);
+}
+
+class ApproveToJoinGroupLoading extends GroupStates {}
+
+class ApproveToJoinGroupSuccess extends GroupStates {}
+
+class ApproveToJoinGroupError extends GroupStates {
+  final String message;
+
+  ApproveToJoinGroupError(this.message);
+}
+
+class DeclineToJoinGroupLoading extends GroupStates {}
+
+class DeclineToJoinGroupSuccess extends GroupStates {}
+
+class DeclineToJoinGroupError extends GroupStates {
+  final String message;
+
+  DeclineToJoinGroupError(this.message);
 }
 
 class LeaveGroupLoading extends GroupStates {}

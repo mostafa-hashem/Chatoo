@@ -66,10 +66,10 @@ class _GroupInfoState extends State<GroupInfo> {
                           if (state is LeaveGroupLoading) {
                             const LoadingIndicator();
                           } else {
-                            if (Navigator.canPop(context)) {
-                              Navigator.pop(context);
-                            }
                             if (state is LeaveGroupSuccess) {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
                               groupCubit.sendMessageToGroup(
                                 group: groupData,
                                 sender: ProfileCubit.get(context).user,
@@ -77,6 +77,8 @@ class _GroupInfoState extends State<GroupInfo> {
                                     '${ProfileCubit.get(context).user.userName} left the group',
                                 leave: true,
                                 joined: false,
+                                requested: false,
+                                declined: false,
                               );
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
@@ -85,6 +87,9 @@ class _GroupInfoState extends State<GroupInfo> {
                               );
                             }
                             if (state is LeaveGroupError) {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
                               const ErrorIndicator();
                             }
                           }
@@ -119,6 +124,58 @@ class _GroupInfoState extends State<GroupInfo> {
               children: [
                 Column(
                   children: [
+                    if (groupData.adminId == ProfileCubit.get(context).user.id!)
+                      BlocBuilder<GroupCubit, GroupStates>(
+                        buildWhen: (_, currentState) =>
+                            currentState is GetAllGroupRequestsSuccess ||
+                            currentState is GetAllGroupRequestsError ||
+                            currentState is GetAllGroupRequestsLoading,
+                        builder: (context, state) {
+                          return GestureDetector(
+                            onTap: () {
+                              groupCubit
+                                  .getAllGroupMRequests(groupData.groupId!);
+                              Navigator.pushNamed(
+                                context,
+                                Routes.joinGroupRequestsScreen,
+                                arguments: groupData,
+                              );
+                            },
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Stack(
+                                alignment: Alignment.topLeft,
+                                children: [
+                                  if (groupData.requests == null ||
+                                      groupData.requests!.isNotEmpty)
+                                    Container(
+                                      width: 24, // Adjust as needed
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.primary
+                                                .withOpacity(0.5),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          groupData.requests!.length.toString(),
+                                        ),
+                                      ),
+                                    ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: Icon(Icons.group_add_outlined),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     BlocListener<GroupCubit, GroupStates>(
                       listener: (_, state) {
                         if (state is UploadImageAndUpdateGroupIconLoading) {
@@ -160,14 +217,14 @@ class _GroupInfoState extends State<GroupInfo> {
                       child: Stack(
                         alignment: Alignment.topRight,
                         children: [
-                          if (groupData.groupIcon.isNotEmpty)
+                          if (groupData.groupIcon!.isNotEmpty)
                             InkWell(
                               onTap: () => showImageDialog(
                                 context,
-                                groupData.groupIcon,
+                                groupData.groupIcon!,
                               ),
                               child: FancyShimmerImage(
-                                imageUrl: groupData.groupIcon,
+                                imageUrl: groupData.groupIcon!,
                                 height: 140.h,
                                 width: 170.w,
                                 boxFit: BoxFit.contain,
@@ -204,11 +261,11 @@ class _GroupInfoState extends State<GroupInfo> {
                                     GroupCubit.get(context)
                                         .uploadImageAndUpdateGroupIcon(
                                       imageFile!,
-                                      groupData.groupId,
+                                      groupData.groupId!,
                                     )
                                         .then((downloadUrl) {
                                       setState(() {
-                                        groupData.groupIcon = downloadUrl!;
+                                        groupData.groupIcon = downloadUrl;
                                       });
                                     });
                                   }
@@ -223,6 +280,10 @@ class _GroupInfoState extends State<GroupInfo> {
                       height: MediaQuery.of(context).size.width * 0.1,
                     ),
                     BlocBuilder<GroupCubit, GroupStates>(
+                      buildWhen: (_, currentState) =>
+                          currentState is GetAdminNameLoading ||
+                          currentState is GetAdminNameSuccess ||
+                          currentState is GetAdminNameError,
                       builder: (context, state) {
                         if (state is GetAdminNameLoading) {
                           return Container(
@@ -290,6 +351,10 @@ class _GroupInfoState extends State<GroupInfo> {
                       },
                     ),
                     BlocBuilder<GroupCubit, GroupStates>(
+                      buildWhen: (_, currentState) =>
+                          currentState is GetAllGroupMembersLoading ||
+                          currentState is GetAllGroupMembersSuccess ||
+                          currentState is GetAllGroupMembersError,
                       builder: (context, state) {
                         if (state is GetAllGroupMembersLoading) {
                           return const LoadingIndicator();

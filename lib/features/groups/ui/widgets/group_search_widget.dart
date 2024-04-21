@@ -13,11 +13,13 @@ import 'package:google_fonts/google_fonts.dart';
 class GroupSearchWidget extends StatefulWidget {
   final Group searchedGroupData;
   final bool isUserMember;
+  final bool isRequested;
 
   const GroupSearchWidget({
     super.key,
     required this.searchedGroupData,
     required this.isUserMember,
+    required this.isRequested,
   });
 
   @override
@@ -32,12 +34,12 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
         return Padding(
           padding: const EdgeInsets.all(8),
           child: ListTile(
-            leading: widget.searchedGroupData.groupIcon.isEmpty
+            leading: widget.searchedGroupData.groupIcon!.isEmpty
                 ? CircleAvatar(
                     radius: 30,
                     backgroundColor: AppColors.primary,
                     child: Text(
-                      widget.searchedGroupData.groupName
+                      widget.searchedGroupData.groupName!
                           .substring(0, 1)
                           .toUpperCase(),
                       style: GoogleFonts.ubuntu(
@@ -48,24 +50,29 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                   )
                 : ClipOval(
                     child: FancyShimmerImage(
-                      imageUrl: widget.searchedGroupData.groupIcon,
+                      imageUrl: widget.searchedGroupData.groupIcon!,
                       width: 50.w,
                     ),
                   ),
             title: Text(
-              widget.searchedGroupData.groupName,
+              widget.searchedGroupData.groupName!,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            subtitle: widget.isUserMember
+            subtitle: widget.isRequested
                 ? Text(
-                    "Joined",
+                    "Requested",
                     style: Theme.of(context).textTheme.bodySmall,
                   )
-                : Text(
-                    "Join as ${ProfileCubit.get(context).user.userName}",
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-            trailing: widget.isUserMember
+                : widget.isUserMember
+                    ? Text(
+                        "Joined",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      )
+                    : Text(
+                        "Join as ${ProfileCubit.get(context).user.userName}",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+            trailing: widget.isRequested
                 ? Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
@@ -77,58 +84,75 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                       vertical: 10,
                     ),
                     child: Text(
-                      "Joined",
+                      "Requested",
                       style: GoogleFonts.ubuntu(color: Colors.white),
                     ),
                   )
-                : BlocListener<GroupCubit, GroupStates>(
-                    listener: (c, state) {
-                        if (state is JoinGroupSuccess) {
-                          GroupCubit.get(context).sendMessageToGroup(
-                            group: widget.searchedGroupData,
-                            sender: ProfileCubit.get(context).user,
-                            message:
-                                '${ProfileCubit.get(context).user.userName} joined the group',
-                            leave: false,
-                            joined: true,
-                          );
-                          showSnackBar(
-                            context,
-                            Colors.green,
-                            "Successfully joined he group",
-                          );
-                        }
-                        if (state is JoinGroupError) {
-                          showSnackBar(
-                            context,
-                            Colors.red,
-                            state.message,
-                          );
-                        }
-                    },
-                    child: InkWell(
-                      onTap: () async {
-                        GroupCubit.get(context).joinGroup(
-                          widget.searchedGroupData,
-                          ProfileCubit.get(context).user,
-                        );
-                      },
-                      child: Container(
+                : widget.isUserMember
+                    ? Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: AppColors.primary,
+                          color: Colors.black,
+                          border: Border.all(color: Colors.white),
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 10,
                         ),
                         child: Text(
-                          "Join",
+                          "Joined",
                           style: GoogleFonts.ubuntu(color: Colors.white),
                         ),
+                      )
+                    : BlocListener<GroupCubit, GroupStates>(
+                        listener: (c, state) {
+                          if (state is RequestToJoinGroupSuccess) {
+                            GroupCubit.get(context).sendMessageToGroup(
+                              group: widget.searchedGroupData,
+                              sender: ProfileCubit.get(context).user,
+                              message:
+                                  "${ProfileCubit.get(context).user.userName} requested to join the the group",
+                              leave: false,
+                              joined: false,
+                              requested: true,
+                              declined: true,
+                            );
+                            showSnackBar(
+                              context,
+                              Colors.green,
+                              "Successfully requested",
+                            );
+                          }
+                          if (state is RequestToJoinGroupError) {
+                            showSnackBar(
+                              context,
+                              Colors.red,
+                              state.message,
+                            );
+                          }
+                        },
+                        child: InkWell(
+                          onTap: () async {
+                            GroupCubit.get(context).requestToJoinGroup(
+                              widget.searchedGroupData,
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: AppColors.primary,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            child: Text(
+                              "Request",
+                              style: GoogleFonts.ubuntu(color: Colors.white),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
           ),
         );
       },

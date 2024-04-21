@@ -28,7 +28,6 @@ class FriendFirebaseServices {
     if (currentUser == null) {
       return Stream.value([]);
     }
-
     return _usersCollection
         .doc(currentUser.uid)
         .snapshots()
@@ -55,13 +54,13 @@ class FriendFirebaseServices {
     final currentUserRef = _usersCollection.doc(currentUser.id);
     final friendRef = _usersCollection.doc(friend.id);
 
-    friendRef.collection(FirebasePath.friends).doc(currentUser.id).set({
+    await friendRef.collection(FirebasePath.friends).doc(currentUser.id).set({
       'sentAt': DateTime.now(),
       'recentMessage': '',
       'recentMessageSender': '',
     });
 
-    _usersCollection
+    await _usersCollection
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.friends)
         .doc(friend.id)
@@ -178,18 +177,17 @@ class FriendFirebaseServices {
 
   Future<void> removeFriend(String friendId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    _friendsCollection
-        .doc(friendId)
-        .delete();
-    _usersCollection
-        .doc(friendId)
+    final friendID = friendId;
+    await _friendsCollection.doc(friendID).delete();
+    await _usersCollection
+        .doc(friendID)
         .collection(FirebasePath.friends)
         .doc(currentUserId)
         .delete();
-    _usersCollection.doc(currentUserId).update({
-      'friends': FieldValue.arrayRemove([friendId]),
+    await _usersCollection.doc(currentUserId).update({
+      'friends': FieldValue.arrayRemove([friendID]),
     });
-    _usersCollection.doc(friendId).update({
+    await _usersCollection.doc(friendId).update({
       'friends': FieldValue.arrayRemove([currentUserId]),
     });
   }

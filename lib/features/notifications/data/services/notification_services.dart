@@ -39,20 +39,20 @@ class NotificationsServices {
     required String fcmToken,
     required String title,
     required String body,
+    required String action,
   }) async {
     final notification = {
       'title': title,
       'body': body,
       'mutable_content': true,
       'sound': 'Tri-tone',
-      'icon': 'assets/images/register.png',
     };
 
     final data = {
       'notification': notification,
       'priority': 'high',
       'data': {
-        'click_action': 'FLUTTER_CHAT_SCREEN',
+        'click_action': action,
         'title': title,
         'body': body,
       },

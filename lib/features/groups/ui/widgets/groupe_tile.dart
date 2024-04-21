@@ -28,12 +28,12 @@ class _GroupTileState extends State<GroupTile> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
       child: ListTile(
-        leading: widget.groupData.groupIcon.isEmpty
+        leading: widget.groupData.groupIcon!.isEmpty
             ? CircleAvatar(
                 radius: 30,
                 backgroundColor: AppColors.primary,
                 child: Text(
-                  widget.groupData.groupName.substring(0, 1).toUpperCase(),
+                  widget.groupData.groupName!.substring(0, 1).toUpperCase(),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.ubuntu(
                     fontWeight: FontWeight.w500,
@@ -43,16 +43,16 @@ class _GroupTileState extends State<GroupTile> {
               )
             : InkWell(
                 onTap: () =>
-                    showImageDialog(context, widget.groupData.groupIcon),
+                    showImageDialog(context, widget.groupData.groupIcon!),
                 child: ClipOval(
                   child: FancyShimmerImage(
-                    imageUrl: widget.groupData.groupIcon,
+                    imageUrl: widget.groupData.groupIcon!,
                     width: 50.w,
                   ),
                 ),
               ),
         title: Text(
-          widget.groupData.groupName,
+          widget.groupData.groupName!,
           style: GoogleFonts.novaSquare(fontWeight: FontWeight.bold),
         ),
         subtitle: widget.isLeftOrJoined

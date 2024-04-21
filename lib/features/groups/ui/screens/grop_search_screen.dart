@@ -1,6 +1,7 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_search_widget.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,7 +39,6 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          toolbarHeight: 60,
           elevation: 0,
           backgroundColor: AppColors.primary,
           title: Text(
@@ -54,28 +54,31 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
           children: [
             Container(
               color: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
               child: Row(
                 children: [
                   Expanded(
                     child: BlocBuilder<GroupCubit, GroupStates>(
                       builder: (context, state) {
                         return TextField(
-                          onChanged: (value) {
-                            if (value.isEmpty) {
+                          onChanged: (String? value) {
+                            if (value == null || value.isEmpty) {
                               groupCubit.searchedGroups.clear();
                             }
-                            if (value.isNotEmpty) {
+                            if (value != null && value.isNotEmpty) {
                               groupCubit.searchOnGroup(value);
                             }
                           },
-                          style: GoogleFonts.ubuntu(color: Colors.white),
+                          style: GoogleFonts.ubuntu(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                          ),
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: "Search groups....",
                             hintStyle: GoogleFonts.novaFlat(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 14.sp,
                             ),
                           ),
                         );
@@ -83,11 +86,11 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                     ),
                   ),
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 40.w,
+                    height: 40.h,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(40),
+                      borderRadius: BorderRadius.circular(40.r),
                     ),
                     child: const Icon(
                       Icons.search,
@@ -105,9 +108,14 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                       return GroupSearchWidget(
                         searchedGroupData: groupCubit.searchedGroups[index],
                         isUserMember: groupCubit.allUserGroups.any(
-                          (group) => group.groupId.contains(
-                            groupCubit.searchedGroups[index].groupId,
+                          (group) => group.groupId!.contains(
+                            groupCubit.searchedGroups[index].groupId!,
                           ),
+                        ),
+                        isRequested:
+                            groupCubit.searchedGroups[index].requests!.any(
+                          (requesterId) =>
+                              requesterId == ProfileCubit.get(context).user.id!,
                         ),
                       );
                     },

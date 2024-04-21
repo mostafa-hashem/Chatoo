@@ -66,6 +66,47 @@ class GroupFirebaseServices {
     }
   }
 
+  Stream<List<User>> getAllGroupRequests(String groupId) {
+    return _groupsCollection
+        .doc(groupId)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      final List<dynamic> userIds =
+          (snapshot.data()?['requests'] ?? []) as List<dynamic>;
+      final List<Future<User>> userFutures = userIds.map((userId) async {
+        final DocumentSnapshot userSnapshot =
+            await _usersCollection.doc(userId.toString()).get();
+        return User.fromJson(userSnapshot.data()! as Map<String, dynamic>);
+      }).toList();
+      final List<User> users = await Future.wait(userFutures);
+      return users;
+    });
+  }
+
+  Future<void> approveToJoinGroup(
+    String groupId,
+    String requesterId,
+  ) async {
+    await _groupsCollection.doc(groupId).update({
+      'requests': FieldValue.arrayRemove([requesterId]),
+    });
+    await _groupsCollection.doc(groupId).update({
+      'members': FieldValue.arrayUnion([requesterId]),
+    });
+    await _usersCollection.doc(requesterId).update({
+      'groups': FieldValue.arrayUnion([groupId]),
+    });
+  }
+
+  Future<void> declineToJoinGroup(
+    String groupId,
+    String requesterId,
+  ) async {
+    await _groupsCollection.doc(groupId).update({
+      'requests': FieldValue.arrayRemove([requesterId]),
+    });
+  }
+
   Future<String> getAdminName(String adminId) async {
     final DocumentSnapshot<Map<String, dynamic>> adminSnapshot =
         await _usersCollection.doc(adminId).get();
@@ -124,15 +165,11 @@ class GroupFirebaseServices {
     });
   }
 
-  Future<void> joinGroup(Group group, User user) async {
+  Future<void> requestToJoinGroup(Group group) async {
     final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     await _groupsCollection.doc(group.groupId).update({
-      "members": FieldValue.arrayUnion([currentUserId]),
-    });
-
-    await _usersCollection.doc(currentUserId).update({
-      "groups": FieldValue.arrayUnion([group.groupId]),
+      "requests": FieldValue.arrayUnion([currentUserId]),
     });
   }
 
@@ -168,6 +205,8 @@ class GroupFirebaseServices {
     User sender,
     bool left,
     bool joined,
+    bool requested,
+    bool declined,
   ) async {
     if (message.isEmpty) {
       return;
@@ -179,7 +218,7 @@ class GroupFirebaseServices {
         .collection(FirebasePath.messages)
         .doc();
     final messageId = groupMessageDocRef.id;
-    groupMessageDocRef.set({
+    await groupMessageDocRef.set({
       'groupId': group.groupId,
       'messageId': messageId,
       'senderId': currentUserUid,
@@ -188,39 +227,24 @@ class GroupFirebaseServices {
       'sentAt': FieldValue.serverTimestamp(),
       'left': left,
       'joined': joined,
+      'requested': requested,
+      'declined': declined,
     });
 
-    _groupsCollection.doc(group.groupId).update({
+    await _groupsCollection.doc(group.groupId).update({
       'recentMessage': message,
+      'recentMessageSentAt' : DateTime.now(),
       'recentMessageSender': sender.userName,
     });
   }
 
-  Stream<bool> isUserInGroup(String groupId, String userId) {
-    return _groupsCollection.doc(groupId).snapshots().map((snapshot) {
-      if (snapshot.exists) {
-        final Map<String, dynamic>? data = snapshot.data();
-        if (data != null && data.containsKey('members')) {
-          final List<dynamic> members = data['members'] as List<dynamic>;
-          return members.contains(userId);
-        }
-      }
-      return false;
-    });
-  }
-
   Future<void> leaveGroup(Group group, User user) async {
-    _usersCollection
+    await _usersCollection
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(FirebasePath.groups)
         .doc(group.groupId)
-        .delete();
-    await _usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({
-      "groups": FieldValue.arrayRemove([group.groupId]),
-    });
-    await _groupsCollection.doc(group.groupId).update({
-      "members": FieldValue.arrayRemove([user.id]),
-    }).whenComplete(() async {
+        .delete()
+        .whenComplete(() async {
       if (group.members!.isEmpty) {
         if (user.id == group.adminId) {
           final groupSnapshot =
@@ -231,6 +255,12 @@ class GroupFirebaseServices {
           }
         }
       }
+    });
+    await _usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({
+      "groups": FieldValue.arrayRemove([group.groupId]),
+    });
+    await _groupsCollection.doc(group.groupId).update({
+      "members": FieldValue.arrayRemove([user.id]),
     });
   }
 
@@ -243,11 +273,28 @@ class GroupFirebaseServices {
     });
   }
 
-  Future<void> deleteMessageForeAll(String groupId, String messageId) async {
-    await _groupsCollection
+  Future<void> deleteMessageForeAll(
+    String groupId,
+    String messageId,
+    String senderName,
+    String lastMessage,
+    String lastMessageSender,
+  ) async {
+    _groupsCollection
         .doc(groupId)
         .collection(FirebasePath.messages)
         .doc(messageId)
-        .delete();
+        .delete()
+        .whenComplete(() async {
+      final DocumentSnapshot<Map<String, dynamic>> senderSnapshot =
+          await _groupsCollection.doc(groupId).get();
+      final senderData = senderSnapshot.data();
+      if (senderData?['recentMessageSender'] == senderName) {
+        _groupsCollection.doc(groupId).update({
+          'recentMessage': lastMessage,
+          'recentMessageSender': lastMessageSender,
+        });
+      }
+    });
   }
 }

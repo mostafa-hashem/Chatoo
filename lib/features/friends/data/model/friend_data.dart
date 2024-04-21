@@ -6,11 +6,13 @@ class Friend {
   String? recentMessage;
   String? recentMessageSender;
    DateTime? sentAt;
+   DateTime? addedAt;
 
   Friend({
     required this.recentMessage,
     required this.recentMessageSender,
     required this.sentAt,
+    required this.addedAt,
   });
 
   Friend.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,9 @@ class Friend {
     if (json['sentAt'] != null) {
       sentAt = (json['sentAt'] as Timestamp).toDate();
     }
+    if (json['addedAt'] != null) {
+      sentAt = (json['addedAt'] as Timestamp).toDate();
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -31,5 +36,7 @@ class Friend {
           'recentMessageSender': recentMessageSender,
     if (sentAt != null)
           'sentAt': sentAt,
+    if (addedAt != null)
+          'addedAt': addedAt,
       };
 }

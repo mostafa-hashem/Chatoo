@@ -27,6 +27,7 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
     String fCMToken,
     String title,
     String body,
+    String action,
   ) async {
     emit(SendNotificationLoading());
     try {
@@ -34,6 +35,7 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
         fcmToken: fCMToken,
         title: title,
         body: body,
+        action: action,
       );
       emit(SendNotificationSuccess());
     } catch (e) {

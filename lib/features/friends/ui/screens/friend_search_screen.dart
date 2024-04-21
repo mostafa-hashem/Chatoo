@@ -24,6 +24,12 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
   }
 
   @override
+  void dispose() {
+    friendCubit.searchedFriends.clear();
+    super.dispose();
+  }
+
+  @override
   void deactivate() {
     friendCubit.searchedFriends.clear();
     super.deactivate();
@@ -38,7 +44,6 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          toolbarHeight: 60,
           elevation: 0,
           backgroundColor: AppColors.primary,
           title: Text(
@@ -54,7 +59,7 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
           children: [
             Container(
               color: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
               child: Row(
                 children: [
                   Expanded(
@@ -67,20 +72,23 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                           friendCubit.searchOnFriend(value);
                         }
                       },
-                      style: GoogleFonts.ubuntu(color: Colors.white),
+                      style: GoogleFonts.ubuntu(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                      ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Search friends....",
                         hintStyle: GoogleFonts.novaFlat(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 14.sp,
                         ),
                       ),
                     ),
                   ),
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 40.w,
+                    height: 40.h,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(40),

@@ -4,9 +4,9 @@ import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:flutter/material.dart';
 
 class ChatMessages extends StatefulWidget {
-  // Note: Avoid using `const` with constructors.
   final String groupId;
 
+  // Note: Avoid using `const` with constructors.
   ChatMessages({
     super.key,
     required this.groupId,
@@ -34,6 +34,8 @@ class _ChatMessagesState extends State<ChatMessages> {
             groupId: widget.groupId,
             isUserLeft: groupMessages[index].left,
             isUserJoined: groupMessages[index].joined,
+            isUserRequested: groupMessages[index].requested,
+            isUserUserDeclined: groupMessages[index].declined,
           );
         },
       ),

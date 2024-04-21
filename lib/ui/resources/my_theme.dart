@@ -1,6 +1,7 @@
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/resources/text_style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
@@ -10,13 +11,13 @@ ThemeData lightTheme = ThemeData(
   ),
   scaffoldBackgroundColor: Colors.white,
   primaryColor: AppColors.primary,
-  appBarTheme: const AppBarTheme(
-    iconTheme: IconThemeData(
+  appBarTheme:  AppBarTheme(
+    iconTheme: const IconThemeData(
       color: Colors.white,
       size: 25,
     ),
     elevation: 0,
-    toolbarHeight: 80,
+    toolbarHeight: 50.h,
     backgroundColor: AppColors.primary,
     centerTitle: true,
   ),
@@ -34,14 +35,14 @@ ThemeData darkTheme = ThemeData(
   ),
   scaffoldBackgroundColor: AppColors.dark,
   primaryColorDark: AppColors.primary,
-  appBarTheme: const AppBarTheme(
-    iconTheme: IconThemeData(
+  appBarTheme: AppBarTheme(
+    iconTheme: const IconThemeData(
       color: Colors.white,
       size: 25,
     ),
     color: AppColors.primary,
     elevation: 0,
-    toolbarHeight: 80,
+    toolbarHeight: 50.h,
     centerTitle: true,
   ),
   textTheme: TextTheme(
@@ -50,5 +51,3 @@ ThemeData darkTheme = ThemeData(
     bodyLarge: novaSquare22WhiteDark(),
   ),
 );
-
-

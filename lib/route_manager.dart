@@ -8,6 +8,7 @@ import 'package:chat_app/features/groups/ui/screens/grop_search_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/group_chat_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/group_info_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
+import 'package:chat_app/features/groups/ui/screens/join_group_request_screen.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
 import 'package:chat_app/ui/screens/home_layout.dart';
 import 'package:chat_app/ui/screens/splash_screen.dart';
@@ -22,6 +23,7 @@ class Routes {
   static const String groupsScreen = "/groupsScreen";
   static const String groupChatScreen = "/groupChatScreen";
   static const String groupInfo = "/groupInfo";
+  static const String joinGroupRequestsScreen = "/joinGroupRequestsScreen";
   static const String groupSearchScreen = "/groupSearchScreen";
   static const String friendChatScreen = "/friendChatScreen";
   static const String friendInfoScreen = "/friendInfoScreen";
@@ -65,6 +67,11 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
     case Routes.groupInfo:
       return MaterialPageRoute(
         builder: (_) => const GroupInfo(),
+        settings: routeSettings,
+      );
+      case Routes.joinGroupRequestsScreen:
+      return MaterialPageRoute(
+        builder: (_) => const JoinGroupRequestsScreen(),
         settings: routeSettings,
       );
     case Routes.groupSearchScreen:

@@ -1,9 +1,12 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
+import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_message_data.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +17,8 @@ class GroupMessagesTile extends StatefulWidget {
   final String groupId;
   final bool isUserLeft;
   final bool isUserJoined;
+  final bool isUserRequested;
+  final bool isUserUserDeclined;
 
   const GroupMessagesTile({
     super.key,
@@ -22,6 +27,8 @@ class GroupMessagesTile extends StatefulWidget {
     required this.groupId,
     required this.isUserLeft,
     required this.isUserJoined,
+    required this.isUserRequested,
+    required this.isUserUserDeclined,
   });
 
   @override
@@ -34,7 +41,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
     final provider = Provider.of<MyAppProvider>(context);
     return InkWell(
       onLongPress: () {
-        widget.isUserLeft
+        widget.isUserLeft || widget.isUserJoined || widget.isUserRequested || widget.isUserUserDeclined
             ? const SizedBox.shrink()
             : widget.sentByMe
                 ? showDialog(
@@ -53,18 +60,26 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                               Navigator.pop(context);
                             },
                           ),
-                          TextButton(
-                            child: const Text('Delete for everyone'),
-                            onPressed: () {
-                              GroupCubit.get(context)
-                                  .deleteMessageForeAll(
-                                    widget.groupId,
-                                    widget.groupMessage.messageId,
-                                  )
-                                  .whenComplete(
-                                    () => Navigator.pop(context),
-                                  );
+                          BlocListener<GroupCubit, GroupStates>(
+                            listener: (context, state) {
+                              if (state is DeleteMessageForAllSuccess) {
+                                GroupCubit.get(context).getAllUserGroups();
+                              }
                             },
+                            child: TextButton(
+                              child: const Text('Delete for everyone'),
+                              onPressed: () {
+                                GroupCubit.get(context)
+                                    .deleteMessageForeAll(
+                                      widget.groupId,
+                                      widget.groupMessage.messageId,
+                                      ProfileCubit.get(context).user.userName!,
+                                    )
+                                    .whenComplete(
+                                      () => Navigator.pop(context),
+                                    );
+                              },
+                            ),
                           ),
                         ],
                       );
@@ -91,24 +106,33 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                   );
       },
       child: widget.isUserJoined
-          ? Center(
-              child: Text(
-                '${widget.groupMessage.sender.userName} joined the group',
-                style: GoogleFonts.alexandria(
-                  fontSize: 12,
-                  color: AppColors.primary,
+          ? Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: Center(
+                child: Text(
+                  '${widget.groupMessage.sender.userName} joined the group',
+                  style: GoogleFonts.alexandria(
+                    fontSize: 12,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             )
-          : widget.isUserLeft
-              ? Center(
-                  child: Text(
-                    widget.groupMessage.message,
-                    style: GoogleFonts.alexandria(
+          : widget.isUserRequested || widget.isUserLeft || widget.isUserUserDeclined
+              ? Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: Center(
+                    child: Text(
+                      widget.groupMessage.message,
+                      style: GoogleFonts.alexandria(
                         fontSize: 12,
-                        color: provider.themeMode == ThemeMode.light
-                            ? Colors.black
-                            : Colors.white),
+                        color: widget.isUserRequested
+                            ? AppColors.primary
+                            : provider.themeMode == ThemeMode.light
+                                ? Colors.black
+                                : Colors.white,
+                      ),
+                    ),
                   ),
                 )
               : Container(
@@ -172,8 +196,10 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                         ),
                         Text(
                           widget.groupMessage.message,
-                          style:
-                              TextStyle(fontSize: 15.sp, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            color: Colors.white,
+                          ),
                         ),
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 0.01,

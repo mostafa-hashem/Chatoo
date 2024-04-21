@@ -182,6 +182,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                     groupName: groupName,
                     adminId: userData.user.id!,
                     createdAt: DateTime.now(),
+                    requests: [],
                   );
                   final user = User(
                     id: userData.user.id,

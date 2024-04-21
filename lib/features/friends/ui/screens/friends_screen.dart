@@ -44,9 +44,9 @@ class _FriendsScreenState extends State<FriendsScreen> {
               ],
               child: BlocBuilder<FriendCubit, FriendStates>(
                 buildWhen: (_, currentState) =>
-                currentState is AddFriendError ||
-                    currentState is AddFriendSuccess ||
-                    currentState is AddFriendLoading,
+                currentState is GetAllUserFriendsSuccess ||
+                    currentState is GetAllUserFriendsSuccess ||
+                    currentState is GetAllUserFriendsLoading,
                 builder: (context, state) {
                   if (state is GetAllUserFriendsLoading) {
                     return const LoadingIndicator();

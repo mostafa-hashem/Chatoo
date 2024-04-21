@@ -2,6 +2,7 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_chat_messages.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
+import 'package:chat_app/features/notifications/cubit/notifications_states.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
@@ -26,34 +27,27 @@ class FriendChatScreen extends StatefulWidget {
 }
 
 class _FriendChatScreenState extends State<FriendChatScreen> {
-  TextEditingController messageController = TextEditingController();
   bool emojiShowing = false;
-  late User friendData;
   late FriendCubit friendCubit;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    friendData = ModalRoute.of(context)!.settings.arguments! as User;
     friendCubit = FriendCubit.get(context);
   }
 
-  @override
-  void dispose() {
-    messageController.dispose();
-    super.dispose();
-  }
   void scrollToBottom() {
     FriendCubit.get(context).scrollController.animateTo(
           0.0,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 700),
           curve: Curves.easeOut,
         );
   }
 
   @override
   Widget build(BuildContext context) {
+    final friendData = ModalRoute.of(context)!.settings.arguments! as User;
     final sender = ProfileCubit.get(context).user;
     final provider = Provider.of<MyAppProvider>(context);
     return GestureDetector(
@@ -114,9 +108,9 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
           children: [
             BlocBuilder<FriendCubit, FriendStates>(
               buildWhen: (_, currentState) =>
-              currentState is SearchOnFriendSuccess ||
-                  currentState is SearchOnFriendError ||
-                  currentState is SearchOnFriendLoading,
+                  currentState is GetAllFriendMessagesSuccess ||
+                  currentState is GetAllFriendMessagesError ||
+                  currentState is GetAllFriendMessagesLoading,
               builder: (context, state) {
                 return FriendChatMessages();
               },
@@ -135,6 +129,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                       onPressed: () {
                         setState(() {
                           emojiShowing = !emojiShowing;
+                          FocusScope.of(context).unfocus();
                         });
                       },
                       icon: const Icon(
@@ -147,7 +142,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12.0),
                       child: TextField(
-                        controller: messageController,
+                        controller: friendCubit.messageController,
                         textInputAction: TextInputAction.newline,
                         style: TextStyle(
                           fontSize: 14.sp,
@@ -176,34 +171,42 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                       ),
                     ),
                   ),
-                  Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () {
-                        if (messageController.text.isNotEmpty) {
-                          FriendCubit.get(context)
-                              .sendMessageToFriend(
-                            friendData,
-                            messageController.text,
-                            sender,
-                          )
-                              .whenComplete(
-                            () {
-                              scrollToBottom();
-                              NotificationsCubit.get(context).sendNotification(
-                                friendData.fCMToken ?? '',
-                                sender.userName!,
-                                messageController.text,
-                              );
-                            },
-                          ).whenComplete(() {
-                            messageController.clear();
-                          });
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.send,
-                        color: Colors.white,
+                  BlocListener<NotificationsCubit, NotificationsStates>(
+                    listener: (context, state) {
+                      if (state is SendNotificationSuccess) {}
+                    },
+                    child: Material(
+                      color: Colors.transparent,
+                      child: IconButton(
+                        onPressed: () {
+                          final notificationBody =
+                              friendCubit.messageController.text;
+                          if (friendCubit.messageController.text.isNotEmpty) {
+                            FriendCubit.get(context)
+                                .sendMessageToFriend(
+                              friendData,
+                              friendCubit.messageController.text,
+                              sender,
+                            )
+                                .whenComplete(
+                              () {
+                                friendCubit.messageController.clear();
+                                scrollToBottom();
+                                NotificationsCubit.get(context)
+                                    .sendNotification(
+                                  friendData.fCMToken ?? '',
+                                  sender.userName!,
+                                  notificationBody,
+                                  'friend',
+                                );
+                              },
+                            );
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.send,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -215,7 +218,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
               child: SizedBox(
                 height: 220.h,
                 child: EmojiPicker(
-                  textEditingController: messageController,
+                  textEditingController: friendCubit.messageController,
                   config: Config(
                     emojiSizeMax: 30 *
                         (foundation.defaultTargetPlatform == TargetPlatform.iOS

@@ -117,7 +117,7 @@ class GroupMembers extends StatelessWidget {
                                 onPressed: () {
                                   groupCubit
                                       .kickUserFromGroup(
-                                    group.groupId,
+                                    group.groupId!,
                                     groupCubit.allGroupMembers[index].id!,
                                   )
                                       .whenComplete(
@@ -129,9 +129,11 @@ class GroupMembers extends StatelessWidget {
                                             '${ProfileCubit.get(context).user.userName!} kick ${groupCubit.allGroupMembers[index].userName}',
                                         leave: true,
                                         joined: false,
+                                        requested: false,
+                                        declined: false,
                                       );
                                       groupCubit
-                                          .getAllGroupMembers(group.groupId);
+                                          .getAllGroupMembers(group.groupId!);
                                       Navigator.pop(context);
                                     },
                                   );

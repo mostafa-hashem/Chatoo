@@ -84,7 +84,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                         onTap: () {
                           groupsCubit
                               .getAllGroupMessages(
-                                groupsCubit.allUserGroups[index].groupId,
+                                groupsCubit.allUserGroups[index].groupId!,
                               )
                               .whenComplete(
                                 () => Future.delayed(
@@ -103,7 +103,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                           groupData: groupsCubit.allUserGroups[index],
                           userName: ProfileCubit.get(context).user.userName!,
                           isLeftOrJoined: groupsCubit
-                              .allUserGroups[index].recentMessage.isEmpty,
+                              .allUserGroups[index].recentMessage!.isEmpty,
                         ),
                       );
                     },

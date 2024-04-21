@@ -14,12 +14,12 @@ class FriendCubit extends Cubit<FriendStates> {
 
   static FriendCubit get(BuildContext context) => BlocProvider.of(context);
   final _friendFirebaseServices = FriendFirebaseServices();
-  List<User> allUsers = [];
   List<User> allFriends = [];
   List<User> searchedFriends = [];
   List<FriendMessage> filteredMessages = [];
   List<Friend> recentMessageData = [];
   ScrollController scrollController = ScrollController();
+  TextEditingController messageController = TextEditingController();
 
   Future<void> addFriend(User friend, User currentUser) async {
     emit(AddFriendLoading());
@@ -36,8 +36,8 @@ class FriendCubit extends Cubit<FriendStates> {
     try {
       _friendFirebaseServices.getAllUserFriends().listen((friends) {
         allFriends = friends;
-      });
       emit(GetAllUserFriendsSuccess());
+      });
     } catch (e) {
       emit(GetAllUserFriendsError(Failure.fromException(e).message));
     }
@@ -54,8 +54,8 @@ class FriendCubit extends Cubit<FriendStates> {
                   friend.phoneNumber == friendData,
             )
             .toList();
-      });
       emit(SearchOnFriendSuccess());
+      });
     } catch (e) {
       emit(SearchOnFriendError(Failure.fromException(e).message));
     }
@@ -87,8 +87,8 @@ class FriendCubit extends Cubit<FriendStates> {
       ) {
         filteredMessages = messages;
         filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
-      });
       emit(GetAllFriendMessagesSuccess());
+      });
     } catch (e) {
       emit(GetAllFriendMessagesError(Failure.fromException(e).message));
     }

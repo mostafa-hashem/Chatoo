@@ -46,7 +46,7 @@ class _MyAppState extends State<MyApp> {
   //   if (isUpdateAvailable) {
   //     await shorebirdCodePush.downloadUpdateIfAvailable();
   //   }
-  // }
+  //
 
   @override
   Widget build(BuildContext context) {

@@ -9,6 +9,8 @@ class GroupMessage {
   final DateTime sentAt;
   final bool left;
   final bool joined;
+  final bool requested;
+  final bool declined;
 
   GroupMessage({
     required this.groupId,
@@ -18,6 +20,8 @@ class GroupMessage {
     required this.sentAt,
     required this.left,
     required this.joined,
+    required this.requested,
+    required this.declined,
   });
 
   GroupMessage.fromJson(Map<String, dynamic> json)
@@ -27,6 +31,8 @@ class GroupMessage {
           message: json['message'] as String,
           left: json['left'] as bool,
           joined: json['joined'] as bool,
+          requested: json['requested'] as bool,
+          declined: json['declined'] as bool,
           sender: User.fromJson(json['sender'] as Map<String, dynamic>),
           sentAt: json['sentAt'] != null
               ? (json['sentAt'] as Timestamp).toDate()
@@ -41,5 +47,7 @@ class GroupMessage {
         'sentAt': Timestamp.fromDate(sentAt),
         'left': left,
         'joined': joined,
+        'requested': requested,
+        'declined': declined,
       };
 }

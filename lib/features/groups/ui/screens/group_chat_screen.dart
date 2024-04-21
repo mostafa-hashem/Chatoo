@@ -3,6 +3,7 @@ import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_chat_messages.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
+import 'package:chat_app/features/notifications/cubit/notifications_states.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
@@ -26,50 +27,35 @@ class GroupChatScreen extends StatefulWidget {
 }
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
-  TextEditingController messageController = TextEditingController();
-
   bool emojiShowing = false;
-  late Group groupData;
   late GroupCubit groupCubit;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
-    groupData = ModalRoute.of(context)!.settings.arguments! as Group;
     groupCubit = GroupCubit.get(context);
     super.didChangeDependencies();
   }
 
-  @override
-  void dispose() {
-    messageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void deactivate() {
-    groupCubit.filteredGroups.clear();
-    super.deactivate();
-  }
-
   void _onBackspacePressed() {
-    messageController
-      ..text = messageController.text.characters.toString()
+    groupCubit.messageController
+      ..text = groupCubit.messageController.text.characters.toString()
       ..selection = TextSelection.fromPosition(
-        TextPosition(offset: messageController.text.length),
+        TextPosition(offset: groupCubit.messageController.text.length),
       );
   }
 
   void scrollToBottom() {
     GroupCubit.get(context).scrollController.animateTo(
           0.0,
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 700),
           curve: Curves.easeOut,
         );
   }
 
   @override
   Widget build(BuildContext context) {
+    final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
     final provider = Provider.of<MyAppProvider>(context);
     final sender = ProfileCubit.get(context).user;
     return GestureDetector(
@@ -82,10 +68,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           centerTitle: false,
           title: Row(
             children: [
-              if (groupData.groupIcon.isNotEmpty)
+              if (groupData.groupIcon!.isNotEmpty)
                 ClipOval(
                   child: FancyShimmerImage(
-                    imageUrl: groupData.groupIcon,
+                    imageUrl: groupData.groupIcon!,
                     width: 40.w,
                     height: 36.h,
                   ),
@@ -105,32 +91,57 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 width: 10.w,
               ),
               Text(
-                groupData.groupName,
+                groupData.groupName!,
                 style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
               ),
             ],
           ),
           actions: [
-            IconButton(
-              onPressed: () {
-                groupCubit.getAllGroupMembers(groupData.groupId);
-                groupCubit.getAdminName(groupData.adminId);
-                Navigator.pushNamed(
-                  context,
-                  Routes.groupInfo,
-                  arguments: groupData,
+            BlocBuilder<GroupCubit, GroupStates>(
+              buildWhen: (_, currentState) =>
+                  currentState is GetAllGroupRequestsSuccess ||
+                  currentState is GetAllGroupRequestsError ||
+                  currentState is GetAllGroupRequestsLoading,
+              builder: (context, state) {
+                return Stack(
+                  alignment: Alignment.topLeft,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        groupCubit.getAllGroupMembers(groupData.groupId!);
+                        groupCubit.getAdminName(groupData.adminId!);
+                        Navigator.pushNamed(
+                          context,
+                          Routes.groupInfo,
+                          arguments: groupData,
+                        );
+                      },
+                      icon: const Icon(Icons.info),
+                    ),
+                    if (groupData.requests!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: CircleAvatar(
+                          radius: 6.r,
+                          backgroundColor: Colors.black,
+                        ),
+                      ),
+                  ],
                 );
               },
-              icon: const Icon(Icons.info),
             ),
           ],
         ),
         body: Column(
           children: [
             BlocBuilder<GroupCubit, GroupStates>(
+              buildWhen: (_, currentState) =>
+                  currentState is GetAllGroupMessagesSuccess ||
+                  currentState is GetAllGroupMessagesError ||
+                  currentState is GetAllGroupMessagesLoading,
               builder: (context, state) {
                 return ChatMessages(
-                  groupId: groupData.groupId,
+                  groupId: groupData.groupId!,
                 );
               },
             ),
@@ -148,6 +159,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       onPressed: () {
                         setState(() {
                           emojiShowing = !emojiShowing;
+                          FocusScope.of(context).unfocus();
                         });
                       },
                       icon: const Icon(
@@ -160,7 +172,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12.0),
                       child: TextField(
-                        controller: messageController,
+                        controller: groupCubit.messageController,
                         textInputAction: TextInputAction.newline,
                         maxLines: 20,
                         style: TextStyle(
@@ -190,56 +202,58 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       ),
                     ),
                   ),
-                  Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () async {
-                        if (messageController.text.isNotEmpty) {
-                          GroupCubit.get(context)
-                              .sendMessageToGroup(
-                            group: groupData,
-                            sender: sender,
-                            message: messageController.text,
-                            leave: false,
-                            joined: false,
-                          )
-                              .whenComplete(() {
-                            scrollToBottom();
-                            final List<dynamic> memberIds =
-                                groupData.members!.toList();
-                            int completedOperations = 0;
-                            for (final memberId in memberIds) {
-                              if (memberId ==
-                                  ProfileCubit.get(context).user.id) {
-                                continue;
-                              }
-                              groupCubit
-                                  .getUserData(memberId.toString())
-                                  .whenComplete(
-                                () {
-                                  NotificationsCubit.get(context)
-                                      .sendNotification(
-                                    groupCubit.userData!.fCMToken!,
-                                    'New Messages in ${groupData.groupName}',
-                                    "${ProfileCubit.get(context).user.userName}: \n${messageController.text}",
-                                  );
-                                  if (completedOperations ==
-                                      memberIds.length - 1) {
-                                    Future.delayed(
-                                      const Duration(milliseconds: 15),
-                                      () => messageController.clear(),
+                  BlocListener<NotificationsCubit, NotificationsStates>(
+                    listener: (context, state) {
+                      if (state is SendNotificationSuccess) {}
+                    },
+                    child: Material(
+                      color: Colors.transparent,
+                      child: IconButton(
+                        onPressed: () async {
+                          final notificationBody =
+                              groupCubit.messageController.text;
+                          if (groupCubit.messageController.text.isNotEmpty) {
+                            GroupCubit.get(context)
+                                .sendMessageToGroup(
+                              group: groupData,
+                              sender: sender,
+                              message: groupCubit.messageController.text,
+                              leave: false,
+                              joined: false,
+                              requested: false,
+                              declined: false,
+                            )
+                                .whenComplete(() {
+                              groupCubit.messageController.clear();
+                              scrollToBottom();
+                              final List<dynamic> memberIds =
+                                  groupData.members!.toList();
+                              for (final memberId in memberIds) {
+                                if (memberId ==
+                                    ProfileCubit.get(context).user.id) {
+                                  continue;
+                                }
+                                groupCubit
+                                    .getUserData(memberId.toString())
+                                    .whenComplete(
+                                  () {
+                                    NotificationsCubit.get(context)
+                                        .sendNotification(
+                                      groupCubit.userData!.fCMToken!,
+                                      'New Messages in ${groupData.groupName}',
+                                      "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
+                                      'group',
                                     );
-                                  }
-                                },
-                              );
-                              completedOperations++;
-                            }
-                          });
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.send,
-                        color: Colors.white,
+                                  },
+                                );
+                              }
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.send,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -251,7 +265,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               child: SizedBox(
                 height: 220.h,
                 child: EmojiPicker(
-                  textEditingController: messageController,
+                  textEditingController: groupCubit.messageController,
                   onBackspacePressed: _onBackspacePressed,
                   config: Config(
                     emojiSizeMax: 30 *
