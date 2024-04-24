@@ -16,7 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class GroupMembers extends StatefulWidget {
   // Note: Avoid using `const` with constructors.
-  GroupMembers({
+   GroupMembers({
     required this.group,
     super.key,
   });
@@ -140,7 +140,6 @@ class _GroupMembersState extends State<GroupMembers> {
                         )
                             .whenComplete(
                           () {
-                            groupCubit.getAllUserGroups();
                             if (context.mounted) {
                               Navigator.pop(context);
                             }
@@ -166,7 +165,6 @@ class _GroupMembersState extends State<GroupMembers> {
                         )
                             .whenComplete(
                           () {
-                            groupCubit.getAllUserGroups();
                             if (context.mounted) {
                               Navigator.pop(context);
                             }
@@ -196,13 +194,9 @@ class _GroupMembersState extends State<GroupMembers> {
                               sender: profileCubit.user,
                               message:
                                   '${profileCubit.user.userName!} kick ${groupCubit.allGroupMembers[index]!.userName}',
-                              leave: true,
-                              joined: false,
-                              requested: false,
-                              declined: false,
+                              isAction: true,
                             );
-                            groupCubit
-                                .getAllGroupMembers(widget.group.groupId!);
+                            // groupCubit.getAllGroupMembers(widget.group.groupId!);
                             if (context.mounted) {
                               Navigator.pop(context);
                             }

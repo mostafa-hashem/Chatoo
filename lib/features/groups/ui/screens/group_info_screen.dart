@@ -70,18 +70,15 @@ class _GroupInfoState extends State<GroupInfo> {
                             const LoadingIndicator();
                           } else {
                             if (state is LeaveGroupSuccess) {
-                              if (Navigator.canPop(context)) {
+                              if (context.mounted) {
                                 Navigator.pop(context);
                               }
                               groupCubit.sendMessageToGroup(
                                 group: groupData,
-                                sender: ProfileCubit.get(context).user,
+                                sender: profileCubit.user,
                                 message:
-                                    '${ProfileCubit.get(context).user.userName} left the group',
-                                leave: true,
-                                joined: false,
-                                requested: false,
-                                declined: false,
+                                    '${profileCubit.user.userName} left the group',
+                                isAction: true,
                               );
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
@@ -90,7 +87,7 @@ class _GroupInfoState extends State<GroupInfo> {
                               );
                             }
                             if (state is LeaveGroupError) {
-                              if (Navigator.canPop(context)) {
+                              if (context.mounted) {
                                 Navigator.pop(context);
                               }
                               const ErrorIndicator();
@@ -128,13 +125,9 @@ class _GroupInfoState extends State<GroupInfo> {
               children: [
                 Row(
                   children: [
-                    if (groupData.mainAdminId ==
-                        profileCubit.user.id!)
+                    if (groupData.groupAdmins!
+                        .any((groupId) => groupId == profileCubit.user.id!))
                       BlocBuilder<GroupCubit, GroupStates>(
-                        buildWhen: (_, currentState) =>
-                            currentState is GetAllGroupRequestsSuccess ||
-                            currentState is GetAllGroupRequestsError ||
-                            currentState is GetAllGroupRequestsLoading,
                         builder: (_, state) {
                           return GestureDetector(
                             onTap: () {
@@ -192,9 +185,7 @@ class _GroupInfoState extends State<GroupInfo> {
                               (adminId) => adminId == profileCubit.user.id,
                             ))
                               if (groupData.groupAdmins!.any(
-                                (adminId) =>
-                                    adminId ==
-                                    ProfileCubit.get(context).user.id!,
+                                (adminId) => adminId == profileCubit.user.id!,
                               ))
                                 PopupMenuItem(
                                   child: TextButton(
@@ -223,6 +214,66 @@ class _GroupInfoState extends State<GroupInfo> {
                                 child: const Text('Add friend'),
                               ),
                             ),
+                            if (groupData.mainAdminId == profileCubit.user.id!)
+                              PopupMenuItem(
+                                child: TextButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          content: const Text(
+                                            "Are you sure you want delete the group ?",
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text("Cancel"),
+                                            ),
+                                            BlocListener<GroupCubit,
+                                                GroupStates>(
+                                              listener: (_, state) {
+                                                if (state
+                                                    is DeleteGroupLoading) {
+                                                  const LoadingIndicator();
+                                                } else {
+                                                  if (context.mounted) {
+                                                    Navigator.pop(context);
+                                                  }
+                                                  if (state
+                                                      is DeleteGroupSuccess) {
+                                                    Navigator
+                                                        .pushReplacementNamed(
+                                                      context,
+                                                      Routes.layout,
+                                                    );
+                                                  }
+                                                  if (state
+                                                      is DeleteGroupError) {
+                                                    const ErrorIndicator();
+                                                  }
+                                                }
+                                              },
+                                              child: TextButton(
+                                                onPressed: () {
+                                                  groupCubit.deleteGroup(
+                                                    groupData.groupId!,
+                                                  );
+                                                },
+                                                child: const Text("Delete"),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: const Text('Delete group'),
+                                ),
+                              ),
                           ],
                         );
                       },

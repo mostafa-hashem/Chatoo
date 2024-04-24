@@ -2,33 +2,25 @@ import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class GroupMessagesTile extends StatefulWidget {
   final bool sentByMe;
   final GroupMessage groupMessage;
   final String groupId;
-  final bool isUserLeft;
-  final bool isUserJoined;
-  final bool isUserRequested;
-  final bool isUserUserDeclined;
+  final bool isAction;
 
   const GroupMessagesTile({
     super.key,
     required this.sentByMe,
     required this.groupMessage,
     required this.groupId,
-    required this.isUserLeft,
-    required this.isUserJoined,
-    required this.isUserRequested,
-    required this.isUserUserDeclined,
+    required this.isAction,
   });
 
   @override
@@ -38,13 +30,9 @@ class GroupMessagesTile extends StatefulWidget {
 class _GroupMessagesTileState extends State<GroupMessagesTile> {
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<MyAppProvider>(context);
     return InkWell(
       onLongPress: () {
-        widget.isUserLeft ||
-                widget.isUserJoined ||
-                widget.isUserRequested ||
-                widget.isUserUserDeclined
+        widget.isAction
             ? const SizedBox.shrink()
             : widget.sentByMe
                 ? showDialog(
@@ -64,9 +52,8 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                             },
                           ),
                           BlocListener<GroupCubit, GroupStates>(
-                            listener: (context, state) {
+                            listener: (_, state) {
                               if (state is DeleteMessageForAllSuccess) {
-                                GroupCubit.get(context).getAllUserGroups();
                               }
                             },
                             child: TextButton(
@@ -90,7 +77,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                   )
                 : showDialog(
                     context: context,
-                    builder: (context) {
+                    builder: (_) {
                       return AlertDialog(
                         title: const Text('Delete Message'),
                         content: const Text(
@@ -108,12 +95,12 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                     },
                   );
       },
-      child: widget.isUserJoined
+      child: widget.isAction
           ? Padding(
               padding: const EdgeInsets.all(6.0),
               child: Center(
                 child: Text(
-                  '${widget.groupMessage.sender!.userName} joined the group',
+                  widget.groupMessage.message!,
                   style: GoogleFonts.alexandria(
                     fontSize: 12,
                     color: AppColors.primary,
@@ -121,25 +108,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                 ),
               ),
             )
-          : widget.isUserRequested ||
-                  widget.isUserLeft ||
-                  widget.isUserUserDeclined
-              ? Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Center(
-                    child: Text(
-                      widget.groupMessage.message!,
-                      style: GoogleFonts.alexandria(
-                        fontSize: 12,
-                        color: widget.isUserRequested
-                            ? AppColors.primary
-                            : provider.themeMode == ThemeMode.light
-                                ? Colors.black
-                                : Colors.white,
-                      ),
-                    ),
-                  ),
-                )
+
               : Container(
                   padding: EdgeInsets.only(
                     top: 4,

@@ -24,6 +24,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   @override
   Widget build(BuildContext context) {
     final suggestionCubit = SuggestionCubit.get(context);
+    final profileCubit = ProfileCubit.get(context);
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -58,21 +59,21 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                       contentPadding: const EdgeInsets.all(12),
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: AppColors.borderColor,
+                          color: AppColors.primary,
                           width: 2.w,
                         ),
                         borderRadius: BorderRadius.circular(7.r),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: AppColors.borderColor,
+                          color: AppColors.primary,
                           width: 2.w,
                         ),
                         borderRadius: BorderRadius.circular(7.r),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: AppColors.borderColor,
+                          color: AppColors.primary,
                           width: 2.w,
                         ),
                         borderRadius: BorderRadius.circular(7.r),
@@ -83,7 +84,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                     height: MediaQuery.sizeOf(context).height * 0.05,
                   ),
                   BlocListener<SuggestionCubit, SuggestionStates>(
-                    listener: (context, state) {
+                    listener: (_, state) {
                       if (state is SendSuggestionSuccess) {
                         showSnackBar(
                           context,
@@ -103,7 +104,8 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                       function: () {
                         if (formKey.currentState!.validate()) {
                           final suggestion = Suggestion(
-                            userId: ProfileCubit.get(context).user.id,
+                            userId: profileCubit.user.id,
+                            user: profileCubit.user,
                             suggestion: suggestionController.text,
                             sentAt: DateTime.now(),
                           );

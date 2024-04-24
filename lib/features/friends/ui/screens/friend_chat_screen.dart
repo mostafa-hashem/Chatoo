@@ -37,6 +37,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
     friendCubit = FriendCubit.get(context);
   }
 
+  @override
+  void dispose() {
+    friendCubit.filteredMessages.clear();
+    super.dispose();
+  }
+
   void scrollToBottom() {
     FriendCubit.get(context).scrollController.animateTo(
           0.0,

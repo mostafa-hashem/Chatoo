@@ -45,6 +45,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       );
   }
 
+  @override
+  void dispose() {
+    groupCubit.filteredMessages.clear();
+    groupCubit.allGroupMembers.clear();
+    groupCubit.allGroupRequests.clear();
+    super.dispose();
+  }
+
   void scrollToBottom() {
     groupCubit.scrollController.animateTo(
       0.0,
@@ -112,8 +120,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        groupCubit.getAllGroupMembers(groupData.groupId!);
-                        groupCubit.getAdminName(groupData.mainAdminId!);
                         Navigator.pushNamed(
                           context,
                           Routes.groupInfo,
@@ -226,10 +232,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               group: groupData,
                               sender: sender,
                               message: notificationBody,
-                              leave: false,
-                              joined: false,
-                              requested: false,
-                              declined: false,
+                              isAction: false,
                             )
                                 .whenComplete(() {
                               scrollToBottom();

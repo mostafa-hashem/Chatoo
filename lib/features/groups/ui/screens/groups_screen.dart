@@ -62,15 +62,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                             duration: Duration(seconds: 3),
                           ),
                         );
-                        // GroupCubit.get(context).getAllUserGroups();
                       }
-                    }
-                  },
-                ),
-                BlocListener<GroupCubit, GroupStates>(
-                  listener: (_, state) {
-                    if (state is GetAllGroupMessagesSuccess) {
-                      GroupCubit.get(context).getAllUserGroups();
                     }
                   },
                 ),
@@ -84,9 +76,12 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   return ListView.builder(
                     itemCount: groupsCubit.allUserGroups.length,
                     itemBuilder: (_, index) {
-                      if (groupsCubit.allUserGroups[index]!.groupId != null) {
+                      if (groupsCubit.allUserGroups[index]?.groupId != null) {
                         return GestureDetector(
                           onTap: () {
+                            groupsCubit.getAllGroupMembers(
+                              groupsCubit.allUserGroups[index]!.groupId!,
+                            );
                             groupsCubit
                                 .getAllGroupMessages(
                                   groupsCubit.allUserGroups[index]!.groupId!,
@@ -94,7 +89,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                 .whenComplete(
                                   () => Future.delayed(
                                     const Duration(
-                                      milliseconds: 55,
+                                      milliseconds: 50,
                                     ),
                                     () => Navigator.pushNamed(
                                       context,

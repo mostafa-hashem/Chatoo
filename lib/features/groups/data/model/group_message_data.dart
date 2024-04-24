@@ -7,10 +7,7 @@ class GroupMessage {
   String? message;
   User? sender;
   DateTime? sentAt;
-  bool? left;
-  bool? joined;
-  bool? requested;
-  bool? declined;
+  bool? isAction;
 
   GroupMessage({
     this.groupId,
@@ -18,10 +15,7 @@ class GroupMessage {
     this.message,
     this.sender,
     this.sentAt,
-    this.left,
-    this.joined,
-    this.requested,
-    this.declined,
+    this.isAction,
   });
 
   GroupMessage.fromJson(Map<String, dynamic> json) {
@@ -34,17 +28,8 @@ class GroupMessage {
     if (json['message'] != null) {
       message = json['message'] as String;
     }
-    if (json['left'] != null) {
-      left = json['left'] as bool;
-    }
-    if (json['joined'] != null) {
-      joined = json['joined'] as bool;
-    }
-    if (json['requested'] != null) {
-      requested = json['requested'] as bool;
-    }
-    if (json['declined'] != null) {
-      declined = json['declined'] as bool;
+    if (json['isAction'] != null) {
+      isAction = json['isAction'] as bool;
     }
     if (json['sender'] != null) {
       sender = User.fromJson(json['sender'] as Map<String, dynamic>);
@@ -60,9 +45,6 @@ class GroupMessage {
         if (message != null) 'message': message,
         if (sender != null) 'sender': sender!.toJson(),
         if (sentAt != null) 'sentAt': Timestamp.fromDate(sentAt!),
-        if (left != null) 'left': left,
-        if (joined != null) 'joined': joined,
-        if (requested != null) 'requested': requested,
-        if (declined != null) 'declined': declined,
+        if (isAction != null) 'isAction': isAction,
       };
 }

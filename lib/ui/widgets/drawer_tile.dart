@@ -1,9 +1,13 @@
+import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
+import 'package:chat_app/features/auth/cubit/auth_state.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/screens/requests_screen.dart';
+import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
+import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/screens/about_us.dart';
 import 'package:chat_app/ui/screens/suggestions_screens.dart';
@@ -24,17 +28,18 @@ class DrawerTile extends StatefulWidget {
 }
 
 class _DrawerTileState extends State<DrawerTile> {
-  String email = '';
-
   @override
   Widget build(BuildContext context) {
     final profile = ProfileCubit.get(context);
+    final authCubit = AuthCubit.get(context);
+    final groupCubit = GroupCubit.get(context);
+    final friendCubit = FriendCubit.get(context);
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 50.h),
       child: Column(
-        children: <Widget>[
+        children: [
           BlocBuilder<ProfileCubit, ProfileState>(
-            builder: (context, state) {
+            builder: (_, state) {
               return profile.user.profileImage != null &&
                       profile.user.profileImage!.isNotEmpty
                   ? InkWell(
@@ -67,7 +72,7 @@ class _DrawerTileState extends State<DrawerTile> {
             height: MediaQuery.of(context).size.height * 0.02,
           ),
           Text(
-            ProfileCubit.get(context).user.userName!,
+            profile.user.userName!,
             textAlign: TextAlign.center,
             style:
                 GoogleFonts.ubuntu(fontSize: 18, fontWeight: FontWeight.bold),
@@ -111,7 +116,7 @@ class _DrawerTileState extends State<DrawerTile> {
                 ),
               ),
               BlocBuilder<FriendCubit, FriendStates>(
-                builder: (context, state) {
+                builder: (_, state) {
                   return Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: CircleAvatar(
@@ -159,6 +164,98 @@ class _DrawerTileState extends State<DrawerTile> {
             title: Text(
               "About us",
               style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+          BlocListener<AuthCubit, AuthState>(
+            listener: (_, state) {
+              if (state is AuthLoading) {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                );
+              } else {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                if (state is LoggedOut) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    Routes.login,
+                    (route) => false,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Successfully logout",
+                        style: TextStyle(fontSize: 15),
+                      ),
+                      backgroundColor: AppColors.snackBar,
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                } else if (state is AuthError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "There is an error",
+                        style: TextStyle(fontSize: 15),
+                      ),
+                      backgroundColor: AppColors.primary,
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
+            },
+            child: ListTile(
+              onTap: () {
+                showDialog(
+                  barrierDismissible: false,
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      content: const Text(
+                        "Are you sure you want to logout?",
+                      ),
+                      actions: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(
+                            Icons.cancel,
+                            color: Colors.red,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            groupCubit.allUserGroups.clear();
+                            friendCubit.allFriends.clear();
+                            authCubit.logout();
+                          },
+                          icon: const Icon(
+                            Icons.done,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              selected: true,
+              selectedColor: AppColors.primary,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: const Icon(Icons.logout),
+              title: Text(
+                "Logout",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
           ),
         ],

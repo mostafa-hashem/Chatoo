@@ -46,28 +46,27 @@ class GroupFirebaseServices {
     });
   }
 
-  Future<List<User?>> getAllGroupMembers(String groupId) async {
-    final DocumentSnapshot<Map<String, dynamic>> groupSnapshot =
-        await _groupsCollection.doc(groupId).get();
-    if (groupSnapshot.exists) {
+  Stream<List<User?>> getAllGroupMembers(String groupId) {
+    return _groupsCollection
+        .doc(groupId)
+        .snapshots()
+        .asyncMap((snapshot) async {
       final List<dynamic> memberIds =
-          groupSnapshot.data()?['members'] as List<dynamic>;
-      final List<User> users = [];
-      for (final memberId in memberIds) {
+          (snapshot.data()?['members'] ?? []) as List<dynamic>;
+      final List<Future<User?>> userFutures = memberIds.map((memberId) async {
         final DocumentSnapshot userSnapshot =
             await _usersCollection.doc(memberId.toString()).get();
         if (userSnapshot.exists) {
           final userData = userSnapshot.data();
           if (userData != null && userData is Map<String, dynamic>) {
-            final User user = User.fromJson(userData);
-            users.add(user);
+            return User.fromJson(userData);
           }
         }
-      }
-      return users;
-    } else {
-      return [];
-    }
+        return null; // or handle the absence of user data differently
+      }).toList();
+      final List<User?> users = await Future.wait(userFutures);
+      return users.where((user) => user != null).toList();
+    });
   }
 
   Stream<List<User>> getAllGroupRequests(String groupId) {
@@ -127,13 +126,6 @@ class GroupFirebaseServices {
     await _groupsCollection.doc(groupId).update({
       'groupName': newGroupName,
     });
-  }
-
-  Future<String> getAdminName(String adminId) async {
-    final DocumentSnapshot<Map<String, dynamic>> adminSnapshot =
-        await _usersCollection.doc(adminId).get();
-    final adminData = adminSnapshot.data();
-    return adminData?['userName'] as String? ?? 'Unknown';
   }
 
   Stream<List<GroupMessage>> getAllGroupMessages(String groupId) {
@@ -246,10 +238,7 @@ class GroupFirebaseServices {
     Group group,
     String message,
     User sender,
-    bool left,
-    bool joined,
-    bool requested,
-    bool declined,
+    bool isAction,
   ) async {
     if (message.isEmpty) {
       return;
@@ -268,10 +257,7 @@ class GroupFirebaseServices {
       'message': message,
       'sender': sender.toJson(),
       'sentAt': FieldValue.serverTimestamp(),
-      'left': left,
-      'joined': joined,
-      'requested': requested,
-      'declined': declined,
+      'isAction': isAction,
     });
 
     await _groupsCollection.doc(group.groupId).update({
@@ -339,5 +325,8 @@ class GroupFirebaseServices {
         });
       }
     });
+  }
+  Future<void> deleteGroup(String groupId) async {
+    await _groupsCollection.doc(groupId).delete();
   }
 }

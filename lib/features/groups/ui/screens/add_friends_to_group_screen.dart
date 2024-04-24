@@ -55,10 +55,10 @@ class AddFriendsToGroupScreen extends StatelessWidget {
                     currentState is AddToGroupSuccess ||
                     currentState is AddToGroupLoading ||
                     currentState is AddToGroupError,
-                builder: (context, state) {
+                builder: (_, state) {
                   return Expanded(
                     child: ListView.separated(
-                      itemBuilder: (context, index) {
+                      itemBuilder: (_, index) {
                         if (friendCubit.allFriends[index] == null) {
                           return const SizedBox.shrink();
                         } else {

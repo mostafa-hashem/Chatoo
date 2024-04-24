@@ -122,10 +122,7 @@ class _GroupRequestsTileState extends State<GroupRequestsTile> {
                         sender: profileCubit.user,
                         message:
                             '${profileCubit.user.userName!} Declined ${widget.requesterData.userName}',
-                        leave: false,
-                        joined: false,
-                        requested: false,
-                        declined: true,
+                        isAction: true,
                       );
                     },
                   );
@@ -160,10 +157,7 @@ class _GroupRequestsTileState extends State<GroupRequestsTile> {
                         sender: profileCubit.user,
                         message:
                             '${profileCubit.user.userName!} Approved ${widget.requesterData.userName}',
-                        leave: false,
-                        joined: false,
-                        requested: true,
-                        declined: false,
+                        isAction: true,
                       );
                       notificationsCubit.sendNotification(
                         widget.requesterData.fCMToken!,
@@ -171,7 +165,7 @@ class _GroupRequestsTileState extends State<GroupRequestsTile> {
                         "Your request to join ${widget.group.groupName} have been accepted",
                         'group',
                       );
-                      groupCubit.getAllGroupMembers(widget.group.groupId!);
+                      // groupCubit.getAllGroupMembers(widget.group.groupId!);
                     },
                   );
                 },

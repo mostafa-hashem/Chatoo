@@ -120,10 +120,7 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             message:
                                 '${profileCubit.user.userName} added ${widget.friendData.userName}',
                             sender: profileCubit.user,
-                            leave: false,
-                            joined: true,
-                            requested: false,
-                            declined: false,
+                            isAction: true,
                           );
                           notificationCubit.sendNotification(
                             friendFcmToken,
@@ -143,10 +140,7 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             message:
                                 "${profileCubit.user.userName} request's to add ${widget.friendData.userName}",
                             sender: profileCubit.user,
-                            leave: false,
-                            joined: false,
-                            requested: true,
-                            declined: false,
+                            isAction: true,
                           );
                           notificationCubit.sendNotification(
                             friendFcmToken,
@@ -155,13 +149,15 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             'group',
                           );
                           final List<dynamic> adminsIds =
-                          widget.groupData.groupAdmins!.toList();
+                              widget.groupData.groupAdmins!.toList();
                           for (final adminId in adminsIds) {
                             if (adminId == profileCubit.user.id) {
                               continue;
                             }
-                            groupCubit.getUserData(adminId.toString()).whenComplete(
-                                  () {
+                            groupCubit
+                                .getUserData(adminId.toString())
+                                .whenComplete(
+                              () {
                                 notificationCubit.sendNotification(
                                   groupCubit.userData!.fCMToken!,
                                   '${widget.groupData.groupName}',

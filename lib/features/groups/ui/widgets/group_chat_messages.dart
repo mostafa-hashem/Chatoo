@@ -7,7 +7,7 @@ class ChatMessages extends StatefulWidget {
   final String groupId;
 
   // Note: Avoid using `const` with constructors.
-  ChatMessages({
+  const ChatMessages({
     super.key,
     required this.groupId,
   });
@@ -32,10 +32,7 @@ class _ChatMessagesState extends State<ChatMessages> {
             sentByMe: ProfileCubit.get(context).user.id ==
                 groupMessages[index].sender!.id,
             groupId: widget.groupId,
-            isUserLeft: groupMessages[index].left!,
-            isUserJoined: groupMessages[index].joined!,
-            isUserRequested: groupMessages[index].requested!,
-            isUserUserDeclined: groupMessages[index].declined!,
+            isAction: groupMessages[index].isAction!,
           );
         },
       ),

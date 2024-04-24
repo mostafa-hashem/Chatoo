@@ -231,3 +231,13 @@ class DeleteMessageForAllError extends GroupStates {
 
   DeleteMessageForAllError(this.message);
 }
+
+class DeleteGroupLoading extends GroupStates {}
+
+class DeleteGroupSuccess extends GroupStates {}
+
+class DeleteGroupError extends GroupStates {
+  final String message;
+
+  DeleteGroupError(this.message);
+}

@@ -16,6 +16,7 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
+
   @override
   Widget build(BuildContext context) {
     final friends = FriendCubit.get(context);
@@ -25,66 +26,50 @@ class _FriendsScreenState extends State<FriendsScreen> {
             onTap: () {
               FocusScope.of(context).unfocus();
             },
-            child: MultiBlocListener(
-              listeners: [
-                BlocListener<FriendCubit, FriendStates>(
-                  listener: (_, state) {
-                    if (state is SearchOnFriendSuccess) {}
-                  },
-                ),
-                BlocListener<FriendCubit, FriendStates>(
-                  listener: (_, state) {
-                    if (state is GetAllFriendMessagesSuccess) {
-                      FriendCubit.get(context).getRecentMessageData();
-                    }
-                  },
-                ),
-              ],
-              child: BlocBuilder<FriendCubit, FriendStates>(
-                buildWhen: (_, currentState) =>
-                    currentState is GetAllUserFriendsSuccess ||
-                    currentState is GetAllUserFriendsSuccess ||
-                    currentState is GetAllUserFriendsLoading,
-                builder: (_, state) {
-                  if (state is GetAllUserFriendsLoading) {
-                    return const LoadingIndicator();
-                  } else if (state is GetAllUserFriendsError) {
-                    return const ErrorIndicator();
-                  } else {
-                    return ListView.builder(
-                      itemCount: friends.allFriends.length,
-                      itemBuilder: (_, index) {
-                        if (friends.allFriends[index]?.id != null) {
-                          return GestureDetector(
-                            onTap: () {
-                              friends
-                                  .getAllFriendMessages(
-                                friends.allFriends[index]!.id!,
-                              )
-                                  .whenComplete(() {
-                                Future.delayed(
-                                  const Duration(
-                                    milliseconds: 50,
-                                  ),
-                                  () => Navigator.pushNamed(
-                                    context,
-                                    Routes.friendChatScreen,
-                                    arguments: friends.allFriends[index],
-                                  ),
-                                );
-                              });
-                            },
-                            child: FriendTile(
-                              friendData: friends.allFriends[index]!,
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    );
-                  }
-                },
-              ),
+            child: BlocBuilder<FriendCubit, FriendStates>(
+              buildWhen: (_, currentState) =>
+                  currentState is GetAllUserFriendsSuccess ||
+                  currentState is GetAllUserFriendsSuccess ||
+                  currentState is GetAllUserFriendsLoading,
+              builder: (_, state) {
+                if (state is GetAllUserFriendsLoading) {
+                  return const LoadingIndicator();
+                } else if (state is GetAllUserFriendsError) {
+                  return const ErrorIndicator();
+                } else {
+                  return ListView.builder(
+                    itemCount: friends.allFriends.length,
+                    itemBuilder: (_, index) {
+                      if (friends.allFriends[index]?.id != null) {
+                        return GestureDetector(
+                          onTap: () {
+                            friends
+                                .getAllFriendMessages(
+                              friends.allFriends[index]!.id!,
+                            )
+                                .whenComplete(() {
+                              Future.delayed(
+                                const Duration(
+                                  milliseconds: 50,
+                                ),
+                                () => Navigator.pushNamed(
+                                  context,
+                                  Routes.friendChatScreen,
+                                  arguments: friends.allFriends[index],
+                                ),
+                              );
+                            });
+                          },
+                          child: FriendTile(
+                            friendData: friends.allFriends[index]!,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  );
+                }
+              },
             ),
           )
         : GestureDetector(

@@ -173,10 +173,7 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                           sender: ProfileCubit.get(context).user,
                           message:
                               "${ProfileCubit.get(context).user.userName} requested to join the the group",
-                          leave: false,
-                          joined: false,
-                          requested: true,
-                          declined: false,
+                          isAction: true,
                         );
                         groupCubit
                             .getUserData(widget.searchedGroupData.mainAdminId!)
