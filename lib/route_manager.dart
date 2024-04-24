@@ -4,6 +4,7 @@ import 'package:chat_app/features/auth/ui/screens/reset_password.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_chat_screen.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_info_screen.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_search_screen.dart';
+import 'package:chat_app/features/groups/ui/screens/add_friends_to_group_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/grop_search_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/group_chat_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/group_info_screen.dart';
@@ -12,6 +13,7 @@ import 'package:chat_app/features/groups/ui/screens/join_group_request_screen.da
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
 import 'package:chat_app/ui/screens/home_layout.dart';
 import 'package:chat_app/ui/screens/splash_screen.dart';
+import 'package:chat_app/ui/screens/suggestions_screens.dart';
 import 'package:chat_app/ui/screens/update_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -25,12 +27,14 @@ class Routes {
   static const String groupsScreen = "/groupsScreen";
   static const String groupChatScreen = "/groupChatScreen";
   static const String groupInfo = "/groupInfo";
+  static const String addFriendsToGroup = "/addFriendToGroup";
   static const String joinGroupRequestsScreen = "/joinGroupRequestsScreen";
   static const String groupSearchScreen = "/groupSearchScreen";
   static const String friendChatScreen = "/friendChatScreen";
   static const String friendInfoScreen = "/friendInfoScreen";
   static const String friendSearchScreen = "/friendSearchScreen";
   static const String profile = "/profile";
+  static const String suggestionsScreen = "/suggestionsScreen";
 }
 
 Route? onGenerateRoute(RouteSettings routeSettings) {
@@ -40,7 +44,7 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
         builder: (_) => const UpdateScreen(),
         settings: routeSettings,
       );
-      case Routes.layout:
+    case Routes.layout:
       return MaterialPageRoute(
         builder: (_) => const HomeLayout(),
         settings: routeSettings,
@@ -52,6 +56,7 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
     case Routes.login:
       return MaterialPageRoute(
         builder: (_) => const LoginScreen(),
+        settings: routeSettings,
       );
     case Routes.resetPassword:
       return MaterialPageRoute(
@@ -76,7 +81,12 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
         builder: (_) => const GroupInfo(),
         settings: routeSettings,
       );
-      case Routes.joinGroupRequestsScreen:
+    case Routes.addFriendsToGroup:
+      return MaterialPageRoute(
+        builder: (_) => const AddFriendsToGroupScreen(),
+        settings: routeSettings,
+      );
+    case Routes.joinGroupRequestsScreen:
       return MaterialPageRoute(
         builder: (_) => const JoinGroupRequestsScreen(),
         settings: routeSettings,
@@ -91,7 +101,7 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
         builder: (_) => const FriendChatScreen(),
         settings: routeSettings,
       );
-      case Routes.friendInfoScreen:
+    case Routes.friendInfoScreen:
       return MaterialPageRoute(
         builder: (_) => const FriendInfoScreen(),
         settings: routeSettings,
@@ -104,6 +114,10 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
     case Routes.profile:
       return MaterialPageRoute(
         builder: (_) => const ProfileScreen(),
+      );
+    case Routes.suggestionsScreen:
+      return MaterialPageRoute(
+        builder: (_) => const SuggestionsScreen(),
       );
     default:
       return null;

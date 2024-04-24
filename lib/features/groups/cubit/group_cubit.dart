@@ -18,8 +18,8 @@ class GroupCubit extends Cubit<GroupStates> {
   String groupIcon = "";
   String adminName = "";
   User? userData;
-  List<Group> allUserGroups = [];
-  List<User> allGroupMembers = [];
+  List<Group?> allUserGroups = [];
+  List<User?> allGroupMembers = [];
   List<User> allGroupRequests = [];
   List<Group> searchedGroups = [];
   List<Group> filteredGroups = [];
@@ -34,6 +34,36 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(CreateGroupSuccess());
     } catch (e) {
       emit(CreateGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> makeAsAdmin(String groupId, String memberId) async {
+    emit(MakeAsAdminLoading());
+    try {
+      await _groupFirebaseServices.makeAsAdmin(groupId, memberId);
+      emit(MakeAsAdminSuccess());
+    } catch (e) {
+      emit(MakeAsAdminError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> removeFromAdmins(String groupId, String memberId) async {
+    emit(RemoveFromAdminsLoading());
+    try {
+      await _groupFirebaseServices.removeFromAdmins(groupId, memberId);
+      emit(RemoveFromAdminsSuccess());
+    } catch (e) {
+      emit(RemoveFromAdminsError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> changeGroupName(String groupId, String newGroupName) async {
+    emit(ChangeGroupNameLoading());
+    try {
+      await _groupFirebaseServices.changeGroupName(groupId, newGroupName);
+      emit(ChangeGroupNameSuccess());
+    } catch (e) {
+      emit(ChangeGroupNameError(Failure.fromException(e).message));
     }
   }
 
@@ -78,10 +108,11 @@ class GroupCubit extends Cubit<GroupStates> {
       _groupFirebaseServices.getAllUserGroups().listen((groups) {
         allUserGroups = groups;
         allUserGroups.sort((a, b) {
-          if (a.recentMessageSentAt != null || b.recentMessageSentAt != null) {
-            return b.recentMessageSentAt!.compareTo(a.recentMessageSentAt!);
+          if (a?.recentMessageSentAt != null ||
+              b?.recentMessageSentAt != null) {
+            return b!.recentMessageSentAt!.compareTo(a!.recentMessageSentAt!);
           }
-          return b.createdAt!.compareTo(a.createdAt!);
+          return b!.createdAt!.compareTo(a!.createdAt!);
         });
 
         emit(GetAllGroupsSuccess());
@@ -99,8 +130,13 @@ class GroupCubit extends Cubit<GroupStates> {
     emit(GetAllGroupMessagesLoading());
     try {
       _groupFirebaseServices.getAllGroupMessages(groupId).listen((messages) {
-        filteredMessages = messages;
-        filteredMessages.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
+        filteredMessages =
+            messages.where((message) => message.sentAt != null).toList();
+
+        if (filteredMessages.isNotEmpty) {
+          filteredMessages.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
+        }
+
         emit(GetAllGroupMessagesSuccess());
       });
     } catch (e) {
@@ -188,8 +224,8 @@ class GroupCubit extends Cubit<GroupStates> {
               (group) => group.groupName!.contains(groupName),
             )
             .toList();
+        emit(SearchOnGroupSuccess());
       });
-      emit(SearchOnGroupSuccess());
     } catch (e) {
       emit(SearchOnGroupError(Failure.fromException(e).message));
     }
@@ -202,6 +238,37 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(RequestToJoinGroupSuccess());
     } catch (e) {
       emit(RequestToJoinGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> requestAddFriendToGroup(Group group, User friend) async {
+    emit(RequestAddToGroupLoading());
+    try {
+      await _groupFirebaseServices.requestAddFriendToGroup(group, friend);
+      emit(RequestAddToGroupSuccess());
+    } catch (e) {
+      emit(RequestAddToGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  // ********** while admin **********
+  Future<void> addFriendToGroup(Group group, User friend) async {
+    emit(AddToGroupLoading());
+    try {
+      await _groupFirebaseServices.addFriendToGroup(group, friend);
+      emit(AddToGroupSuccess());
+    } catch (e) {
+      emit(AddToGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> cancelRequestToJoinGroup(String groupId) async {
+    emit(CancelRequestToJoinGroupLoading());
+    try {
+      await _groupFirebaseServices.cancelRequestToJoinGroup(groupId);
+      emit(CancelRequestToJoinGroupSuccess());
+    } catch (e) {
+      emit(CancelRequestToJoinGroupError(Failure.fromException(e).message));
     }
   }
 

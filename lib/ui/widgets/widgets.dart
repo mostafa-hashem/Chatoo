@@ -1,3 +1,5 @@
+import 'package:chat_app/features/groups/ui/widgets/change_group_name_sheet.dart';
+import 'package:chat_app/features/profile/ui/widgets/bio_edit_bottom_sheet.dart';
 import 'package:chat_app/ui/widgets/language_bootom_sheet.dart';
 import 'package:chat_app/ui/widgets/theme_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -28,13 +30,15 @@ void showSnackBar(BuildContext context, Color color, String text) {
   );
 }
 
-void nextScreen(BuildContext context,Widget page) {
+void nextScreen(BuildContext context, Widget page) {
   Navigator.push(context, MaterialPageRoute(builder: (context) => page));
 }
 
-void nextScreenReplace(BuildContext context,Widget page) {
+void nextScreenReplace(BuildContext context, Widget page) {
   Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (context) => page),);
+    context,
+    MaterialPageRoute(builder: (context) => page),
+  );
 }
 
 String getId(String res) {
@@ -57,6 +61,33 @@ void showLanguageSheet(BuildContext context) {
   );
 }
 
+void showEditBioSheet(BuildContext context, String bio) {
+  showModalBottomSheet(
+    isScrollControlled: true,
+    context: context,
+    builder: (context) {
+      return EditBioBottomSheet(bio);
+    },
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16.r),
+    ),
+  );
+}
+
+void showChangeGroupNameSheet(
+    BuildContext context, String groupId, String groupName) {
+  showModalBottomSheet(
+    isScrollControlled: true,
+    context: context,
+    builder: (context) {
+      return ChangeGroupNameBottomSheet(groupName, groupId);
+    },
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16.r),
+    ),
+  );
+}
+
 void showThemeSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
@@ -66,5 +97,17 @@ void showThemeSheet(BuildContext context) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16.0.r),
     ),
+  );
+}
+
+Rect getWidgetPosition(GlobalKey key, {double spacing = 50.0}) {
+  final RenderBox? renderBox =
+      key.currentContext?.findRenderObject() as RenderBox?;
+  final offset = renderBox!.localToGlobal(Offset.zero);
+  return Rect.fromLTWH(
+    offset.dx - spacing,
+    offset.dy + spacing,
+    renderBox.size.width + (spacing * 2),
+    renderBox.size.height + (spacing * 2),
   );
 }

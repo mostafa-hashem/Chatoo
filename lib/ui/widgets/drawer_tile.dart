@@ -1,10 +1,12 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/screens/requests_screen.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/screens/about_us.dart';
+import 'package:chat_app/ui/screens/suggestions_screens.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/helper_methods.dart';
@@ -108,21 +110,42 @@ class _DrawerTileState extends State<DrawerTile> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: CircleAvatar(
-                  radius: 18.r,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    FriendCubit.get(context).allUserRequests.length.toString(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall!
-                        .copyWith(fontSize: 14.sp),
-                  ),
-                ),
+              BlocBuilder<FriendCubit, FriendStates>(
+                builder: (context, state) {
+                  return Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: CircleAvatar(
+                      radius: 18.r,
+                      backgroundColor: AppColors.primary,
+                      child: Text(
+                        FriendCubit.get(context)
+                            .allUserRequests
+                            .length
+                            .toString(),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall!
+                            .copyWith(fontSize: 14.sp),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
+          ),
+          ListTile(
+            onTap: () {
+              nextScreen(context, const SuggestionsScreen());
+            },
+            selected: true,
+            selectedColor: AppColors.primary,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            leading: const Icon(Icons.comment),
+            title: Text(
+              "Suggestions",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
           ListTile(
             onTap: () {

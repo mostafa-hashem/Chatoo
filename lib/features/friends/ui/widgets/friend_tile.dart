@@ -1,6 +1,5 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
-import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/error_indicator.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
@@ -16,11 +15,9 @@ class FriendTile extends StatefulWidget {
   const FriendTile({
     super.key,
     required this.friendData,
-    required this.lastMessageData,
   });
 
   final User friendData;
-  final Friend lastMessageData;
 
   @override
   State<FriendTile> createState() => _FriendTileState();
@@ -66,12 +63,12 @@ class _FriendTileState extends State<FriendTile> {
               widget.friendData.userName ?? 'Unknown',
               style: GoogleFonts.novaSquare(fontWeight: FontWeight.bold),
             ),
-            subtitle: widget.lastMessageData.recentMessage != null ? Text(
-              widget.lastMessageData.recentMessage!,
+            subtitle: Text(
+              "Test for last message",
               style:
                   GoogleFonts.novaSquare(fontWeight: FontWeight.w700, fontSize: 14),
               overflow: TextOverflow.ellipsis,
-            ) : const SizedBox.shrink(),
+            ),
           ),
         );
       },

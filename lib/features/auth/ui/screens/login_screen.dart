@@ -2,6 +2,7 @@ import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
 import 'package:chat_app/features/auth/cubit/auth_state.dart';
 import 'package:chat_app/features/auth/data/models/login_data.dart';
 import 'package:chat_app/features/auth/ui/screens/register_screen.dart';
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
@@ -147,6 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   duration: Duration(seconds: 3),
                                 ),
                               );
+                              FriendCubit.get(context).getAllUserFriends();
                               Navigator.pushReplacementNamed(
                                 context,
                                 Routes.layout,
@@ -163,8 +165,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 email: emailController.text,
                                 password: passwordController.text,
                                 fCMToken:
-                                    NotificationsCubit.get(context).fCMToken ??
-                                        "",
+                                NotificationsCubit.get(context).fCMToken ??
+                                    "",
                               ),
                             );
                             NotificationsCubit.get(context).initNotifications();

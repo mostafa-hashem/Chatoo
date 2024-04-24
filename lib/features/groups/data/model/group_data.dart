@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Group {
-  String ?groupId;
+  String? groupId;
   String? groupName;
   String? groupIcon;
-  String? adminId;
+  String? mainAdminId;
+  List<dynamic>? groupAdmins;
   List<dynamic>? members;
   List<dynamic>? requests;
   String? recentMessage;
@@ -16,7 +17,8 @@ class Group {
     this.groupId = '',
     required this.groupName,
     this.groupIcon = "",
-    this.adminId = "",
+    this.mainAdminId = "",
+    this.groupAdmins,
     this.members,
     this.requests,
     this.recentMessage = "",
@@ -29,8 +31,9 @@ class Group {
     groupId =
     json['groupId'] as String;
     groupName = json['groupName'] as String;
-    adminId = json['adminId'] as String;
+    mainAdminId = json['mainAdminId'] as String;
     groupIcon = json['groupIcon'] as String;
+    groupAdmins = json['groupAdmins'] as List<dynamic>?;
     members = json['members'] as List<dynamic>?;
     requests = json['requests'] != null
         ? json['requests'] as List<dynamic>?
@@ -52,8 +55,9 @@ class Group {
       {
         'groupId': groupId,
         'groupName': groupName,
-        'adminId': adminId,
+        'mainAdminId': mainAdminId,
         'groupIcon': groupIcon,
+        'groupAdmins': groupAdmins,
         'members': members,
         'requests': requests!.isNotEmpty ? requests : [],
         'recentMessage': recentMessage,

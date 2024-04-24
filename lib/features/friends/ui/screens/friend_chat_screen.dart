@@ -85,9 +85,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
               SizedBox(
                 width: 10.w,
               ),
-              Text(
-                friendData.userName!,
-                style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
+              Flexible(
+                child: Text(
+                  friendData.userName!,
+                  style: GoogleFonts.ubuntu(fontWeight: FontWeight.w400),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -111,7 +114,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   currentState is GetAllFriendMessagesSuccess ||
                   currentState is GetAllFriendMessagesError ||
                   currentState is GetAllFriendMessagesLoading,
-              builder: (context, state) {
+              builder: (_, state) {
                 return FriendChatMessages();
               },
             ),
@@ -172,7 +175,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                     ),
                   ),
                   BlocListener<NotificationsCubit, NotificationsStates>(
-                    listener: (context, state) {
+                    listener: (_, state) {
                       if (state is SendNotificationSuccess) {}
                     },
                     child: Material(
@@ -182,15 +185,15 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                           final notificationBody =
                               friendCubit.messageController.text;
                           if (friendCubit.messageController.text.isNotEmpty) {
+                            friendCubit.messageController.clear();
                             FriendCubit.get(context)
                                 .sendMessageToFriend(
                               friendData,
-                              friendCubit.messageController.text,
+                              notificationBody,
                               sender,
                             )
                                 .whenComplete(
                               () {
-                                friendCubit.messageController.clear();
                                 scrollToBottom();
                                 NotificationsCubit.get(context)
                                     .sendNotification(

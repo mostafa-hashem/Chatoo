@@ -77,39 +77,44 @@ class _GroupsScreenState extends State<GroupsScreen> {
               ],
               child: BlocBuilder<GroupCubit, GroupStates>(
                 buildWhen: (_, currentState) =>
-                currentState is GetAllGroupsSuccess ||
+                    currentState is GetAllGroupsSuccess ||
                     currentState is GetAllGroupsError ||
                     currentState is GetAllGroupsLoading,
-                builder: (context, state) {
+                builder: (_, state) {
                   return ListView.builder(
                     itemCount: groupsCubit.allUserGroups.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          groupsCubit
-                              .getAllGroupMessages(
-                                groupsCubit.allUserGroups[index].groupId!,
-                              )
-                              .whenComplete(
-                                () => Future.delayed(
-                                  const Duration(
-                                    milliseconds: 55,
+                    itemBuilder: (_, index) {
+                      if (groupsCubit.allUserGroups[index]!.groupId != null) {
+                        return GestureDetector(
+                          onTap: () {
+                            groupsCubit
+                                .getAllGroupMessages(
+                                  groupsCubit.allUserGroups[index]!.groupId!,
+                                )
+                                .whenComplete(
+                                  () => Future.delayed(
+                                    const Duration(
+                                      milliseconds: 55,
+                                    ),
+                                    () => Navigator.pushNamed(
+                                      context,
+                                      Routes.groupChatScreen,
+                                      arguments:
+                                          groupsCubit.allUserGroups[index],
+                                    ),
                                   ),
-                                  () => Navigator.pushNamed(
-                                    context,
-                                    Routes.groupChatScreen,
-                                    arguments: groupsCubit.allUserGroups[index],
-                                  ),
-                                ),
-                              );
-                        },
-                        child: GroupTile(
-                          groupData: groupsCubit.allUserGroups[index],
-                          userName: ProfileCubit.get(context).user.userName!,
-                          isLeftOrJoined: groupsCubit
-                              .allUserGroups[index].recentMessage!.isEmpty,
-                        ),
-                      );
+                                );
+                          },
+                          child: GroupTile(
+                            groupData: groupsCubit.allUserGroups[index]!,
+                            userName: ProfileCubit.get(context).user.userName!,
+                            isLeftOrJoined: groupsCubit
+                                .allUserGroups[index]!.recentMessage!.isEmpty,
+                          ),
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
                     },
                   );
                 },

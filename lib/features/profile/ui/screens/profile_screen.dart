@@ -14,6 +14,7 @@ import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/default_button.dart';
 import 'package:chat_app/ui/widgets/default_text_button.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
+import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
@@ -84,97 +85,181 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 autovalidateMode: AutovalidateMode.always,
                 child: Column(
                   children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: BlocListener<AuthCubit, AuthState>(
-                        listener: (context, state) {
-                          if (state is AuthLoading) {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // BlocListener<AuthCubit, AuthState>(
+                        //   listener: (context, state) {
+                        //     if (state is DeleteAccountLoading) {
+                        //       showDialog(
+                        //         context: context,
+                        //         builder: (BuildContext context) {
+                        //           return const Center(
+                        //             child: CircularProgressIndicator(),
+                        //           );
+                        //         },
+                        //       );
+                        //     } else {
+                        //       if (state is DeleteAccountSuccess) {
+                        //         ScaffoldMessenger.of(context).showSnackBar(
+                        //           const SnackBar(
+                        //             content: Text(
+                        //               "Successfully deleted",
+                        //               style: TextStyle(fontSize: 15),
+                        //             ),
+                        //             backgroundColor: AppColors.snackBar,
+                        //             duration: Duration(seconds: 3),
+                        //           ),
+                        //         );
+                        //         Navigator.pushNamedAndRemoveUntil(
+                        //           context,
+                        //           Routes.login,
+                        //           (route) => false,
+                        //         );
+                        //       } else if (state is DeleteAccountError) {
+                        //         ScaffoldMessenger.of(context).showSnackBar(
+                        //           SnackBar(
+                        //             content: Text(
+                        //               state.message,
+                        //               style: const TextStyle(fontSize: 15),
+                        //             ),
+                        //             backgroundColor: AppColors.primary,
+                        //             duration: const Duration(seconds: 3),
+                        //           ),
+                        //         );
+                        //       }
+                        //     }
+                        //   },
+                        //   child: DefaultTextButton(
+                        //     backgroundColor: Colors.black,
+                        //     borderColor: Colors.white,
+                        //     width: MediaQuery.sizeOf(context).width * 0.35,
+                        //     height: 50,
+                        //     function: () {
+                        //       showDialog(
+                        //         barrierDismissible: false,
+                        //         context: context,
+                        //         builder: (context) {
+                        //           return AlertDialog(
+                        //             title: const Text("Delete account"),
+                        //             content: const Text(
+                        //               "Are you sure you want to delete your account?",
+                        //             ),
+                        //             actions: [
+                        //               TextButton(
+                        //                 onPressed: () {
+                        //                   Navigator.pop(context);
+                        //                 },
+                        //                 child: const Text('Cancel'),
+                        //               ),
+                        //               TextButton(
+                        //                 onPressed: () {
+                        //                   AuthCubit.get(context)
+                        //                       .deleteAccount();
+                        //                 },
+                        //                 child: const Text('Delete'),
+                        //               ),
+                        //             ],
+                        //           );
+                        //         },
+                        //       );
+                        //     },
+                        //     text: 'Delete account',
+                        //   ),
+                        // ),
+                        const Spacer(),
+                        BlocListener<AuthCubit, AuthState>(
+                          listener: (context, state) {
+                            if (state is AuthLoading) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                },
+                              );
+                            } else {
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                              if (state is LoggedOut) {
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  Routes.login,
+                                  (route) => false,
                                 );
-                              },
-                            );
-                          } else {
-                            Navigator.pop(context);
-                            if (state is LoggedOut) {
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                Routes.login,
-                                (route) => false,
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "Successfully logout",
-                                    style: TextStyle(fontSize: 15),
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Successfully logout",
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                    backgroundColor: AppColors.snackBar,
+                                    duration: Duration(seconds: 3),
                                   ),
-                                  backgroundColor: AppColors.snackBar,
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
-                            } else if (state is AuthError) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "There is an error",
-                                    style: TextStyle(fontSize: 15),
+                                );
+                              } else if (state is AuthError) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "There is an error",
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                    backgroundColor: AppColors.primary,
+                                    duration: Duration(seconds: 3),
                                   ),
-                                  backgroundColor: AppColors.primary,
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
+                                );
+                              }
                             }
-                          }
-                        },
-                        child: DefaultButton(
-                          width: 40,
-                          height: 50,
-                          function: () {
-                            showDialog(
-                              barrierDismissible: false,
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text("Logout"),
-                                  content: const Text(
-                                    "Are you sure you want to logout?",
-                                  ),
-                                  actions: [
-                                    IconButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      icon: const Icon(
-                                        Icons.cancel,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        AuthCubit.get(context).logout();
-                                        GroupCubit.get(context)
-                                            .allUserGroups
-                                            .clear();
-                                        FriendCubit.get(context)
-                                            .allFriends
-                                            .clear();
-                                      },
-                                      icon: const Icon(
-                                        Icons.done,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
                           },
-                          icon: Icons.logout_outlined,
+                          child: DefaultButton(
+                            width: 40,
+                            height: 50,
+                            function: () {
+                              showDialog(
+                                barrierDismissible: false,
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Logout"),
+                                    content: const Text(
+                                      "Are you sure you want to logout?",
+                                    ),
+                                    actions: [
+                                      IconButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        icon: const Icon(
+                                          Icons.cancel,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          AuthCubit.get(context).logout();
+                                          GroupCubit.get(context)
+                                              .allUserGroups
+                                              .clear();
+                                          FriendCubit.get(context)
+                                              .allFriends
+                                              .clear();
+                                        },
+                                        icon: const Icon(
+                                          Icons.done,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: Icons.logout_outlined,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                     SizedBox(height: 16.h),
                     BlocConsumer<ProfileCubit, ProfileState>(
@@ -281,7 +366,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.05,
+                      height: MediaQuery.of(context).size.height * 0.03,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Bio"),
+                        SizedBox(
+                          width: 8.w,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            showEditBioSheet(context, bioController.text);
+                          },
+                          child: const Icon(
+                            Icons.edit,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.01,
+                    ),
+                    BlocBuilder<ProfileCubit, ProfileState>(
+                      buildWhen: (_, currentState) =>
+                          currentState is UpdateUserBioLoading ||
+                          currentState is UpdateUserBioSuccess ||
+                          currentState is UpdateUserBioError,
+                      builder: (context, state) {
+                        return Text(
+                          bioController.text,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.02,
                     ),
                     BlocBuilder<ProfileCubit, ProfileState>(
                       builder: (context, state) => CustomProfileContainer(
@@ -313,6 +437,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         controller: phoneNumberController,
                         validator: validatePhoneNumber,
                       ),
+                    ),
+                    Divider(
+                      height: 30.h,
                     ),
                     BlocBuilder<ProfileCubit, ProfileState>(
                       builder: (context, state) => CustomProfileContainer(
@@ -354,21 +481,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: DefaultTextButton(
                         function: () {
                           if (formKey.currentState!.validate()) {
-                            profile.updateUser(
-                              User(
-                                fCMToken:
-                                    NotificationsCubit.get(context).fCMToken,
-                                id: profile.user.id,
-                                userName: userNameController.text,
-                                email: profile.user.email,
-                                phoneNumber: phoneNumberController.text,
-                                bio: profile.user.bio,
-                                friends: profile.user.friends,
-                                groups: profile.user.friends,
-                                profileImage: profile.user.profileImage,
-                                city: addressController.text,
-                              ),
-                            );
+                            if (userNameController.text !=
+                                    profile.user.userName! ||
+                                emailController.text != profile.user.email! ||
+                                bioController.text != profile.user.bio! ||
+                                phoneNumberController.text !=
+                                    profile.user.phoneNumber! ||
+                                addressController.text != profile.user.city!) {
+                              profile.updateUser(
+                                User(
+                                  fCMToken:
+                                      NotificationsCubit.get(context).fCMToken,
+                                  id: profile.user.id,
+                                  userName: userNameController.text,
+                                  email: profile.user.email,
+                                  phoneNumber: phoneNumberController.text,
+                                  bio: profile.user.bio,
+                                  friends: profile.user.friends,
+                                  groups: profile.user.groups,
+                                  requests: profile.user.requests,
+                                  profileImage: profile.user.profileImage,
+                                  city: addressController.text,
+                                ),
+                              );
+                            }
                           }
                         },
                         text: provider.language == "en"
@@ -377,7 +513,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     SizedBox(
-                      height: 18.h,
+                      height: 24.h,
                     ),
                   ],
                 ),

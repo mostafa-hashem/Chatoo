@@ -3,6 +3,7 @@ import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_search_widget.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -58,31 +59,27 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: BlocBuilder<GroupCubit, GroupStates>(
-                      builder: (context, state) {
-                        return TextField(
-                          onChanged: (String? value) {
-                            if (value == null || value.isEmpty) {
-                              groupCubit.searchedGroups.clear();
-                            }
-                            if (value != null && value.isNotEmpty) {
-                              groupCubit.searchOnGroup(value);
-                            }
-                          },
-                          style: GoogleFonts.ubuntu(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                          ),
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Search groups....",
-                            hintStyle: GoogleFonts.novaFlat(
-                              color: Colors.white,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        );
+                    child: TextField(
+                      onChanged: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          groupCubit.searchedGroups.clear();
+                        }
+                        if (value != null && value.isNotEmpty) {
+                          groupCubit.searchOnGroup(value);
+                        }
                       },
+                      style: GoogleFonts.ubuntu(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Search groups....",
+                        hintStyle: GoogleFonts.novaFlat(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                        ),
+                      ),
                     ),
                   ),
                   Container(
@@ -101,14 +98,50 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
               ),
             ),
             Expanded(
-              child: BlocBuilder<GroupCubit, GroupStates>(
-                builder: (context, state) {
+              child: BlocConsumer<GroupCubit, GroupStates>(
+                listener: (_, state) {
+                  if (state is RequestToJoinGroupSuccess) {
+                    showSnackBar(
+                      context,
+                      Colors.green,
+                      "Successfully requested",
+                    );
+                  }
+                  if (state is CancelRequestToJoinGroupSuccess) {
+                    showSnackBar(
+                      context,
+                      Colors.green,
+                      "Successfully canceled",
+                    );
+                    if(context.mounted){
+                      Navigator.pop(context);
+                    }
+                  }
+                  if (state is LeaveGroupSuccess) {
+                    showSnackBar(
+                      context,
+                      Colors.green,
+                      "Successfully left",
+                    );
+                    if(context.mounted){
+                      Navigator.pop(context);
+                    }
+                  }
+                  if (state is RequestToJoinGroupError) {
+                    showSnackBar(
+                      context,
+                      Colors.red,
+                      state.message,
+                    );
+                  }
+                },
+                builder: (_, state) {
                   return ListView.separated(
-                    itemBuilder: (context, index) {
+                    itemBuilder: (_, index) {
                       return GroupSearchWidget(
                         searchedGroupData: groupCubit.searchedGroups[index],
                         isUserMember: groupCubit.allUserGroups.any(
-                          (group) => group.groupId!.contains(
+                          (group) => group!.groupId!.contains(
                             groupCubit.searchedGroups[index].groupId!,
                           ),
                         ),

@@ -24,12 +24,12 @@ class AuthFirebaseService {
       phoneNumber: registerModel.phoneNumber,
       city: registerModel.city,
       bio: 'Hello my friends!',
+      requests: [],
+      friends: [],
+      groups: [],
       profileImage: FirebasePath.defaultImage,
     );
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      final DocumentReference userDocRef = _usersCollection.doc(uId);
-      transaction.set(userDocRef, userModel.toJson());
-    });
+    await _usersCollection.doc(uId).set(userModel.toJson());
     await userCredential.user?.sendEmailVerification();
     return userModel;
   }
@@ -40,23 +40,16 @@ class AuthFirebaseService {
       email: loginData.email,
       password: loginData.password,
     );
+    final String uId = userCredential.user!.uid;
 
     if (!userCredential.user!.emailVerified) {
       throw Exception("Email not verified");
     }
-
-    final String uId = userCredential.user!.uid;
-
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      final DocumentReference userDocRef = _usersCollection.doc(uId);
-      final DocumentSnapshot userSnapshot = await transaction.get(userDocRef);
-
-      if (userSnapshot.exists) {
-        transaction.update(userDocRef, {'fCMToken': loginData.fCMToken});
-      }
-    });
-
     final DocumentSnapshot docSnapshot = await _usersCollection.doc(uId).get();
+    if (docSnapshot.exists) {
+      await _usersCollection.doc(uId).update({'fCMToken': loginData.fCMToken});
+    }
+
     final userModel =
         User.fromJson(docSnapshot.data()! as Map<String, dynamic>);
     return userModel;
@@ -68,4 +61,12 @@ class AuthFirebaseService {
       FirebaseAuth.instance.sendPasswordResetEmail(email: email);
 
   bool getAuthStatus() => FirebaseAuth.instance.currentUser != null;
+
+  Future<void> deleteAccount() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await user.delete();
+      await _usersCollection.doc(user.uid).delete();
+    }
+  }
 }

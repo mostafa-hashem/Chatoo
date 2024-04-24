@@ -21,6 +21,15 @@ class UpdateUserError extends ProfileState {
 
   UpdateUserError(this.message);
 }
+class UpdateUserBioLoading extends ProfileState {}
+
+class  UpdateUserBioSuccess extends ProfileState {}
+
+class  UpdateUserBioError extends ProfileState {
+  final String message;
+
+  UpdateUserBioError(this.message);
+}
 
 class UploadProfileImageLoading extends ProfileState {}
 

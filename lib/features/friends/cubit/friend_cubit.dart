@@ -14,7 +14,7 @@ class FriendCubit extends Cubit<FriendStates> {
 
   static FriendCubit get(BuildContext context) => BlocProvider.of(context);
   final _friendFirebaseServices = FriendFirebaseServices();
-  List<User> allFriends = [];
+  List<User?> allFriends = [];
   List<User> allUserRequests = [];
   List<User> searchedFriends = [];
   List<FriendMessage> filteredMessages = [];
@@ -142,6 +142,15 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
+  Future<void> removeFriendRequest(String friendId) async {
+    emit(RemoveFriendRequestLoading());
+    try {
+      await _friendFirebaseServices.requestFriendRequest(friendId);
+      emit(RemoveFriendRequestSuccess());
+    } catch (e) {
+      emit(RemoveFriendRequestError(Failure.fromException(e).message));
+    }
+  }
   Future<void> removeFriend(String friendId) async {
     emit(RemoveFriendLoading());
     try {

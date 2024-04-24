@@ -22,6 +22,16 @@ class EmailVerifyRequestSentError extends AuthState {
   EmailVerifyRequestSentError(this.message);
 }
 
+class DeleteAccountLoading extends AuthState {}
+
+class DeleteAccountSuccess extends AuthState {}
+
+class DeleteAccountError extends AuthState {
+  final String message;
+
+  DeleteAccountError(this.message);
+}
+
 class PasswordResetRequestSent extends AuthState {}
 
 class LoggedOut extends AuthState {}

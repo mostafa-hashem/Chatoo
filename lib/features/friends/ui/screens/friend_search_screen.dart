@@ -3,6 +3,9 @@ import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_search_widget.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/ui/widgets/error_indicator.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
+import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -38,6 +41,7 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final friendCubit = FriendCubit.get(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -103,13 +107,62 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
               ),
             ),
             Expanded(
-              child: BlocBuilder<FriendCubit, FriendStates>(
-                builder: (context, state) {
+              child: BlocConsumer<FriendCubit, FriendStates>(
+                listener: (_, state) {
+                  if (state is RequestToAddFriendLoading) {
+                    const LoadingIndicator();
+                  } else {
+                    if (state is RequestToAddFriendSuccess) {
+                      showSnackBar(
+                        context,
+                        Colors.green,
+                        "Requested successfully",
+                      );
+                    }
+                    if (state is RequestToAddFriendError) {
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                      const ErrorIndicator();
+                    }
+                  }
+                  if (state is RemoveFriendLoading) {
+                    const LoadingIndicator();
+                  } else {
+                    if (state is RemoveFriendSuccess) {
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                      showSnackBar(
+                        context,
+                        Colors.green,
+                        "Friend removed successfully",
+                      );
+                    }
+                    if (state is RequestToAddFriendError) {
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                      const ErrorIndicator();
+                    }
+                  }
+                  if (state is RemoveFriendRequestSuccess) {
+                    showSnackBar(
+                      context,
+                      Colors.green,
+                      "Request removed successfully",
+                    );
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
+                  }
+                },
+                builder: (_, state) {
                   return ListView.separated(
-                    itemBuilder: (context, index) => FriendSearchWidget(
+                    itemBuilder: (_, index) => FriendSearchWidget(
                       friendData: friendCubit.searchedFriends[index],
                       isUserFriend: friendCubit.allFriends.any(
-                        (friend) => friend.id!.contains(
+                        (friend) => friend!.id!.contains(
                           friendCubit.searchedFriends[index].id!,
                         ),
                       ),

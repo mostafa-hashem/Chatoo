@@ -12,6 +12,36 @@ class CreateGroupError extends GroupStates {
   CreateGroupError(this.message);
 }
 
+class MakeAsAdminLoading extends GroupStates {}
+
+class MakeAsAdminSuccess extends GroupStates {}
+
+class MakeAsAdminError extends GroupStates {
+  final String message;
+
+  MakeAsAdminError(this.message);
+}
+
+class RemoveFromAdminsLoading extends GroupStates {}
+
+class RemoveFromAdminsSuccess extends GroupStates {}
+
+class RemoveFromAdminsError extends GroupStates {
+  final String message;
+
+  RemoveFromAdminsError(this.message);
+}
+
+class ChangeGroupNameLoading extends GroupStates {}
+
+class ChangeGroupNameSuccess extends GroupStates {}
+
+class ChangeGroupNameError extends GroupStates {
+  final String message;
+
+  ChangeGroupNameError(this.message);
+}
+
 class UploadGroupImageToFireStorageLoading extends GroupStates {}
 
 class UploadGroupImageToFireStorageSuccess extends GroupStates {}
@@ -112,8 +142,6 @@ class SearchOnGroupError extends GroupStates {
   SearchOnGroupError(this.message);
 }
 
-class CheckUserInGroupLoading extends GroupStates {}
-
 class RequestToJoinGroupLoading extends GroupStates {}
 
 class RequestToJoinGroupSuccess extends GroupStates {}
@@ -122,6 +150,36 @@ class RequestToJoinGroupError extends GroupStates {
   final String message;
 
   RequestToJoinGroupError(this.message);
+}
+
+class RequestAddToGroupLoading extends GroupStates {}
+
+class RequestAddToGroupSuccess extends GroupStates {}
+
+class RequestAddToGroupError extends GroupStates {
+  final String message;
+
+  RequestAddToGroupError(this.message);
+}
+
+class AddToGroupLoading extends GroupStates {}
+
+class AddToGroupSuccess extends GroupStates {}
+
+class AddToGroupError extends GroupStates {
+  final String message;
+
+  AddToGroupError(this.message);
+}
+
+class CancelRequestToJoinGroupLoading extends GroupStates {}
+
+class CancelRequestToJoinGroupSuccess extends GroupStates {}
+
+class CancelRequestToJoinGroupError extends GroupStates {
+  final String message;
+
+  CancelRequestToJoinGroupError(this.message);
 }
 
 class ApproveToJoinGroupLoading extends GroupStates {}

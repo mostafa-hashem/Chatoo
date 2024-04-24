@@ -58,7 +58,7 @@ class _GroupTileState extends State<GroupTile> {
         subtitle: widget.isLeftOrJoined
             ? const SizedBox.shrink()
             : Text(
-                "${widget.groupData.recentMessageSender}: ${widget.groupData.recentMessage}",
+                "Test for last message",
                 style: GoogleFonts.ubuntu(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,

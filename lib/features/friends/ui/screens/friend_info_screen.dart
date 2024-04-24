@@ -242,22 +242,22 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                       thickness: 3,
                       color: AppColors.primary,
                     ),
-                    FriendInfoTile(
-                      labelText: 'Email',
-                      info: friendData.email!,
-                    ),
-                    const Divider(
-                      thickness: 3,
-                      color: AppColors.primary,
-                    ),
-                    FriendInfoTile(
-                      labelText: 'Phone',
-                      info: friendData.phoneNumber!,
-                    ),
-                    const Divider(
-                      thickness: 3,
-                      color: AppColors.primary,
-                    ),
+                    // FriendInfoTile(
+                    //   labelText: 'Email',
+                    //   info: friendData.email!,
+                    // ),
+                    // const Divider(
+                    //   thickness: 3,
+                    //   color: AppColors.primary,
+                    // ),
+                    // FriendInfoTile(
+                    //   labelText: 'Phone',
+                    //   info: friendData.phoneNumber!,
+                    // ),
+                    // const Divider(
+                    //   thickness: 3,
+                    //   color: AppColors.primary,
+                    // ),
                     FriendInfoTile(
                       labelText: 'City',
                       info: friendData.city!,

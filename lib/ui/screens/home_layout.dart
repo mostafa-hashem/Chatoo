@@ -41,14 +41,14 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
       child: Scaffold(
         appBar: AppBar(
           actions: [
-            IconButton(
-              onPressed: () {
-                showLanguageSheet(context);
-              },
-              icon: const Icon(
-                Icons.translate,
-              ),
-            ),
+            // IconButton(
+            //   onPressed: () {
+            //     showLanguageSheet(context);
+            //   },
+            //   icon: const Icon(
+            //     Icons.translate,
+            //   ),
+            // ),
             IconButton(
               onPressed: () {
                 showThemeSheet(context);

@@ -12,18 +12,24 @@ class NotificationsServices {
   Future<String?> initNotifications() async {
     await _firebaseMessaging.requestPermission();
     final fCMToken = await _firebaseMessaging.getToken();
-    print("*********************************************");
-    print(fCMToken);
-    print("*********************************************");
     FirebaseMessaging.onBackgroundMessage(
       (message) => handelBackgroundMessage(message),
     );
-    FirebaseFirestore.instance
-        .collection(FirebasePath.users)
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .update({
-      'fCMToken': fCMToken,
-    });
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      final userData = await FirebaseFirestore.instance
+          .collection(FirebasePath.users)
+          .doc(currentUserId)
+          .get();
+      if (userData.exists) {
+        FirebaseFirestore.instance
+            .collection(FirebasePath.users)
+            .doc(currentUserId)
+            .update({
+          'fCMToken': fCMToken,
+        });
+      }
+    }
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
 
     // Handle notification when app is opened from terminated state
@@ -52,7 +58,7 @@ class NotificationsServices {
       'notification': notification,
       'priority': 'high',
       'data': {
-        'click_action': action,
+        'click_action': "Flutter_click_action",
         'title': title,
         'body': body,
       },

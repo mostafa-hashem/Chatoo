@@ -23,7 +23,7 @@ class FriendFirebaseServices {
         );
   }
 
-  Stream<List<User>> getAllUserFriends() {
+  Stream<List<User?>> getAllUserFriends() {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       return Stream.value([]);
@@ -36,13 +36,14 @@ class FriendFirebaseServices {
       if (userData != null && userData is Map<String, dynamic>) {
         final List<dynamic> friendIds =
             (userData['friends'] ?? []) as List<dynamic>;
-        final List<Future<User>> friendFutures =
+        final List<Future<User?>> friendFutures =
             friendIds.map((friendId) async {
           final DocumentSnapshot friendFutures =
               await _usersCollection.doc(friendId.toString()).get();
-          return User.fromJson(friendFutures.data()! as Map<String, dynamic>);
+          if(friendFutures.exists)
+          return User.fromJson(friendFutures.data() as Map<String, dynamic>);
         }).toList();
-        final List<User> users = await Future.wait(friendFutures);
+        final List<User?> users = await Future.wait(friendFutures);
         return users;
       } else {
         return [];
@@ -85,6 +86,14 @@ class FriendFirebaseServices {
       ]),
     });
   }
+  Future<void> requestFriendRequest(String friendId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection.doc(friendId).update({
+      'requests': FieldValue.arrayRemove([
+        currentUserId,
+      ]),
+    });
+  }
 
   Future<void> approveFriendRequest(String friendId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
@@ -112,7 +121,6 @@ class FriendFirebaseServices {
     await currentUserRef.update({
       'friends': FieldValue.arrayUnion([friendId]),
     });
-
     await currentUserRef.update({
       'requests': FieldValue.arrayRemove([friendId]),
     });

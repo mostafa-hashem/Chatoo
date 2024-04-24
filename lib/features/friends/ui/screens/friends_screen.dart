@@ -29,9 +29,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
               listeners: [
                 BlocListener<FriendCubit, FriendStates>(
                   listener: (_, state) {
-                    if (state is SearchOnFriendSuccess) {
-
-                    }
+                    if (state is SearchOnFriendSuccess) {}
                   },
                 ),
                 BlocListener<FriendCubit, FriendStates>(
@@ -44,10 +42,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
               ],
               child: BlocBuilder<FriendCubit, FriendStates>(
                 buildWhen: (_, currentState) =>
-                currentState is GetAllUserFriendsSuccess ||
+                    currentState is GetAllUserFriendsSuccess ||
                     currentState is GetAllUserFriendsSuccess ||
                     currentState is GetAllUserFriendsLoading,
-                builder: (context, state) {
+                builder: (_, state) {
                   if (state is GetAllUserFriendsLoading) {
                     return const LoadingIndicator();
                   } else if (state is GetAllUserFriendsError) {
@@ -55,31 +53,33 @@ class _FriendsScreenState extends State<FriendsScreen> {
                   } else {
                     return ListView.builder(
                       itemCount: friends.allFriends.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            friends
-                                .getAllFriendMessages(
-                              friends.allFriends[index].id!,
-                            )
-                                .whenComplete(() {
-                              Future.delayed(
-                                const Duration(
-                                  milliseconds: 50,
-                                ),
-                                () => Navigator.pushNamed(
-                                  context,
-                                  Routes.friendChatScreen,
-                                  arguments: friends.allFriends[index],
-                                ),
-                              );
-                            });
-                          },
-                          child: FriendTile(
-                            friendData: friends.allFriends[index],
-                            lastMessageData: friends.recentMessageData[index],
-                          ),
-                        );
+                      itemBuilder: (_, index) {
+                        if (friends.allFriends[index]?.id != null) {
+                          return GestureDetector(
+                            onTap: () {
+                              friends
+                                  .getAllFriendMessages(
+                                friends.allFriends[index]!.id!,
+                              )
+                                  .whenComplete(() {
+                                Future.delayed(
+                                  const Duration(
+                                    milliseconds: 50,
+                                  ),
+                                  () => Navigator.pushNamed(
+                                    context,
+                                    Routes.friendChatScreen,
+                                    arguments: friends.allFriends[index],
+                                  ),
+                                );
+                              });
+                            },
+                            child: FriendTile(
+                              friendData: friends.allFriends[index]!,
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
                       },
                     );
                   }

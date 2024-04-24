@@ -46,11 +46,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   void scrollToBottom() {
-    GroupCubit.get(context).scrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.easeOut,
-        );
+    groupCubit.scrollController.animateTo(
+      0.0,
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -58,6 +58,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
     final provider = Provider.of<MyAppProvider>(context);
     final sender = ProfileCubit.get(context).user;
+    final profileCubit = ProfileCubit.get(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -90,9 +91,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               SizedBox(
                 width: 10.w,
               ),
-              Text(
-                groupData.groupName!,
-                style: GoogleFonts.ubuntu(fontWeight: FontWeight.bold),
+              Flexible(
+                child: Text(
+                  groupData.groupName!,
+                  style: GoogleFonts.ubuntu(fontWeight: FontWeight.w400),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -102,14 +106,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   currentState is GetAllGroupRequestsSuccess ||
                   currentState is GetAllGroupRequestsError ||
                   currentState is GetAllGroupRequestsLoading,
-              builder: (context, state) {
+              builder: (_, state) {
                 return Stack(
                   alignment: Alignment.topLeft,
                   children: [
                     IconButton(
                       onPressed: () {
                         groupCubit.getAllGroupMembers(groupData.groupId!);
-                        groupCubit.getAdminName(groupData.adminId!);
+                        groupCubit.getAdminName(groupData.mainAdminId!);
                         Navigator.pushNamed(
                           context,
                           Routes.groupInfo,
@@ -118,7 +122,10 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       },
                       icon: const Icon(Icons.info),
                     ),
-                    if (groupData.requests!.isNotEmpty)
+                    if (groupData.requests!.isNotEmpty &&
+                        groupData.groupAdmins!.any(
+                          (adminId) => adminId == profileCubit.user.id,
+                        ))
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: CircleAvatar(
@@ -139,7 +146,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   currentState is GetAllGroupMessagesSuccess ||
                   currentState is GetAllGroupMessagesError ||
                   currentState is GetAllGroupMessagesLoading,
-              builder: (context, state) {
+              builder: (_, state) {
                 return ChatMessages(
                   groupId: groupData.groupId!,
                 );
@@ -213,18 +220,18 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                           final notificationBody =
                               groupCubit.messageController.text;
                           if (groupCubit.messageController.text.isNotEmpty) {
+                            groupCubit.messageController.clear();
                             GroupCubit.get(context)
                                 .sendMessageToGroup(
                               group: groupData,
                               sender: sender,
-                              message: groupCubit.messageController.text,
+                              message: notificationBody,
                               leave: false,
                               joined: false,
                               requested: false,
                               declined: false,
                             )
                                 .whenComplete(() {
-                              groupCubit.messageController.clear();
                               scrollToBottom();
                               final List<dynamic> memberIds =
                                   groupData.members!.toList();

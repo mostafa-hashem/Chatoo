@@ -180,9 +180,10 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                   final group = Group(
                     groupIcon: GroupCubit.get(context).groupIcon,
                     groupName: groupName,
-                    adminId: userData.user.id!,
+                    mainAdminId: userData.user.id,
                     createdAt: DateTime.now(),
                     requests: [],
+                    groupAdmins: [],
                   );
                   final user = User(
                     id: userData.user.id,

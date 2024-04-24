@@ -6,7 +6,6 @@ import 'package:chat_app/utils/data/failure/failure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
@@ -65,6 +64,16 @@ class AuthCubit extends Cubit<AuthState> {
       isLoggedIn = authFirebaseService.getAuthStatus();
     } catch (e) {
       emit(AuthError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    emit(DeleteAccountLoading());
+    try {
+      await authFirebaseService.deleteAccount();
+      emit(DeleteAccountSuccess());
+    } catch (e) {
+      emit(DeleteAccountError(Failure.fromException(e).message));
     }
   }
 }

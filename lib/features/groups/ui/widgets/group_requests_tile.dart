@@ -1,5 +1,6 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -10,9 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class GroupRequestsTile extends StatelessWidget {
+class GroupRequestsTile extends StatefulWidget {
   // Note: Avoid using `const` with constructors.
-  GroupRequestsTile({
+  const GroupRequestsTile({
     required this.group,
     required this.requesterData,
     super.key,
@@ -22,8 +23,24 @@ class GroupRequestsTile extends StatelessWidget {
   final User requesterData;
 
   @override
+  State<GroupRequestsTile> createState() => _GroupRequestsTileState();
+}
+
+class _GroupRequestsTileState extends State<GroupRequestsTile> {
+  late GroupCubit groupCubit;
+  late NotificationsCubit notificationsCubit;
+  late ProfileCubit profileCubit;
+
+  @override
+  void didChangeDependencies() {
+    groupCubit = GroupCubit.get(context);
+    notificationsCubit = NotificationsCubit.get(context);
+    profileCubit = ProfileCubit.get(context);
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final groupCubit = GroupCubit.get(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 5,
@@ -38,18 +55,18 @@ class GroupRequestsTile extends StatelessWidget {
             onTap: () => Navigator.pushNamed(
               context,
               Routes.friendInfoScreen,
-              arguments: requesterData,
+              arguments: widget.requesterData,
             ),
             child: ListTile(
-              leading: requesterData.profileImage != null ||
-                      requesterData.profileImage!.isNotEmpty
+              leading: widget.requesterData.profileImage != null ||
+                      widget.requesterData.profileImage!.isNotEmpty
                   ? InkWell(
                       onTap: () => showImageDialog(
                         context,
-                        requesterData.profileImage!,
+                        widget.requesterData.profileImage!,
                       ),
                       child: FancyShimmerImage(
-                        imageUrl: requesterData.profileImage!,
+                        imageUrl: widget.requesterData.profileImage!,
                         height: 44.h,
                         width: 44.w,
                         boxFit: BoxFit.contain,
@@ -62,7 +79,9 @@ class GroupRequestsTile extends StatelessWidget {
                       radius: 28.r,
                       backgroundColor: AppColors.primary,
                       child: Text(
-                        requesterData.userName!.substring(0, 1).toUpperCase(),
+                        widget.requesterData.userName!
+                            .substring(0, 1)
+                            .toUpperCase(),
                         style: GoogleFonts.ubuntu(
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
@@ -70,12 +89,12 @@ class GroupRequestsTile extends StatelessWidget {
                       ),
                     ),
               title: Text(
-                requesterData.userName!,
+                widget.requesterData.userName!,
                 style: GoogleFonts.alexandria(fontSize: 14.sp),
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: Text(
-                "Bio: ${requesterData.bio}",
+                "Bio: ${widget.requesterData.bio}",
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall!
@@ -93,22 +112,21 @@ class GroupRequestsTile extends StatelessWidget {
                 onTap: () {
                   groupCubit
                       .declineToJoinGroup(
-                    group.groupId!,
-                    requesterData.id!,
+                    widget.group.groupId!,
+                    widget.requesterData.id!,
                   )
                       .whenComplete(
                     () {
                       groupCubit.sendMessageToGroup(
-                        group: group,
-                        sender: ProfileCubit.get(context).user,
+                        group: widget.group,
+                        sender: profileCubit.user,
                         message:
-                            '${ProfileCubit.get(context).user.userName!} Declined ${requesterData.userName}',
+                            '${profileCubit.user.userName!} Declined ${widget.requesterData.userName}',
                         leave: false,
                         joined: false,
                         requested: false,
                         declined: true,
                       );
-                      Navigator.pop(context);
                     },
                   );
                 },
@@ -132,23 +150,28 @@ class GroupRequestsTile extends StatelessWidget {
                 onTap: () {
                   groupCubit
                       .approveToJoinGroup(
-                    group.groupId!,
-                    requesterData.id!,
+                    widget.group.groupId!,
+                    widget.requesterData.id!,
                   )
                       .whenComplete(
                     () {
                       groupCubit.sendMessageToGroup(
-                        group: group,
-                        sender: ProfileCubit.get(context).user,
+                        group: widget.group,
+                        sender: profileCubit.user,
                         message:
-                            '${ProfileCubit.get(context).user.userName!} Approved ${requesterData.userName}',
+                            '${profileCubit.user.userName!} Approved ${widget.requesterData.userName}',
                         leave: false,
                         joined: false,
                         requested: true,
                         declined: false,
                       );
-                      groupCubit.getAllGroupMembers(group.groupId!);
-                      Navigator.pop(context);
+                      notificationsCubit.sendNotification(
+                        widget.requesterData.fCMToken!,
+                        widget.group.groupName!,
+                        "Your request to join ${widget.group.groupName} have been accepted",
+                        'group',
+                      );
+                      groupCubit.getAllGroupMembers(widget.group.groupId!);
                     },
                   );
                 },

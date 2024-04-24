@@ -34,6 +34,15 @@ class ProfileCubit extends Cubit<ProfileState> {
       emit(UpdateUserError(Failure.fromException(e).message));
     }
   }
+  Future<void> updateBio(String newBio) async {
+    emit( UpdateUserBioLoading());
+    try {
+      await profileFirebaseService.updateBio(newBio);
+      emit( UpdateUserBioSuccess());
+    } catch (e) {
+      emit( UpdateUserBioError(Failure.fromException(e).message));
+    }
+  }
 
   Future<void> uploadProfileImageToFireStorage(
       String filePath,

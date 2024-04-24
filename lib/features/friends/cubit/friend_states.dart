@@ -112,6 +112,15 @@ class GetRecentMessageDataError extends FriendStates {
   GetRecentMessageDataError(this.message);
 }
 
+class RemoveFriendRequestLoading extends FriendStates {}
+
+class RemoveFriendRequestSuccess extends FriendStates {}
+
+class RemoveFriendRequestError extends FriendStates {
+  final String message;
+
+  RemoveFriendRequestError(this.message);
+}
 class RemoveFriendLoading extends FriendStates {}
 
 class RemoveFriendSuccess extends FriendStates {}

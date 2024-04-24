@@ -20,29 +20,16 @@ class ProfileFirebaseService {
   Future<void> updateUser(User updatedUser) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final userDoc = _usersCollection.doc(currentUserId);
-    final updatedUserData = updatedUser.toJson();
 
     // Update the user's data
-    await userDoc.update(updatedUserData);
+    await userDoc.update(updatedUser.toJson());
+  }
 
-    // Retrieve the list of friend IDs from the user's document
-    final userSnapshot = await userDoc.get();
-    final List<dynamic> friendIds =
-        userSnapshot.data()?['friends'] as List<dynamic>;
-
-    // Update friendData for each friend
-    for (final friendId in friendIds) {
-      final friendDoc = _usersCollection
-          .doc(friendId.toString())
-          .collection(FirebasePath.friends)
-          .doc(currentUserId);
-
-      final friendSnapshot = await friendDoc.get();
-      if (friendSnapshot.exists) {
-        // Update the friendData field with the updated user data
-        await friendDoc.update({'friendData': updatedUserData});
-      }
-    }
+  Future<void> updateBio(String newBio) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection.doc(currentUserId).update({
+      'bio': newBio,
+    });
   }
 
   Future<void> uploadProfileImage(String filePath, File imageFile) async {

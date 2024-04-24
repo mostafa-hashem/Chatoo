@@ -8,6 +8,7 @@ import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/my_theme.dart';
 import 'package:chat_app/utils/bloc_observer.dart';
+import 'package:chat_app/utils/cubit/suggestion_cubit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -55,7 +56,7 @@ class _MyAppState extends State<MyApp> {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     setState(() {
       appVersion = packageInfo.version;
-      if (appVersion!.compareTo(requiredVersion) < 0) {
+      if (appVersion != requiredVersion) {
         routeName = Routes.updateScreen;
       } else {
         routeName = Routes.splash;
@@ -89,6 +90,9 @@ class _MyAppState extends State<MyApp> {
             ),
             BlocProvider(
               create: (_) => FriendCubit(),
+            ),
+            BlocProvider(
+              create: (context) => SuggestionCubit(),
             ),
           ],
           child: MaterialApp(
