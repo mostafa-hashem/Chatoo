@@ -1,8 +1,6 @@
 import 'dart:convert';
 
 import 'package:chat_app/utils/constants.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,21 +13,6 @@ class NotificationsServices {
     FirebaseMessaging.onBackgroundMessage(
       (message) => handelBackgroundMessage(message),
     );
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) {
-      final userData = await FirebaseFirestore.instance
-          .collection(FirebasePath.users)
-          .doc(currentUserId)
-          .get();
-      if (userData.exists) {
-        FirebaseFirestore.instance
-            .collection(FirebasePath.users)
-            .doc(currentUserId)
-            .update({
-          'fCMToken': fCMToken,
-        });
-      }
-    }
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
 
     // Handle notification when app is opened from terminated state

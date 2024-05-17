@@ -72,6 +72,15 @@ class DeclineToAddFriendError extends FriendStates {
   DeclineToAddFriendError(this.message);
 }
 
+class GetFriendDataLoading extends FriendStates {}
+
+class GetFriendDataSuccess extends FriendStates {}
+
+class GetFriendDataError extends FriendStates {
+  final String message;
+
+  GetFriendDataError(this.message);
+}
 class SearchOnFriendLoading extends FriendStates {}
 
 class SearchOnFriendSuccess extends FriendStates {}
@@ -82,6 +91,15 @@ class SearchOnFriendError extends FriendStates {
   SearchOnFriendError(this.message);
 }
 
+class SendMediaToFriendLoading extends FriendStates {}
+
+class SendMediaToFriendSuccess extends FriendStates {}
+
+class SendMediaToFriendError extends FriendStates {
+  final String message;
+
+  SendMediaToFriendError(this.message);
+}
 class SendMessageToFriendLoading extends FriendStates {}
 
 class SendMessageToFriendSuccess extends FriendStates {}

@@ -21,10 +21,9 @@ class GroupCubit extends Cubit<GroupStates> {
   List<User?> allGroupMembers = [];
   List<User> allGroupRequests = [];
   List<Group> searchedGroups = [];
-
-  // List<Group> filteredGroups = [];
   List<GroupMessage> filteredMessages = [];
   ScrollController scrollController = ScrollController();
+  List<String> mediaUrls = [];
   TextEditingController messageController = TextEditingController();
 
   Future<void> createGroup(Group group, User user) async {
@@ -74,7 +73,9 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(UploadGroupImageToFireStorageSuccess());
     } catch (e) {
       emit(
-        UploadGroupImageToFireStorageError(Failure.fromException(e).message),
+        UploadGroupImageToFireStorageError(
+          Failure.fromException(e).message,
+        ),
       );
     }
   }
@@ -172,6 +173,9 @@ class GroupCubit extends Cubit<GroupStates> {
     required Group group,
     User? sender,
     required String message,
+    List<String>? mediaUrls,
+    required MessageType type,
+    double? duration,
     required bool isAction,
   }) async {
     emit(SendMessageToGroupLoading());
@@ -180,11 +184,31 @@ class GroupCubit extends Cubit<GroupStates> {
         group,
         message,
         sender!,
+        mediaUrls ?? [],
+        type,
+        duration,
         isAction,
       );
       emit(SendMessageToGroupSuccess());
     } catch (e) {
       emit(SendMessageToGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> uploadMediaToGroup(
+    String mediaPath,
+    File mediaFile,
+    String groupId,
+  ) async {
+    emit(UploadMediaToGroupLoading());
+    try {
+      mediaUrls.clear();
+      final String downloadUrl = await _groupFirebaseServices
+          .uploadMediaToGroup(mediaPath, mediaFile, groupId);
+      mediaUrls.add(downloadUrl);
+      emit(UploadMediaToGroupSuccess());
+    } catch (e) {
+      emit(UploadMediaToGroupError(Failure.fromException(e).message));
     }
   }
 

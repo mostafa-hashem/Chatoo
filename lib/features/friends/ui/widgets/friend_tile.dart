@@ -50,8 +50,9 @@ class _FriendTileState extends State<FriendTile> {
                     ),
                   )
                 : InkWell(
-                    onTap: () =>
-                        showImageDialog(context, widget.friendData.profileImage!),
+                    onTap: () {
+                      showImageDialog(context, widget.friendData.profileImage!);
+                    },
                     child: ClipOval(
                       child: FancyShimmerImage(
                         imageUrl: widget.friendData.profileImage!,
@@ -65,8 +66,8 @@ class _FriendTileState extends State<FriendTile> {
             ),
             subtitle: Text(
               "Test for last message",
-              style:
-                  GoogleFonts.novaSquare(fontWeight: FontWeight.w700, fontSize: 14),
+              style: GoogleFonts.novaSquare(
+                  fontWeight: FontWeight.w700, fontSize: 14),
               overflow: TextOverflow.ellipsis,
             ),
           ),

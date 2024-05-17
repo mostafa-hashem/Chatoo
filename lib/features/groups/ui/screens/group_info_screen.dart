@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_members.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
@@ -78,6 +79,7 @@ class _GroupInfoState extends State<GroupInfo> {
                                 sender: profileCubit.user,
                                 message:
                                     '${profileCubit.user.userName} left the group',
+                                type: MessageType.text,
                                 isAction: true,
                               );
                               Navigator.pushNamedAndRemoveUntil(
@@ -184,9 +186,6 @@ class _GroupInfoState extends State<GroupInfo> {
                             if (groupData.groupAdmins!.any(
                               (adminId) => adminId == profileCubit.user.id,
                             ))
-                              if (groupData.groupAdmins!.any(
-                                (adminId) => adminId == profileCubit.user.id!,
-                              ))
                                 PopupMenuItem(
                                   child: TextButton(
                                     onPressed: () {

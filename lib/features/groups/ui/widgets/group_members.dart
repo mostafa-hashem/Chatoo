@@ -2,6 +2,7 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
@@ -16,7 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class GroupMembers extends StatefulWidget {
   // Note: Avoid using `const` with constructors.
-   GroupMembers({
+  const GroupMembers({
     required this.group,
     super.key,
   });
@@ -194,6 +195,7 @@ class _GroupMembersState extends State<GroupMembers> {
                               sender: profileCubit.user,
                               message:
                                   '${profileCubit.user.userName!} kick ${groupCubit.allGroupMembers[index]!.userName}',
+                              type: MessageType.text,
                               isAction: true,
                             );
                             // groupCubit.getAllGroupMembers(widget.group.groupId!);

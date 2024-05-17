@@ -5,7 +5,6 @@ class MyAppProvider extends ChangeNotifier {
   ThemeMode themeMode = ThemeMode.light;
   String language = 'en';
 
-
   Future<void> changeLanguage(String newLanguage) async {
     if (language == newLanguage) {
       return;

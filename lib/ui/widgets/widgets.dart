@@ -75,7 +75,10 @@ void showEditBioSheet(BuildContext context, String bio) {
 }
 
 void showChangeGroupNameSheet(
-    BuildContext context, String groupId, String groupName) {
+  BuildContext context,
+  String groupId,
+  String groupName,
+) {
   showModalBottomSheet(
     isScrollControlled: true,
     context: context,
@@ -100,7 +103,7 @@ void showThemeSheet(BuildContext context) {
   );
 }
 
-Rect getWidgetPosition(GlobalKey key, {double spacing = 50.0}) {
+Rect getWidgetPosition(GlobalKey key, {double spacing = 40.0}) {
   final RenderBox? renderBox =
       key.currentContext?.findRenderObject() as RenderBox?;
   final offset = renderBox!.localToGlobal(Offset.zero);

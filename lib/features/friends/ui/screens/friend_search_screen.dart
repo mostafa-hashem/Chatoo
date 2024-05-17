@@ -162,9 +162,11 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                     itemBuilder: (_, index) => FriendSearchWidget(
                       friendData: friendCubit.searchedFriends[index],
                       isUserFriend: friendCubit.allFriends.any(
-                        (friend) => friend!.id!.contains(
-                          friendCubit.searchedFriends[index].id!,
-                        ),
+                        (friend) =>
+                            friend != null &&
+                            friend.id!.contains(
+                              friendCubit.searchedFriends[index].id!,
+                            ),
                       ),
                       isRequested: friendCubit.searchedFriends.any(
                         (friend) => friend.requests!.any(

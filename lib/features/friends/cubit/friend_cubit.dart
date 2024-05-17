@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
@@ -17,9 +18,11 @@ class FriendCubit extends Cubit<FriendStates> {
   List<User?> allFriends = [];
   List<User> allUserRequests = [];
   List<User> searchedFriends = [];
+  User? friendData;
   List<FriendMessage> filteredMessages = [];
   List<Friend> recentMessageData = [];
   ScrollController scrollController = ScrollController();
+  List<String> mediaUrls = [];
   TextEditingController messageController = TextEditingController();
 
   Future<void> requestToAddFriend(String friendId) async {
@@ -76,6 +79,18 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
+  Future<void> getFriendData(String friendId) async {
+    emit(GetFriendDataLoading());
+    try {
+      _friendFirebaseServices.getFriendData(friendId).listen((friend) {
+        friendData = friend;
+        emit(GetFriendDataSuccess());
+      });
+    } catch (e) {
+      emit(GetFriendDataError(Failure.fromException(e).message));
+    }
+  }
+
   Future<void> searchOnFriend(String friendData) async {
     emit(SearchOnFriendLoading());
     try {
@@ -94,21 +109,40 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> sendMessageToFriend(
-    User friend,
-    String message,
-    User sender,
-  ) async {
+  Future<void> sendMessageToFriend({
+    required User friend,
+    required String message,
+    required User sender,
+    required MessageType type,
+    double? duration,
+  }) async {
     emit(SendMessageToFriendLoading());
     try {
       await _friendFirebaseServices.sendMessageToFriend(
         friend,
         message,
         sender,
+        mediaUrls,
+        type,
+        duration
       );
       emit(SendMessageToFriendSuccess());
     } catch (e) {
       emit(SendMessageToFriendError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> sendMediaToFriend(
+      String mediaPath, File mediaFile, String friendPathId) async {
+    emit(SendMediaToFriendLoading());
+    try {
+      mediaUrls.clear();
+      final String downloadUrl = await _friendFirebaseServices
+          .sendMediaToFriend(mediaPath, mediaFile, friendPathId);
+      mediaUrls.add(downloadUrl);
+      emit(SendMediaToFriendSuccess());
+    } catch (e) {
+      emit(SendMediaToFriendError(Failure.fromException(e).message));
     }
   }
 
@@ -151,6 +185,7 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(RemoveFriendRequestError(Failure.fromException(e).message));
     }
   }
+
   Future<void> removeFriend(String friendId) async {
     emit(RemoveFriendLoading());
     try {

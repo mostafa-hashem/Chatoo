@@ -1,3 +1,5 @@
+import 'package:chat_app/route_manager.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -56,13 +58,20 @@ void showImageDialog(BuildContext context, String imageUrl) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return Dialog(
-        child: SizedBox(
-          width: 400,
-          height: 350,
-          child: Image.network(
-            imageUrl,
-            fit: BoxFit.contain,
+      return GestureDetector(
+        onTap: (){
+          Navigator.pushNamed(
+            context,
+            Routes.imageView,
+            arguments: imageUrl,
+          );
+        },
+        child: Dialog(
+          child: SizedBox(
+            child: FancyShimmerImage(
+              imageUrl: imageUrl,
+              boxFit: BoxFit.contain,
+            ),
           ),
         ),
       );

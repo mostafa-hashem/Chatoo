@@ -1,17 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum MessageType {
+  text,
+  image,
+  video,
+  record,
+}
+
 class FriendMessage {
-   String friendId = '';
-   String messageId = '';
-   String message = '';
-   String sender = '';
-   DateTime sentAt = DateTime.now();
+  String friendId = '';
+  String messageId = '';
+  String message = '';
+  String sender = '';
+  List<String>? mediaUrls;
+  MessageType? messageType;
+  double? duration;
+  DateTime sentAt = DateTime.now();
 
   FriendMessage({
     required this.friendId,
     required this.messageId,
     required this.message,
     required this.sender,
+    this.mediaUrls,
+    this.messageType,
+    this.duration = 0,
     required this.sentAt,
   });
 
@@ -28,15 +41,28 @@ class FriendMessage {
     if (json['sender'] != null) {
       sender = json['sender'] as String;
     }
+    if (json['mediaUrls'] != null) {
+      mediaUrls = List<String>.from(json['mediaUrls'] as List<dynamic>);
+    }
+    if (json['messageType'] != null) {
+      messageType = MessageType.values[json['messageType'] as int];
+    }
+    if (json['duration'] != null) {
+      duration = json['duration'] as double;
+    }
     if (json['sentAt'] != null) {
       sentAt = (json['sentAt'] as Timestamp).toDate();
     }
   }
+
   Map<String, dynamic> toJson() => {
         'friendId': friendId,
         'messageId': messageId,
         'message': message,
         'sender': sender,
+        if (mediaUrls != null) 'mediaUrls': mediaUrls,
+        if (messageType != null) 'messageType': messageType!.index,
+        if (duration != null) 'duration': duration,
         'sentAt': Timestamp.fromDate(sentAt),
       };
 }

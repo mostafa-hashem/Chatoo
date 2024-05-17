@@ -131,6 +131,15 @@ class SendMessageToGroupError extends GroupStates {
 
   SendMessageToGroupError(this.message);
 }
+class UploadMediaToGroupLoading extends GroupStates {}
+
+class UploadMediaToGroupSuccess extends GroupStates {}
+
+class UploadMediaToGroupError extends GroupStates {
+  final String message;
+
+  UploadMediaToGroupError(this.message);
+}
 
 class SearchOnGroupLoading extends GroupStates {}
 

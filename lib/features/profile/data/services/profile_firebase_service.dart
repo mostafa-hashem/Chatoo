@@ -37,7 +37,7 @@ class ProfileFirebaseService {
         _storage.ref().child(FirebasePath.users).child(filePath);
     final UploadTask uploadTask =
         storageRef.child('${imageFile.hashCode}').putFile(imageFile);
-    final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+    final TaskSnapshot snapshot = await uploadTask;
     final String downloadUrl = await snapshot.ref.getDownloadURL();
 
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;

@@ -1,5 +1,6 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
@@ -122,6 +123,7 @@ class _GroupRequestsTileState extends State<GroupRequestsTile> {
                         sender: profileCubit.user,
                         message:
                             '${profileCubit.user.userName!} Declined ${widget.requesterData.userName}',
+                        type: MessageType.text,
                         isAction: true,
                       );
                     },
@@ -157,6 +159,7 @@ class _GroupRequestsTileState extends State<GroupRequestsTile> {
                         sender: profileCubit.user,
                         message:
                             '${profileCubit.user.userName!} Approved ${widget.requesterData.userName}',
+                        type: MessageType.text,
                         isAction: true,
                       );
                       notificationsCubit.sendNotification(

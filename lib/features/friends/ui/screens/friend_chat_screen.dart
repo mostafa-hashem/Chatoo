@@ -1,21 +1,16 @@
+
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_chat_messages.dart';
-import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
-import 'package:chat_app/features/notifications/cubit/notifications_states.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/provider/app_provider.dart';
+import 'package:chat_app/features/friends/ui/widgets/friend_type_message_widget.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/utils/data/models/user.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
-import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class FriendChatScreen extends StatefulWidget {
   const FriendChatScreen({
@@ -27,10 +22,8 @@ class FriendChatScreen extends StatefulWidget {
 }
 
 class _FriendChatScreenState extends State<FriendChatScreen> {
-  bool emojiShowing = false;
   late FriendCubit friendCubit;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -43,19 +36,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
     super.dispose();
   }
 
-  void scrollToBottom() {
-    FriendCubit.get(context).scrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.easeOut,
-        );
-  }
 
   @override
   Widget build(BuildContext context) {
     final friendData = ModalRoute.of(context)!.settings.arguments! as User;
-    final sender = ProfileCubit.get(context).user;
-    final provider = Provider.of<MyAppProvider>(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -71,8 +55,8 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                 ClipOval(
                   child: FancyShimmerImage(
                     imageUrl: friendData.profileImage!,
-                    width: 40.w,
-                    height: 36.h,
+                    width: 44.w,
+                    height: 40.h,
                   ),
                 )
               else
@@ -92,10 +76,56 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                 width: 10.w,
               ),
               Flexible(
-                child: Text(
-                  friendData.userName!,
-                  style: GoogleFonts.ubuntu(fontWeight: FontWeight.w400),
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      friendCubit.friendData?.userName ?? '',
+                      style: GoogleFonts.ubuntu(fontWeight: FontWeight.w500),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    BlocBuilder<FriendCubit, FriendStates>(
+                      buildWhen: (_, current) =>
+                          current is GetFriendDataError ||
+                          current is GetFriendDataSuccess ||
+                          current is GetFriendDataLoading,
+                      builder: (_, state) {
+                        if (friendCubit.friendData?.onLine != null) {
+                          return Row(
+                            children: [
+                              if (friendCubit.friendData!.onLine!)
+                                Icon(
+                                  Icons.circle,
+                                  color: Colors.greenAccent,
+                                  size: 10.r,
+                                )
+                              else
+                                Icon(
+                                  Icons.circle,
+                                  color: Colors.grey,
+                                  size: 10.r,
+                                ),
+                              SizedBox(
+                                width: MediaQuery.sizeOf(context).width * 0.01,
+                              ),
+                              Text(
+                                friendCubit.friendData!.onLine!
+                                    ? 'Online'
+                                    : 'Offline',
+                                style: GoogleFonts.ubuntu(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 12.sp,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          );
+                        } else {
+                          return const SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -124,129 +154,8 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                 return FriendChatMessages();
               },
             ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.01,
-            ),
-            Container(
-              height: 60.h,
-              color: Colors.grey[600],
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          emojiShowing = !emojiShowing;
-                          FocusScope.of(context).unfocus();
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.emoji_emotions,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      child: TextField(
-                        controller: friendCubit.messageController,
-                        textInputAction: TextInputAction.newline,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: provider.themeMode == ThemeMode.light
-                              ? Colors.black87
-                              : AppColors.light,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Type a message',
-                          hintStyle: Theme.of(context).textTheme.bodySmall,
-                          filled: true,
-                          fillColor: provider.themeMode == ThemeMode.light
-                              ? Colors.white
-                              : AppColors.dark,
-                          contentPadding: const EdgeInsets.only(
-                            left: 16.0,
-                            bottom: 8.0,
-                            top: 8.0,
-                            right: 16.0,
-                          ),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(50.r),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  BlocListener<NotificationsCubit, NotificationsStates>(
-                    listener: (_, state) {
-                      if (state is SendNotificationSuccess) {}
-                    },
-                    child: Material(
-                      color: Colors.transparent,
-                      child: IconButton(
-                        onPressed: () {
-                          final notificationBody =
-                              friendCubit.messageController.text;
-                          if (friendCubit.messageController.text.isNotEmpty) {
-                            friendCubit.messageController.clear();
-                            FriendCubit.get(context)
-                                .sendMessageToFriend(
-                              friendData,
-                              notificationBody,
-                              sender,
-                            )
-                                .whenComplete(
-                              () {
-                                scrollToBottom();
-                                NotificationsCubit.get(context)
-                                    .sendNotification(
-                                  friendData.fCMToken ?? '',
-                                  sender.userName!,
-                                  notificationBody,
-                                  'friend',
-                                );
-                              },
-                            );
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.send,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Offstage(
-              offstage: !emojiShowing,
-              child: SizedBox(
-                height: 220.h,
-                child: EmojiPicker(
-                  textEditingController: friendCubit.messageController,
-                  config: Config(
-                    emojiSizeMax: 30 *
-                        (foundation.defaultTargetPlatform == TargetPlatform.iOS
-                            ? 1.30
-                            : 1.0),
-                    bgColor: provider.themeMode == ThemeMode.light
-                        ? const Color(0xFFF2F2F2)
-                        : AppColors.dark,
-                    indicatorColor: AppColors.primary,
-                    iconColorSelected: AppColors.primary,
-                    backspaceColor: AppColors.primary,
-                    noRecents: Text(
-                      'No Recents',
-                      style: TextStyle(fontSize: 16.sp, color: Colors.black26),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ),
+            FriendTypeMessageWidget(
+              friendData: friendData,
             ),
           ],
         ),

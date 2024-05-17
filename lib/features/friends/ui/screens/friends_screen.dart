@@ -16,7 +16,6 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
-
   @override
   Widget build(BuildContext context) {
     final friends = FriendCubit.get(context);
@@ -43,6 +42,9 @@ class _FriendsScreenState extends State<FriendsScreen> {
                       if (friends.allFriends[index]?.id != null) {
                         return GestureDetector(
                           onTap: () {
+                            friends.getFriendData(
+                              friends.allFriends[index]!.id!,
+                            );
                             friends
                                 .getAllFriendMessages(
                               friends.allFriends[index]!.id!,

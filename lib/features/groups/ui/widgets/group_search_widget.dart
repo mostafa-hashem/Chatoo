@@ -1,5 +1,6 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -171,6 +172,7 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                         groupCubit.sendMessageToGroup(
                           group: widget.searchedGroupData,
                           sender: ProfileCubit.get(context).user,
+                          type: MessageType.text,
                           message:
                               "${ProfileCubit.get(context).user.userName} requested to join the the group",
                           isAction: true,

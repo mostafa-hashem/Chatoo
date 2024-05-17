@@ -1,13 +1,10 @@
 import 'dart:io';
 
-import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
-import 'package:chat_app/features/auth/cubit/auth_state.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/widgets/custom_profile_container.dart';
 import 'package:chat_app/provider/app_provider.dart';
-import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/default_text_button.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
@@ -54,7 +51,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
     final profile = ProfileCubit.get(context);
-    final authCubit = AuthCubit.get(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -229,29 +225,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       context,
                                       profile.user.profileImage!,
                                     ),
-                                    child: ClipOval(
-                                      child: FancyShimmerImage(
-                                        imageUrl: profile.user.profileImage!,
-                                        height: 150.h,
-                                        width: 180.w,
-                                        boxFit: BoxFit.contain,
-                                        errorWidget: const Icon(
-                                          Icons.error_outline_outlined,
-                                        ),
-                                      ),
+                                    child:CircleAvatar(
+                                      backgroundColor: Colors.transparent,
+                                      backgroundImage:
+                                      NetworkImage(profile.user.profileImage!),
                                     ),
                                   )
-                                : ClipOval(
-                                    child: FancyShimmerImage(
-                                      imageUrl: FirebasePath.defaultImage,
-                                      height: 150.h,
-                                      width: 180.w,
-                                      boxFit: BoxFit.contain,
-                                      errorWidget: const Icon(
-                                        Icons.error_outline_outlined,
-                                      ),
-                                    ),
-                                  ),
+                                :
+                            CircleAvatar(
+                              backgroundColor: Colors.transparent,
+                              radius: 125.r,
+                              backgroundImage:
+                              const NetworkImage(FirebasePath.defaultImage),
+                            ),
                           ),
                           GestureDetector(
                             onTap: () async {

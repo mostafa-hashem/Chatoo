@@ -113,7 +113,7 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                       Colors.green,
                       "Successfully canceled",
                     );
-                    if(context.mounted){
+                    if (context.mounted) {
                       Navigator.pop(context);
                     }
                   }
@@ -123,7 +123,7 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                       Colors.green,
                       "Successfully left",
                     );
-                    if(context.mounted){
+                    if (context.mounted) {
                       Navigator.pop(context);
                     }
                   }
@@ -141,9 +141,11 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                       return GroupSearchWidget(
                         searchedGroupData: groupCubit.searchedGroups[index],
                         isUserMember: groupCubit.allUserGroups.any(
-                          (group) => group!.groupId!.contains(
-                            groupCubit.searchedGroups[index].groupId!,
-                          ),
+                          (group) =>
+                              group != null &&
+                              group.groupId!.contains(
+                                groupCubit.searchedGroups[index].groupId!,
+                              ),
                         ),
                         isRequested:
                             groupCubit.searchedGroups[index].requests!.any(
@@ -152,9 +154,11 @@ class _GroupSearchScreenState extends State<GroupSearchScreen> {
                         ),
                       );
                     },
-                    separatorBuilder: (context, index) => Divider(
-                      thickness: 4.h,
-                    ),
+                    separatorBuilder: (context, index) {
+                      return Divider(
+                        thickness: 4.h,
+                      );
+                    },
                     itemCount: groupCubit.searchedGroups.length,
                   );
                 },

@@ -12,6 +12,7 @@ import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/join_group_request_screen.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
 import 'package:chat_app/ui/screens/home_layout.dart';
+import 'package:chat_app/ui/screens/image_view.dart';
 import 'package:chat_app/ui/screens/splash_screen.dart';
 import 'package:chat_app/ui/screens/suggestions_screens.dart';
 import 'package:chat_app/ui/screens/update_screen.dart';
@@ -35,6 +36,7 @@ class Routes {
   static const String friendSearchScreen = "/friendSearchScreen";
   static const String profile = "/profile";
   static const String suggestionsScreen = "/suggestionsScreen";
+  static const String imageView = "/imageView";
 }
 
 Route? onGenerateRoute(RouteSettings routeSettings) {
@@ -118,6 +120,11 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
     case Routes.suggestionsScreen:
       return MaterialPageRoute(
         builder: (_) => const SuggestionsScreen(),
+      );
+      case Routes.imageView:
+      return MaterialPageRoute(
+        builder: (_) => const ImageView(),
+        settings: routeSettings
       );
     default:
       return null;

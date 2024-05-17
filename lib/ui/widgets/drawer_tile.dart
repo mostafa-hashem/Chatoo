@@ -36,7 +36,7 @@ class _DrawerTileState extends State<DrawerTile> {
     final friendCubit = FriendCubit.get(context);
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 50.h),
-      child: Column(
+      child: ListView(
         children: [
           BlocBuilder<ProfileCubit, ProfileState>(
             builder: (_, state) {
@@ -47,14 +47,11 @@ class _DrawerTileState extends State<DrawerTile> {
                         context,
                         profile.user.profileImage!,
                       ),
-                      child: ClipOval(
-                        child: FancyShimmerImage(
-                          imageUrl: profile.user.profileImage!,
-                          height: 150.h,
-                          width: 180.w,
-                          boxFit: BoxFit.contain,
-                          errorWidget: const Icon(Icons.error_outline_outlined),
-                        ),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        radius: 125.r,
+                        backgroundImage:
+                            NetworkImage(profile.user.profileImage!),
                       ),
                     )
                   : ClipOval(

@@ -1,5 +1,6 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
@@ -120,6 +121,7 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             message:
                                 '${profileCubit.user.userName} added ${widget.friendData.userName}',
                             sender: profileCubit.user,
+                            type: MessageType.text,
                             isAction: true,
                           );
                           notificationCubit.sendNotification(
@@ -140,6 +142,7 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             message:
                                 "${profileCubit.user.userName} request's to add ${widget.friendData.userName}",
                             sender: profileCubit.user,
+                            type: MessageType.text,
                             isAction: true,
                           );
                           notificationCubit.sendNotification(

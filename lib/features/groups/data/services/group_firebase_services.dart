@@ -238,9 +238,12 @@ class GroupFirebaseServices {
     Group group,
     String message,
     User sender,
+    List<String> mediaUrls,
+    MessageType type,
+    double? duration,
     bool isAction,
   ) async {
-    if (message.isEmpty) {
+    if (message.isEmpty && mediaUrls.isEmpty) {
       return;
     }
     final String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
@@ -250,15 +253,21 @@ class GroupFirebaseServices {
         .collection(FirebasePath.messages)
         .doc();
     final messageId = groupMessageDocRef.id;
-    await groupMessageDocRef.set({
-      'groupId': group.groupId,
-      'messageId': messageId,
-      'senderId': currentUserUid,
-      'message': message,
-      'sender': sender.toJson(),
-      'sentAt': FieldValue.serverTimestamp(),
-      'isAction': isAction,
-    });
+    final GroupMessage groupMessage = GroupMessage(
+      groupId: group.groupId,
+      messageId: messageId,
+      message: message,
+      mediaUrls: mediaUrls,
+      sender: sender,
+      senderId: currentUserUid,
+      sentAt: DateTime.now(),
+      messageType: type,
+      duration: duration ?? 0,
+      isAction: isAction,
+    );
+    await groupMessageDocRef.set(
+      groupMessage.toJson(),
+    );
 
     await _groupsCollection.doc(group.groupId).update({
       'recentMessage': message,
@@ -266,6 +275,14 @@ class GroupFirebaseServices {
       'recentMessageSender': sender.userName,
     });
   }
+  Future<String> uploadMediaToGroup(String mediaPath,File mediaFile, String groupId) async {
+      final Reference storageRef = _storage.ref().child(mediaPath).child(groupId);
+      final UploadTask uploadRecord = storageRef.child('${mediaFile.hashCode}').putFile(mediaFile);
+      final TaskSnapshot snapshot = await uploadRecord;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+  }
+
 
   Future<void> leaveGroup(Group group, User user) async {
     await _usersCollection
@@ -326,6 +343,7 @@ class GroupFirebaseServices {
       }
     });
   }
+
   Future<void> deleteGroup(String groupId) async {
     await _groupsCollection.doc(groupId).delete();
   }

@@ -1,5 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
+import 'package:chat_app/ui/widgets/image_widget.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,6 +20,11 @@ class FriendMessagesTile extends StatefulWidget {
 }
 
 class _FriendMessagesTileState extends State<FriendMessagesTile> {
+  @override
+  void initState() {
+    widget.friendMessage.messageType ??= MessageType.text;
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     final friendCubit = FriendCubit.get(context);
@@ -47,8 +53,8 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                               onPressed: () {
                                 friendCubit
                                     .deleteMessageForMe(
-                                      widget.friendMessage.friendId!,
-                                      widget.friendMessage.messageId!,
+                                      widget.friendMessage.friendId,
+                                      widget.friendMessage.messageId,
                                     )
                                     .whenComplete(
                                       () => Navigator.pop(context),
@@ -60,8 +66,8 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                               onPressed: () {
                                 friendCubit
                                     .deleteMessageForAll(
-                                      widget.friendMessage.friendId!,
-                                      widget.friendMessage.messageId!,
+                                      widget.friendMessage.friendId,
+                                      widget.friendMessage.messageId,
                                     )
                                     .whenComplete(
                                       () => Navigator.pop(context),
@@ -92,8 +98,8 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                               onPressed: () {
                                 friendCubit
                                     .deleteMessageForMe(
-                                      widget.friendMessage.friendId!,
-                                      widget.friendMessage.messageId!,
+                                      widget.friendMessage.friendId,
+                                      widget.friendMessage.messageId,
                                     )
                                     .whenComplete(
                                       () => Navigator.pop(context),
@@ -148,13 +154,15 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                       ? const Color(0xffecae7d)
                       : const Color(0xff8db4ad),
                 ),
-                child: Column(
+                child:
+                widget.friendMessage.messageType! == MessageType.text ?
+                Column(
                   crossAxisAlignment: widget.sentByMe
                       ? CrossAxisAlignment.end
                       : CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.friendMessage.message!,
+                      widget.friendMessage.message,
                       style: TextStyle(fontSize: 15.sp, color: Colors.white),
                     ),
                     SizedBox(
@@ -162,7 +170,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                     ),
                     Text(
                       getFormattedTime(
-                        widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+                        widget.friendMessage.sentAt.millisecondsSinceEpoch,
                       ),
                       style: TextStyle(
                         fontSize: 9.sp,
@@ -171,6 +179,9 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                       ),
                     ),
                   ],
+                ):
+                ImageWidget(
+                  imagePath: widget.friendMessage.mediaUrls?.first ?? '',
                 ),
               ),
             ),

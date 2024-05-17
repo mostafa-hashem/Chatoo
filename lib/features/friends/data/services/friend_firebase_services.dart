@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FriendFirebaseServices {
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final _usersCollection =
       FirebaseFirestore.instance.collection(FirebasePath.users);
   final _friendsCollection = FirebaseFirestore.instance
@@ -20,6 +24,12 @@ class FriendFirebaseServices {
                 (queryDocSnapshot) => User.fromJson(queryDocSnapshot.data()),
               )
               .toList(),
+        );
+  }
+
+  Stream<User> getFriendData(String friendId) {
+    return _usersCollection.doc(friendId).snapshots().map(
+          (querySnapshot) => User.fromJson(querySnapshot.data()!),
         );
   }
 
@@ -40,8 +50,9 @@ class FriendFirebaseServices {
             friendIds.map((friendId) async {
           final DocumentSnapshot friendFutures =
               await _usersCollection.doc(friendId.toString()).get();
-          if(friendFutures.exists)
-          return User.fromJson(friendFutures.data() as Map<String, dynamic>);
+          if (friendFutures.exists) {
+            return User.fromJson(friendFutures.data()! as Map<String, dynamic>);
+          }
         }).toList();
         final List<User?> users = await Future.wait(friendFutures);
         return users;
@@ -86,6 +97,7 @@ class FriendFirebaseServices {
       ]),
     });
   }
+
   Future<void> requestFriendRequest(String friendId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     await _usersCollection.doc(friendId).update({
@@ -101,9 +113,9 @@ class FriendFirebaseServices {
     final friendRef = _usersCollection.doc(friendId);
 
     await friendRef.collection(FirebasePath.friends).doc(currentUserId).set({
-      'recentMessage' : '',
-      'recentMessageSender' : '',
-      'sentAt' : DateTime.now(),
+      'recentMessage': '',
+      'recentMessageSender': '',
+      'sentAt': DateTime.now(),
       'addedAt': DateTime.now(),
     });
 
@@ -112,9 +124,9 @@ class FriendFirebaseServices {
         .collection(FirebasePath.friends)
         .doc(friendId)
         .set({
-      'recentMessage' : '',
-      'recentMessageSender' : '',
-      'sentAt' : DateTime.now(),
+      'recentMessage': '',
+      'recentMessageSender': '',
+      'sentAt': DateTime.now(),
       'addedAt': DateTime.now(),
     });
     // Update the current user's friends field
@@ -138,12 +150,33 @@ class FriendFirebaseServices {
     });
   }
 
+  Future<String> sendMediaToFriend(
+    String mediaPath,
+    File mediaFile,
+    String friendPathId,
+  ) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final Reference storageRef = _storage
+        .ref()
+        .child(mediaPath)
+        .child(currentUserId)
+        .child(friendPathId);
+    final UploadTask uploadRecord =
+        storageRef.child('${mediaFile.hashCode}').putFile(mediaFile);
+    final TaskSnapshot snapshot = await uploadRecord;
+    final String downloadUrl = await snapshot.ref.getDownloadURL();
+    return downloadUrl;
+  }
+
   Future<void> sendMessageToFriend(
     User friend,
-    String message,
+    String? message,
     User sender,
+    List<String>? mediaUrls,
+      MessageType type,
+      double? duration,
   ) async {
-    if (message.isEmpty) {
+    if (message!.isEmpty && mediaUrls!.isEmpty) {
       return;
     }
     final String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
@@ -161,22 +194,30 @@ class FriendFirebaseServices {
         .doc(userMessageDocRef.id);
 
     final String messageId = userMessageDocRef.id;
+    final FriendMessage currentUserMessage = FriendMessage(
+      messageId: messageId,
+      message: message,
+      mediaUrls: mediaUrls ?? [],
+      sender: sender.id!,
+      friendId: currentUserUid,
+      messageType: type,
+      duration: duration ?? 0,
+      sentAt: DateTime.now(),
+    );
+    final FriendMessage friendMessage = FriendMessage(
+      messageId: messageId,
+      message: message,
+      mediaUrls: mediaUrls ?? [],
+      sender: sender.id!,
+      friendId: friend.id!,
+      messageType: type,
+      duration: duration ?? 0,
+      sentAt: DateTime.now(),
+    );
 
-    userMessageDocRef.set({
-      'friendId': currentUserUid,
-      'messageId': messageId,
-      'message': message,
-      'sender': sender.id,
-      'sentAt': FieldValue.serverTimestamp(),
-    });
+    userMessageDocRef.set(currentUserMessage.toJson());
 
-    friendMessageDocRef.set({
-      'friendId': friend.id,
-      'messageId': messageId,
-      'message': message,
-      'sender': sender.id,
-      'sentAt': FieldValue.serverTimestamp(),
-    });
+    friendMessageDocRef.set(friendMessage.toJson());
 
     _friendsCollection.doc(friend.id).update({
       'sentAt': FieldValue.serverTimestamp(),

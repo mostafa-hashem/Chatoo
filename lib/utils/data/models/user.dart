@@ -10,6 +10,7 @@ class User {
   List<dynamic>? requests;
   String? city;
   String? fCMToken;
+  bool? onLine;
 
   User({
     required this.id,
@@ -23,6 +24,7 @@ class User {
     this.friends,
     this.requests,
     this.city = '',
+    this.onLine = true,
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,9 @@ class User {
     if (json['requests'] != null && json['requests'] is List<dynamic>) {
       requests = json['requests'] as List<dynamic>;
     }
+    if (json['onLine'] != null) {
+      onLine = json['onLine'] as bool?;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -62,6 +67,7 @@ class User {
       if (groups != null) 'groups': groups,
       if (friends != null) 'friends': friends,
       if (requests != null) 'requests': requests,
+      if (onLine != null) 'onLine': onLine,
     };
   }
 }
