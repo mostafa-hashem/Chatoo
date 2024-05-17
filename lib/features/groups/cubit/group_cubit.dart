@@ -109,7 +109,7 @@ class GroupCubit extends Cubit<GroupStates> {
       _groupFirebaseServices.getAllUserGroups().listen((groups) {
         allUserGroups = groups;
         allUserGroups.sort((a, b) {
-          if (a?.recentMessageSentAt != null ||
+          if (a?.recentMessageSentAt != null &&
               b?.recentMessageSentAt != null) {
             return b!.recentMessageSentAt!.compareTo(a!.recentMessageSentAt!);
           }
@@ -230,7 +230,7 @@ class GroupCubit extends Cubit<GroupStates> {
       _groupFirebaseServices.getGroupsForSearch().listen((search) {
         searchedGroups = search
             .where(
-              (group) => group.groupName!.contains(groupName),
+              (group) => group.groupName!.toLowerCase().contains(groupName.toLowerCase()),
             )
             .toList();
         emit(SearchOnGroupSuccess());

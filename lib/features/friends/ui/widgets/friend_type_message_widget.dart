@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
@@ -151,209 +150,223 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Container(
-              height: 50.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          emojiShowing = !emojiShowing;
-                          FocusScope.of(context).unfocus();
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.emoji_emotions,
+            padding: EdgeInsets.only(top: 12.h, bottom: 12.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  padding: const EdgeInsets.all(4),
+                  onPressed: () {
+                    setState(() {
+                      emojiShowing = !emojiShowing;
+                      FocusScope.of(context).unfocus();
+                    });
+                  },
+                  icon: CircleAvatar(
+                    backgroundColor: AppColors.primary,
+                    radius: 20.r,
+                    child: const Icon(
+                      Icons.emoji_emotions,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: Container(
+                    constraints:
+                        BoxConstraints(minHeight: 50.h, maxHeight: 180.h),
+                    child: isRecording
+                        ? Row(
+                            children: [
+                              Flexible(
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () async {
+                                        await _stopRecording();
+                                        setState(() {
+                                          isRecording = false;
+                                        });
+                                      },
+                                      icon: const Icon(
+                                        Icons.cancel,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    const Flexible(
+                                      child: CustomRecordingWaveWidget(),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Flexible(
+                                child: TextField(
+                                  controller: friendCubit.messageController,
+                                  onChanged: (value) {
+                                    setState(() {});
+                                  },
+                                  textInputAction: TextInputAction.newline,
+                                  minLines: 1,
+                                  maxLines: null,
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: provider.themeMode == ThemeMode.light
+                                        ? Colors.black87
+                                        : AppColors.light,
+                                  ),
+                                  decoration: InputDecoration(
+                                    suffixIcon: friendCubit
+                                            .messageController.text.isEmpty
+                                        ? IconButton(
+                                            onPressed: () async {
+                                              final ImagePicker picker =
+                                                  ImagePicker();
+                                              final XFile? xFile =
+                                                  await picker.pickImage(
+                                                source: ImageSource.gallery,
+                                              );
+                                              if (xFile != null) {
+                                                File xFilePathToFile(
+                                                  XFile xFile,
+                                                ) {
+                                                  return File(xFile.path);
+                                                }
+
+                                                imageFile =
+                                                    xFilePathToFile(xFile);
+                                                if (context.mounted) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return AlertDialog(
+                                                        title: const Text(
+                                                          'Send image?',
+                                                        ),
+                                                        actionsOverflowDirection:
+                                                            VerticalDirection
+                                                                .down,
+                                                        actions: [
+                                                          TextButton(
+                                                            child: const Text(
+                                                              'Cancel',
+                                                            ),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                            },
+                                                          ),
+                                                          TextButton(
+                                                            child: const Text(
+                                                              'Send',
+                                                            ),
+                                                            onPressed: () {
+                                                              friendCubit
+                                                                  .sendMediaToFriend(
+                                                                FirebasePath
+                                                                    .images,
+                                                                imageFile!,
+                                                                widget
+                                                                    .friendData
+                                                                    .id!,
+                                                              );
+
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                            },
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            icon: const Icon(Icons.image),
+                                          )
+                                        : const SizedBox.shrink(),
+                                    hintText: 'Type a message',
+                                    hintStyle:
+                                        Theme.of(context).textTheme.bodySmall,
+                                    filled: true,
+                                    fillColor:
+                                        provider.themeMode == ThemeMode.light
+                                            ? Colors.white
+                                            : AppColors.dark,
+                                    contentPadding: const EdgeInsets.only(
+                                      left: 16.0,
+                                      bottom: 8.0,
+                                      top: 8.0,
+                                      right: 16.0,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                BlocListener<NotificationsCubit, NotificationsStates>(
+                  listener: (_, state) {
+                    if (state is SendNotificationSuccess) {}
+                  },
+                  child: IconButton(
+                    padding: const EdgeInsets.all(4),
+                    onPressed: () {
+                      final notificationBody =
+                          friendCubit.messageController.text;
+                      if (friendCubit.messageController.text.isNotEmpty) {
+                        friendCubit.messageController.clear();
+                        FriendCubit.get(context)
+                            .sendMessageToFriend(
+                          friend: widget.friendData,
+                          message: notificationBody,
+                          sender: sender,
+                          type: MessageType.text,
+                        )
+                            .whenComplete(
+                          () {
+                            scrollToBottom();
+                            NotificationsCubit.get(context).sendNotification(
+                              widget.friendData.fCMToken ?? '',
+                              sender.userName!,
+                              notificationBody,
+                              'friend',
+                            );
+                          },
+                        );
+                      }
+                    },
+                    icon: CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      radius: 20.r,
+                      child: const Icon(
+                        Icons.send,
                         color: Colors.white,
+                        size: 24,
                       ),
                     ),
                   ),
-                  if (isRecording)
-                    Flexible(
-                      child: Row(
-                        children: [
-                          IconButton(
-                            onPressed: () async {
-                              await _stopRecording();
-                              setState(() {
-                                isRecording = false;
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.cancel,
-                              color: Colors.red,
-                            ),
-                          ),
-                          const Flexible(child: CustomRecordingWaveWidget()),
-                        ],
-                      ),
-                    )
-                  else
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: TextField(
-                          controller: friendCubit.messageController,
-                          onChanged: (value) {
-                            setState(() {});
-                          },
-                          textInputAction: TextInputAction.newline,
-                          minLines: 1,
-                          maxLines: 20,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: provider.themeMode == ThemeMode.light
-                                ? Colors.black87
-                                : AppColors.light,
-                          ),
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              onPressed: () async {
-                                final ImagePicker picker = ImagePicker();
-                                final XFile? xFile = await picker.pickImage(
-                                    source: ImageSource.gallery);
-                                if (xFile != null) {
-                                  File xFilePathToFile(XFile xFile) {
-                                    return File(xFile.path);
-                                  }
-
-                                  imageFile = xFilePathToFile(xFile);
-                                  if (context.mounted) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          title: const Text('Send image?'),
-                                          actionsOverflowDirection:
-                                              VerticalDirection.down,
-                                          actions: [
-                                            TextButton(
-                                              child: const Text('Cancel'),
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                            TextButton(
-                                              child: const Text('Send'),
-                                              onPressed: () {
-                                                friendCubit.sendMediaToFriend(
-                                                  FirebasePath.images,
-                                                  imageFile!,
-                                                  widget.friendData.id!,
-                                                );
-
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
-                                }
-                              },
-                              icon: const Icon(Icons.image),
-                            ),
-                            hintText: 'Type a message',
-                            hintStyle: Theme.of(context).textTheme.bodySmall,
-                            filled: true,
-                            fillColor: provider.themeMode == ThemeMode.light
-                                ? Colors.white
-                                : AppColors.dark,
-                            contentPadding: const EdgeInsets.only(
-                              left: 16.0,
-                              bottom: 8.0,
-                              top: 8.0,
-                              right: 16.0,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (friendCubit.messageController.text.isNotEmpty)
-                    BlocListener<NotificationsCubit, NotificationsStates>(
-                      listener: (_, state) {
-                        if (state is SendNotificationSuccess) {}
-                      },
-                      child: Material(
-                        color: Colors.transparent,
-                        child: IconButton(
-                          onPressed: () {
-                            final notificationBody =
-                                friendCubit.messageController.text;
-                            if (friendCubit.messageController.text.isNotEmpty) {
-                              friendCubit.messageController.clear();
-                              FriendCubit.get(context)
-                                  .sendMessageToFriend(
-                                friend: widget.friendData,
-                                message: notificationBody,
-                                sender: sender,
-                                type: MessageType.text,
-                              )
-                                  .whenComplete(
-                                () {
-                                  scrollToBottom();
-                                  NotificationsCubit.get(context)
-                                      .sendNotification(
-                                    widget.friendData.fCMToken ?? '',
-                                    sender.userName!,
-                                    notificationBody,
-                                    'friend',
-                                  );
-                                },
-                              );
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.send,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    // CustomRecordingButton(
-                    //   isRecording: isRecording,
-                    //   onPressed: () => _record(),
-                    // ),
-
-                    GestureDetector(
-                      onLongPress: () async {
-                        final audioPlayer = AudioPlayer();
-                        await audioPlayer
-                            .play(AssetSource("audios/Notification.mp3"));
-                        _record();
-                      },
-                      onLongPressEnd: (details) {
-                        debugPrint('End');
-                      },
-                      child: isRecording
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: CircleAvatar(
-                                backgroundColor: Colors.greenAccent,
-                                radius: 38.r,
-                                child: const Center(child: Icon(Icons.mic)),
-                              ),
-                            )
-                          : const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Icon(Icons.mic),
-                            ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           Offstage(

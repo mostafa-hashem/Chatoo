@@ -1,17 +1,12 @@
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
-import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_messages_tile.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
-import 'package:chat_app/ui/widgets/record_tile.dart';
 import 'package:flutter/material.dart';
 
 class ChatMessages extends StatefulWidget {
-  final String groupId;
 
   // Note: Avoid using `const` with constructors.
   const ChatMessages({
     super.key,
-    required this.groupId,
   });
 
   @override

@@ -20,10 +20,11 @@ class FriendMessagesTile extends StatefulWidget {
 }
 
 class _FriendMessagesTileState extends State<FriendMessagesTile> {
+
   @override
-  void initState() {
+  void didChangeDependencies() {
     widget.friendMessage.messageType ??= MessageType.text;
-    super.initState();
+    super.didChangeDependencies();
   }
   @override
   Widget build(BuildContext context) {
@@ -182,6 +183,11 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                 ):
                 ImageWidget(
                   imagePath: widget.friendMessage.mediaUrls?.first ?? '',
+                  sentAt: widget
+                      .friendMessage.sentAt.millisecondsSinceEpoch,
+                  senderName: '',
+                  senderId: widget.friendMessage.sender,
+                  isInGroup: false,
                 ),
               ),
             ),

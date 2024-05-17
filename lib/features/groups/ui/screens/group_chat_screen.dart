@@ -128,9 +128,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   currentState is GetAllGroupMessagesError ||
                   currentState is GetAllGroupMessagesLoading,
               builder: (_, state) {
-                return ChatMessages(
-                  groupId: groupData.groupId!,
-                );
+                return const ChatMessages();
               },
             ),
             SizedBox(

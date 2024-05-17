@@ -159,16 +159,14 @@ class _GroupTileState extends State<GroupTile> {
             widget.groupData.groupName!,
             style: GoogleFonts.novaSquare(fontWeight: FontWeight.bold),
           ),
-          subtitle: widget.isLeftOrJoined
-              ? const SizedBox.shrink()
-              : Text(
-                  "Test for last message",
-                  style: GoogleFonts.ubuntu(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+          subtitle: Text(
+            "Test for last message",
+            style: GoogleFonts.ubuntu(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ),
     );

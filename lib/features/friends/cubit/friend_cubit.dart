@@ -98,7 +98,7 @@ class FriendCubit extends Cubit<FriendStates> {
         searchedFriends = search
             .where(
               (friend) =>
-                  friend.userName == friendData ||
+                  friend.userName?.toLowerCase() == friendData.toLowerCase() ||
                   friend.phoneNumber == friendData,
             )
             .toList();
@@ -124,7 +124,7 @@ class FriendCubit extends Cubit<FriendStates> {
         sender,
         mediaUrls,
         type,
-        duration
+        duration,
       );
       emit(SendMessageToFriendSuccess());
     } catch (e) {
@@ -133,7 +133,10 @@ class FriendCubit extends Cubit<FriendStates> {
   }
 
   Future<void> sendMediaToFriend(
-      String mediaPath, File mediaFile, String friendPathId) async {
+    String mediaPath,
+    File mediaFile,
+    String friendPathId,
+  ) async {
     emit(SendMediaToFriendLoading());
     try {
       mediaUrls.clear();

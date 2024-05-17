@@ -16,6 +16,7 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
+
   @override
   Widget build(BuildContext context) {
     final friends = FriendCubit.get(context);
@@ -27,8 +28,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
             },
             child: BlocBuilder<FriendCubit, FriendStates>(
               buildWhen: (_, currentState) =>
-                  currentState is GetAllUserFriendsSuccess ||
-                  currentState is GetAllUserFriendsSuccess ||
+              currentState is GetAllUserFriendsSuccess ||
+                  currentState is GetAllUserFriendsError ||
                   currentState is GetAllUserFriendsLoading,
               builder: (_, state) {
                 if (state is GetAllUserFriendsLoading) {

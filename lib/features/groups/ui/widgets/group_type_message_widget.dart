@@ -154,7 +154,9 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
             duration: 0,
             sender: sender,
             mediaUrls: groupCubit.mediaUrls,
-            message: groupCubit.messageController.text.isEmpty ? '' : groupCubit.messageController.text ,
+            message: groupCubit.messageController.text.isEmpty
+                ? ''
+                : groupCubit.messageController.text,
             type: MessageType.image,
             isAction: false,
           );
@@ -163,238 +165,289 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Container(
-              height: 50.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Row(
-                children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          emojiShowing = !emojiShowing;
-                          FocusScope.of(context).unfocus();
+            padding: EdgeInsets.only(top: 12.h, bottom: 12.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  padding: const EdgeInsets.all(4),
+                  onPressed: () {
+                    setState(() {
+                      emojiShowing = !emojiShowing;
+                      FocusScope.of(context).unfocus();
+                    });
+                  },
+                  icon: CircleAvatar(
+                    backgroundColor: AppColors.primary,
+                    radius: 20.r,
+                    child: const Icon(
+                      Icons.emoji_emotions,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: Container(
+                    constraints:
+                        BoxConstraints(minHeight: 40.h, maxHeight: 180.h),
+                    child: isRecording
+                        ? Row(
+                            children: [
+                              Flexible(
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () async {
+                                        await _stopRecording();
+                                        setState(() {
+                                          isRecording = false;
+                                        });
+                                      },
+                                      icon: const Icon(
+                                        Icons.cancel,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    const Flexible(
+                                      child: CustomRecordingWaveWidget(),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Flexible(
+                                child: TextField(
+                                  controller: groupCubit.messageController,
+                                  onChanged: (value) {
+                                    setState(() {});
+                                  },
+
+                                  textInputAction: TextInputAction.newline,
+                                  minLines: 1,
+                                  maxLines: null,
+                                  // expands: true,
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: provider.themeMode == ThemeMode.light
+                                        ? Colors.black87
+                                        : AppColors.light,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'Type a message',
+                                    hintStyle:
+                                        Theme.of(context).textTheme.bodySmall,
+                                    filled: true,
+                                    fillColor:
+                                        provider.themeMode == ThemeMode.light
+                                            ? Colors.white
+                                            : AppColors.dark,
+                                    suffixIcon: groupCubit
+                                            .messageController.text.isEmpty
+                                        ? IconButton(
+                                            padding: const EdgeInsets.all(4),
+                                            onPressed: () async {
+                                              final ImagePicker picker =
+                                                  ImagePicker();
+                                              final XFile? xFile =
+                                                  await picker.pickImage(
+                                                source: ImageSource.gallery,
+                                              );
+                                              if (xFile != null) {
+                                                File xFilePathToFile(
+                                                  XFile xFile,
+                                                ) {
+                                                  return File(xFile.path);
+                                                }
+
+                                                imageFile =
+                                                    xFilePathToFile(xFile);
+                                                if (context.mounted) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return AlertDialog(
+                                                        title: const Text(
+                                                          'Send image?',
+                                                        ),
+                                                        actionsOverflowDirection:
+                                                            VerticalDirection
+                                                                .down,
+                                                        actions: [
+                                                          TextButton(
+                                                            child: const Text(
+                                                              'Cancel',
+                                                            ),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                            },
+                                                          ),
+                                                          TextButton(
+                                                            child: const Text(
+                                                              'Send',
+                                                            ),
+                                                            onPressed: () {
+                                                              groupCubit
+                                                                  .uploadMediaToGroup(
+                                                                FirebasePath
+                                                                    .images,
+                                                                imageFile!,
+                                                                widget.groupData
+                                                                    .groupId!,
+                                                              );
+
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                            },
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            icon: const Icon(Icons.image),
+                                          )
+                                        : const SizedBox.shrink(),
+                                    contentPadding: const EdgeInsets.only(
+                                      left: 16.0,
+                                      bottom: 8.0,
+                                      top: 8.0,
+                                      right: 16.0,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                // if (groupCubit.messageController.text.isNotEmpty)
+                BlocListener<NotificationsCubit, NotificationsStates>(
+                  listener: (context, state) {
+                    if (state is SendNotificationSuccess) {}
+                  },
+                  child: IconButton(
+                    padding: const EdgeInsets.all(4),
+                    onPressed: () async {
+                      final notificationBody =
+                          groupCubit.messageController.text;
+                      if (groupCubit.messageController.text.isNotEmpty) {
+                        groupCubit.messageController.clear();
+                        groupCubit
+                            .sendMessageToGroup(
+                          group: widget.groupData,
+                          sender: sender,
+                          message: notificationBody,
+                          type: MessageType.text,
+                          isAction: false,
+                        )
+                            .whenComplete(() {
+                          scrollToBottom();
+                          final List<dynamic> memberIds =
+                              widget.groupData.members!.toList();
+                          for (final memberId in memberIds) {
+                            if (memberId == ProfileCubit.get(context).user.id) {
+                              continue;
+                            }
+                            groupCubit
+                                .getUserData(memberId.toString())
+                                .whenComplete(
+                              () {
+                                NotificationsCubit.get(context)
+                                    .sendNotification(
+                                  groupCubit.userData?.fCMToken ?? '',
+                                  'New Messages in ${widget.groupData.groupName}',
+                                  "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
+                                  'group',
+                                );
+                              },
+                            );
+                          }
                         });
-                      },
-                      icon: const Icon(
-                        Icons.emoji_emotions,
+                      }
+                    },
+                    icon: CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      radius: 20.r,
+                      child: const Icon(
+                        Icons.send,
                         color: Colors.white,
+                        size: 24,
                       ),
                     ),
                   ),
-                  if (isRecording)
-                    Flexible(
-                      child: Row(
-                        children: [
-                          IconButton(
-                            onPressed: () async {
-                              await _stopRecording();
-                              setState(() {
-                                isRecording = false;
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.cancel,
-                              color: Colors.red,
-                            ),
-                          ),
-                          const Flexible(child: CustomRecordingWaveWidget()),
-                        ],
-                      ),
-                    )
-                  else
-                    Flexible(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.h),
-                        child: TextField(
-                          controller: groupCubit.messageController,
-                          onChanged: (value) {
-                            setState(() {});
-                          },
-                          textInputAction: TextInputAction.newline,
-                          minLines: 1,
-                          maxLines: 20,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: provider.themeMode == ThemeMode.light
-                                ? Colors.black87
-                                : AppColors.light,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Type a message',
-                            hintStyle: Theme.of(context).textTheme.bodySmall,
-                            filled: true,
-                            fillColor: provider.themeMode == ThemeMode.light
-                                ? Colors.white
-                                : AppColors.dark,
-                            suffixIcon: IconButton(
-                              onPressed: () async {
-                                final ImagePicker picker = ImagePicker();
-                                final XFile? xFile = await picker.pickImage(
-                                    source: ImageSource.gallery);
-                                if (xFile != null) {
-                                  File xFilePathToFile(XFile xFile) {
-                                    return File(xFile.path);
-                                  }
-
-                                  imageFile = xFilePathToFile(xFile);
-                                  if (context.mounted) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          title: const Text('Send image?'),
-                                          actionsOverflowDirection:
-                                              VerticalDirection.down,
-                                          actions: [
-                                            TextButton(
-                                              child: const Text('Cancel'),
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                            TextButton(
-                                              child: const Text('Send'),
-                                              onPressed: () {
-                                                groupCubit.uploadMediaToGroup(
-                                                  FirebasePath.images,
-                                                  imageFile!,
-                                                  widget.groupData.groupId!,
-                                                );
-
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
-                                }
-                              },
-                              icon: const Icon(Icons.image),
-                            ),
-                            contentPadding: const EdgeInsets.only(
-                              left: 16.0,
-                              bottom: 8.0,
-                              top: 8.0,
-                              right: 16.0,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  // if (groupCubit.messageController.text.isNotEmpty)
-                  BlocListener<NotificationsCubit, NotificationsStates>(
-                    listener: (context, state) {
-                      if (state is SendNotificationSuccess) {}
-                    },
-                    child: Material(
-                      color: Colors.transparent,
-                      child: IconButton(
-                        onPressed: () async {
-                          final notificationBody =
-                              groupCubit.messageController.text;
-                          if (groupCubit.messageController.text.isNotEmpty) {
-                            groupCubit.messageController.clear();
-                            groupCubit
-                                .sendMessageToGroup(
-                              group: widget.groupData,
-                              sender: sender,
-                              message: notificationBody,
-                              type: MessageType.text,
-                              isAction: false,
-                            )
-                                .whenComplete(() {
-                              scrollToBottom();
-                              final List<dynamic> memberIds =
-                                  widget.groupData.members!.toList();
-                              for (final memberId in memberIds) {
-                                if (memberId ==
-                                    ProfileCubit.get(context).user.id) {
-                                  continue;
-                                }
-                                groupCubit
-                                    .getUserData(memberId.toString())
-                                    .whenComplete(
-                                  () {
-                                    NotificationsCubit.get(context)
-                                        .sendNotification(
-                                      groupCubit.userData?.fCMToken ?? '',
-                                      'New Messages in ${widget.groupData.groupName}',
-                                      "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
-                                      'group',
-                                    );
-                                  },
-                                );
-                              }
-                            });
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.send,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  )
-                  // else
-                  // BlocListener<GroupCubit, GroupStates>(
-                  //   listener: (_, state) async {
-                  //     if (state is UploadRecordToGroupSuccess)  {
-                  //
-                  //       final Duration? duration = await audioPlayer.getDuration();
-                  //       debugPrint('Duration: $duration');
-                  //     //   groupCubit.sendMessageToGroup(
-                  //     //     group: widget.groupData,
-                  //     //     message: '',
-                  //     //     type: MessageType.record,
-                  //     //     isAction: false,
-                  //     //     mediaUrls: groupCubit.mediaUrls,
-                  //     //     duration: 0,
-                  //     //   );
-                  //     }
-                  //   },
-                  //   child: GestureDetector(
-                  //     onLongPress: () async {
-                  //       await audioPlayer
-                  //           .play(AssetSource("audios/Notification.mp3"));
-                  //       _record();
-                  //     },
-                  //     onLongPressEnd: (details) async {
-                  //       final File recordFile = File(_audioPath!);
-                  //       await groupCubit.uploadRecordToGroup(
-                  //         recordFile,
-                  //         widget.groupData.groupId!,
-                  //       );
-                  //       debugPrint('End');
-                  //     },
-                  //     child: isRecording
-                  //         ? Padding(
-                  //             padding: const EdgeInsets.all(8.0),
-                  //             child: CircleAvatar(
-                  //               backgroundColor: Colors.greenAccent,
-                  //               radius: 38.r,
-                  //               child: const Center(child: Icon(Icons.mic)),
-                  //             ),
-                  //           )
-                  //         : const Padding(
-                  //             padding: EdgeInsets.all(8.0),
-                  //             child: Icon(Icons.mic),
-                  //           ),
-                  //   ),
-                  // ),
-                ],
-              ),
+                )
+                // else
+                // BlocListener<GroupCubit, GroupStates>(
+                //   listener: (_, state) async {
+                //     if (state is UploadRecordToGroupSuccess)  {
+                //
+                //       final Duration? duration = await audioPlayer.getDuration();
+                //       debugPrint('Duration: $duration');
+                //     //   groupCubit.sendMessageToGroup(
+                //     //     group: widget.groupData,
+                //     //     message: '',
+                //     //     type: MessageType.record,
+                //     //     isAction: false,
+                //     //     mediaUrls: groupCubit.mediaUrls,
+                //     //     duration: 0,
+                //     //   );
+                //     }
+                //   },
+                //   child: GestureDetector(
+                //     onLongPress: () async {
+                //       await audioPlayer
+                //           .play(AssetSource("audios/Notification.mp3"));
+                //       _record();
+                //     },
+                //     onLongPressEnd: (details) async {
+                //       final File recordFile = File(_audioPath!);
+                //       await groupCubit.uploadRecordToGroup(
+                //         recordFile,
+                //         widget.groupData.groupId!,
+                //       );
+                //       debugPrint('End');
+                //     },
+                //     child: isRecording
+                //         ? Padding(
+                //             padding: const EdgeInsets.all(8.0),
+                //             child: CircleAvatar(
+                //               backgroundColor: Colors.greenAccent,
+                //               radius: 38.r,
+                //               child: const Center(child: Icon(Icons.mic)),
+                //             ),
+                //           )
+                //         : const Padding(
+                //             padding: EdgeInsets.all(8.0),
+                //             child: Icon(Icons.mic),
+                //           ),
+                //   ),
+                // ),
+                ,
+              ],
             ),
           ),
           Offstage(

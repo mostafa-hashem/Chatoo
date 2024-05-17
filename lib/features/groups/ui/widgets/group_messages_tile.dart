@@ -18,17 +18,17 @@ class GroupMessagesTile extends StatefulWidget {
     required this.groupMessage,
   });
 
-
   @override
   State<GroupMessagesTile> createState() => _GroupMessagesTileState();
 }
 
 class _GroupMessagesTileState extends State<GroupMessagesTile> {
   @override
-  void initState() {
-   widget.groupMessage.messageType ??= MessageType.text;
-    super.initState();
+  void didChangeDependencies() {
+    widget.groupMessage.messageType ??= MessageType.text;
+    super.didChangeDependencies();
   }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -144,7 +144,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                         bottom: 15,
                         left: 15,
                         right: 15,
-                      ) ,
+                      ),
                 decoration: BoxDecoration(
                   borderRadius: ProfileCubit.get(context).user.id ==
                           widget.groupMessage.sender!.id
@@ -171,9 +171,9 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                             : CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.groupMessage.sender!.userName!.toUpperCase(),
+                            widget.groupMessage.sender!.userName!,
                             style: TextStyle(
-                              fontSize: 8.sp,
+                              fontSize: 10.sp,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -206,6 +206,12 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                       )
                     : ImageWidget(
                         imagePath: widget.groupMessage.mediaUrls?.first ?? '',
+                        sentAt: widget
+                                .groupMessage.sentAt?.millisecondsSinceEpoch ??
+                            DateTime.now().millisecondsSinceEpoch,
+                        senderName: widget.groupMessage.sender?.userName ?? '',
+                        senderId: widget.groupMessage.sender?.id ?? '',
+                        isInGroup: true,
                       ),
               ),
             ),

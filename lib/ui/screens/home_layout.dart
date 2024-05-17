@@ -1,14 +1,19 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/screens/friends_screen.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
+import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/widgets/creat_group_widget.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/drawer_tile.dart';
+import 'package:chat_app/ui/widgets/error_indicator.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 class HomeLayout extends StatefulWidget {
@@ -26,8 +31,11 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
     super.initState();
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(_handleTabChange);
-    GroupCubit.get(context).getAllUserGroups();
-    FriendCubit.get(context).getAllUserRequests();
+    Future.wait([
+      GroupCubit.get(context).getAllUserGroups(),
+      FriendCubit.get(context).getAllUserRequests(),
+      FriendCubit.get(context).getAllUserFriends(),
+    ]);
   }
 
   void _handleTabChange() {
@@ -93,9 +101,71 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
           children: [
             TabBarView(
               controller: tabController,
-              children: const [
-                FriendsScreen(),
-                GroupsScreen(),
+              children: [
+                BlocBuilder<FriendCubit, FriendStates>(
+                  buildWhen: (_, currentState) =>
+                      currentState is GetAllUserFriendsSuccess ||
+                      currentState is GetAllUserFriendsError ||
+                      currentState is GetAllUserFriendsLoading,
+                  builder: (_, state) {
+                    if (state is GetAllUserFriendsLoading) {
+                      return const LoadingIndicator();
+                    } else if (state is GetAllUserFriendsError) {
+                      return const ErrorIndicator();
+                    } else {
+                      return const FriendsScreen();
+                    }
+                  },
+                ),
+                BlocConsumer<GroupCubit, GroupStates>(
+                  listener: (_, state) {
+                    if (state is CreateGroupLoading) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return const LoadingIndicator();
+                        },
+                      );
+                    } else {
+                      if (state is CreateGroupError) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              state.message,
+                              style: const TextStyle(fontSize: 15),
+                            ),
+                            backgroundColor: AppColors.error,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                      if (state is CreateGroupSuccess) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Successfully Created",
+                              style: TextStyle(fontSize: 15),
+                            ),
+                            backgroundColor: AppColors.primary,
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  buildWhen: (_, currentState) =>
+                      currentState is GetAllGroupsSuccess ||
+                      currentState is GetAllGroupsError ||
+                      currentState is GetAllGroupsLoading ||
+                          currentState is CreateGroupLoading ||
+                          currentState is CreateGroupSuccess ||
+                          currentState is CreateGroupError,
+                  builder: (_, state) {
+                    return const GroupsScreen();
+                  },
+                ),
               ],
             ),
           ],

@@ -42,7 +42,7 @@ class UpdateScreen extends StatelessWidget {
 
   Future<void> _launchURL() async {
     const String url =
-        'https://www.mediafire.com/file/eqj3pkzbdgg17qr/Chatoo_v1.0.2.apk/file';
+        'https://www.mediafire.com/file/8nyi40g8croac48/Chatoo_v1.0.2.apk/file';
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       throw 'Could not launch $uri';
