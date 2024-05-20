@@ -125,10 +125,10 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             isAction: true,
                           );
                           notificationCubit.sendNotification(
-                            friendFcmToken,
-                            '${widget.groupData.groupName}',
-                            "${profileCubit.user.userName} add you to ${widget.groupData.groupName}",
-                            'group',
+                            fCMToken: friendFcmToken,
+                            title: '${widget.groupData.groupName}',
+                            body:
+                                "${profileCubit.user.userName} add you to ${widget.groupData.groupName}",
                           );
                         })
                       : groupCubit
@@ -146,10 +146,10 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             isAction: true,
                           );
                           notificationCubit.sendNotification(
-                            friendFcmToken,
-                            '${widget.groupData.groupName}',
-                            "${profileCubit.user.userName} request to add you to ${widget.groupData.groupName}",
-                            'group',
+                            fCMToken: friendFcmToken,
+                            title: '${widget.groupData.groupName}',
+                            body:
+                                "${profileCubit.user.userName} request to add you to ${widget.groupData.groupName}",
                           );
                           final List<dynamic> adminsIds =
                               widget.groupData.groupAdmins!.toList();
@@ -162,10 +162,10 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                                 .whenComplete(
                               () {
                                 notificationCubit.sendNotification(
-                                  groupCubit.userData!.fCMToken!,
-                                  '${widget.groupData.groupName}',
-                                  "${profileCubit.user.userName} request's to add ${widget.friendData.userName}",
-                                  'group',
+                                  fCMToken: groupCubit.userData!.fCMToken!,
+                                  title: '${widget.groupData.groupName}',
+                                  body:
+                                      "${profileCubit.user.userName} request's to add ${widget.friendData.userName}",
                                 );
                               },
                             );

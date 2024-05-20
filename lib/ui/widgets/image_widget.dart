@@ -1,5 +1,6 @@
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
@@ -12,64 +13,85 @@ class ImageWidget extends StatefulWidget {
   final bool isInGroup;
   final int sentAt;
 
-  const ImageWidget(
-      {super.key,
-      required this.imagePath,
-      required this.sentAt,
-      required this.senderName,
-      required this.senderId,
-      required this.isInGroup});
+  const ImageWidget({
+    super.key,
+    required this.imagePath,
+    required this.sentAt,
+    required this.senderName,
+    required this.senderId,
+    required this.isInGroup,
+  });
 
   @override
   State<ImageWidget> createState() => _ImageWidgetState();
 }
 
 class _ImageWidgetState extends State<ImageWidget> {
+  late User sender;
+
+  @override
+  void didChangeDependencies() {
+    sender = ProfileCubit.get(context).user;
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final fileName = widget.imagePath.split('/').last;
+    final dimensions = fileName.split('.').first.split('x');
+    final width =
+        double.tryParse(dimensions[0].split('%').last.substring(2)) ?? 100.0.w;
+    final height = double.tryParse(dimensions[1]) ?? 100.0.h;
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
           context,
-          Routes.imageView,
-          arguments: widget.imagePath,
+          Routes.mediaView,
+          arguments: {'path': widget.imagePath, 'isVideo': false},
         );
       },
       child: Column(
-        crossAxisAlignment: ProfileCubit.get(context).user.id == widget.senderId
+        crossAxisAlignment: sender.id == widget.senderId
             ? CrossAxisAlignment.end
             : CrossAxisAlignment.start,
         children: [
-          if(widget.isInGroup)
-          Text(
-            widget.senderName,
-            style: TextStyle(
-              fontSize: 10.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.01,
-          ),
-          Center(
-              child: FancyShimmerImage(
-                imageUrl: widget.imagePath,
-                boxFit: BoxFit.contain,
+          if (widget.isInGroup)
+            Text(
+              widget.senderName,
+              style: TextStyle(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
-
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
-          Text(
-            getFormattedTime(
-              widget.sentAt,
-            ),
-            style: TextStyle(
-              fontSize: 9.sp,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+          FancyShimmerImage(
+            height: width > MediaQuery.sizeOf(context).width * 3
+                ? MediaQuery.sizeOf(context).height * 0.25
+                : height > MediaQuery.sizeOf(context).height * 1
+                    ? MediaQuery.sizeOf(context).height * 1
+                    : height,
+            width: width,
+            imageUrl: widget.imagePath,
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.01,
+          ),
+          Align(
+            alignment: sender.id == widget.senderId
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
+            child: Text(
+              getFormattedTime(
+                widget.sentAt,
+              ),
+              style: TextStyle(
+                fontSize: 10.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

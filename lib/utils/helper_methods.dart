@@ -1,7 +1,11 @@
+import 'dart:io';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:image/image.dart' as img;
+import 'package:video_player/video_player.dart';
 
 String? validateEmail(String? value) {
   final RegExp regex = RegExp(
@@ -48,21 +52,24 @@ String? validateGeneral(String? value, String label) {
   return null;
 }
 
-String getFormattedTime(int timeOfMessage) {
-  final dateTime = DateTime.fromMillisecondsSinceEpoch(timeOfMessage);
-  final formatter = DateFormat.Hm();
-  return formatter.format(dateTime);
+String getFormattedTime(int timestamp) {
+  final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  final hours = dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12;
+  final minutes = dateTime.minute.toString().padLeft(2, '0');
+  final period = dateTime.hour >= 12 ? 'PM' : 'AM';
+  return '$hours:$minutes $period';
 }
+
 
 void showImageDialog(BuildContext context, String imageUrl) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return GestureDetector(
-        onTap: (){
+        onTap: () {
           Navigator.pushNamed(
             context,
-            Routes.imageView,
+            Routes.mediaView,
             arguments: imageUrl,
           );
         },
@@ -77,4 +84,47 @@ void showImageDialog(BuildContext context, String imageUrl) {
       );
     },
   );
+}
+
+Future<String> getImageFileName(File imageFile) async {
+  final image = img.decodeImage(imageFile.readAsBytesSync());
+  if (image == null) {
+    throw Exception('Unable to decode image');
+  }
+
+  final int width = image.width;
+  final int height = image.height;
+  final String fileName = '${width}x$height.${imageFile.path.split('.').last}';
+  return fileName;
+}
+
+Future<String> getVideoFileName(File videoFile) async {
+  final VideoPlayerController videoController =
+      VideoPlayerController.file(videoFile);
+  await videoController.initialize();
+  final int duration = videoController.value.duration.inSeconds;
+  final double width = videoController.value.size.width;
+  final double height = videoController.value.size.height;
+
+
+  await videoController.dispose();
+
+  final String fileName =
+      '${width}x$height^${duration}s.${videoFile.path.split('.').last}';
+  return fileName;
+}
+
+Future<String> getAudioFileName(File audioFile) async {
+  final AudioPlayer audioPlayer = AudioPlayer();
+  await audioPlayer.setSourceUrl(
+    audioFile.path,
+  );
+  final Duration? duration = await audioPlayer.getDuration();
+
+  await audioPlayer.dispose();
+
+  final int? durationInSeconds = duration?.inSeconds;
+  final String fileName =
+      '${durationInSeconds}s.${audioFile.path.split('.').last}';
+  return fileName;
 }

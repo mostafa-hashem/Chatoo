@@ -182,10 +182,10 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                             .whenComplete(
                               () => NotificationsCubit.get(context)
                                   .sendNotification(
-                                groupCubit.userData!.fCMToken!,
-                                "${widget.searchedGroupData.groupName}",
-                                "${ProfileCubit.get(context).user.userName!} requested to join ${widget.searchedGroupData.groupName}",
-                                'group',
+                                fCMToken: groupCubit.userData!.fCMToken!,
+                                title: "${widget.searchedGroupData.groupName}",
+                                body:
+                                    "${ProfileCubit.get(context).user.userName!} requested to join ${widget.searchedGroupData.groupName}",
                               ),
                             );
                       });

@@ -23,19 +23,19 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
     }
   }
 
-  Future<void> sendNotification(
-    String fCMToken,
-    String title,
-    String body,
-    String action,
-  ) async {
+  Future<void> sendNotification({
+    required String fCMToken,
+    required String title,
+    required String body,
+    String? imageUrl,
+  }) async {
     emit(SendNotificationLoading());
     try {
       notificationsServices.sendNotification(
         fcmToken: fCMToken,
         title: title,
         body: body,
-        action: action,
+        imageUrl: imageUrl
       );
       emit(SendNotificationSuccess());
     } catch (e) {

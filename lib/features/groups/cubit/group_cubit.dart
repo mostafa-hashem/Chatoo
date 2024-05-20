@@ -5,6 +5,7 @@ import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/groups/data/services/group_firebase_services.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:flutter/material.dart';
@@ -175,7 +176,6 @@ class GroupCubit extends Cubit<GroupStates> {
     required String message,
     List<String>? mediaUrls,
     required MessageType type,
-    double? duration,
     required bool isAction,
   }) async {
     emit(SendMessageToGroupLoading());
@@ -186,7 +186,6 @@ class GroupCubit extends Cubit<GroupStates> {
         sender!,
         mediaUrls ?? [],
         type,
-        duration,
         isAction,
       );
       emit(SendMessageToGroupSuccess());
@@ -199,16 +198,42 @@ class GroupCubit extends Cubit<GroupStates> {
     String mediaPath,
     File mediaFile,
     String groupId,
+    Future<String> Function(File imageFile) getFileName,
   ) async {
-    emit(UploadMediaToGroupLoading());
+    if (mediaPath == FirebasePath.images) {
+      emit(UploadImageToGroupLoading());
+    }
+    if (mediaPath == FirebasePath.videos) {
+      emit(UploadVideoToGroupLoading());
+    }
+    if (mediaPath == FirebasePath.images) {
+      emit(UploadAudioToGroupLoading());
+    }
     try {
       mediaUrls.clear();
-      final String downloadUrl = await _groupFirebaseServices
-          .uploadMediaToGroup(mediaPath, mediaFile, groupId);
+      final String downloadUrl =
+          await _groupFirebaseServices.uploadMediaToGroup(
+        mediaPath,
+        mediaFile,
+        groupId,
+        getFileName,
+      );
       mediaUrls.add(downloadUrl);
-      emit(UploadMediaToGroupSuccess());
+      if (mediaPath == FirebasePath.images) {
+        emit(UploadImageToGroupSuccess());
+      } else if (mediaPath == FirebasePath.videos) {
+        emit(UploadVideoToGroupSuccess());
+      } else {
+        emit(UploadAudioToGroupSuccess());
+      }
     } catch (e) {
-      emit(UploadMediaToGroupError(Failure.fromException(e).message));
+      if (mediaPath == FirebasePath.images) {
+        emit(UploadImageToGroupError(Failure.fromException(e).message));
+      } else if (mediaPath == FirebasePath.videos) {
+        emit(UploadVideoToGroupError(Failure.fromException(e).message));
+      } else {
+        emit(UploadAudioToGroupError(Failure.fromException(e).message));
+      }
     }
   }
 
@@ -230,7 +255,9 @@ class GroupCubit extends Cubit<GroupStates> {
       _groupFirebaseServices.getGroupsForSearch().listen((search) {
         searchedGroups = search
             .where(
-              (group) => group.groupName!.toLowerCase().contains(groupName.toLowerCase()),
+              (group) => group.groupName!
+                  .toLowerCase()
+                  .contains(groupName.toLowerCase()),
             )
             .toList();
         emit(SearchOnGroupSuccess());
@@ -318,6 +345,26 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(KickUserFromGroupSuccess());
     } catch (e) {
       emit(KickUserFromGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> muteGroup(String groupId) async {
+    emit(MuteGroupLoading());
+    try {
+      await _groupFirebaseServices.muteGroup(groupId);
+      emit(MuteGroupSuccess());
+    } catch (e) {
+      emit(MuteGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> unMuteGroup(String groupId) async {
+    emit(UnMuteGroupLoading());
+    try {
+      await _groupFirebaseServices.unMuteGroup(groupId);
+      emit(UnMuteGroupSuccess());
+    } catch (e) {
+      emit(UnMuteGroupError(Failure.fromException(e).message));
     }
   }
 

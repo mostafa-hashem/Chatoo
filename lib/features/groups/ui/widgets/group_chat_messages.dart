@@ -3,9 +3,8 @@ import 'package:chat_app/features/groups/ui/widgets/group_messages_tile.dart';
 import 'package:flutter/material.dart';
 
 class ChatMessages extends StatefulWidget {
-
   // Note: Avoid using `const` with constructors.
-  const ChatMessages({
+  ChatMessages({
     super.key,
   });
 

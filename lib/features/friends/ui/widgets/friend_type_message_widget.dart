@@ -1,17 +1,18 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
-import 'package:chat_app/features/notifications/cubit/notifications_states.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/custom_recording_wave_widget.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
+import 'package:chat_app/utils/helper_methods.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
@@ -36,14 +37,18 @@ class FriendTypeMessageWidget extends StatefulWidget {
 class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
   bool emojiShowing = false;
   late FriendCubit friendCubit;
+  late User sender;
   bool isRecording = false;
+  final audioPlayer = AudioPlayer();
   late final AudioRecorder _audioRecorder;
   String? _audioPath;
-  File? imageFile;
+  File? mediaFile;
+  String? notificationBody;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    sender = ProfileCubit.get(context).user;
     friendCubit = FriendCubit.get(context);
   }
 
@@ -131,22 +136,42 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
         );
   }
 
+  bool isMuted() {
+    if (widget.friendData.mutedGroups != null) {
+      return widget.friendData.mutedFriends!
+          .any((userId) => userId == sender.id);
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final sender = ProfileCubit.get(context).user;
     final provider = Provider.of<MyAppProvider>(context);
-    return BlocListener<FriendCubit, FriendStates>(
-      listener: (_, state) {
-        if (state is SendMediaToFriendSuccess) {
-          debugPrint("HIIIIIIIIIIIIIIIIIII");
-          friendCubit.sendMessageToFriend(
-            friend: widget.friendData,
-            message: "",
-            sender: sender,
-            type: MessageType.image,
-          );
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<FriendCubit, FriendStates>(
+          listener: (_, state) {
+            if (state is SendMessageToFriendSuccess) {
+              scrollToBottom();
+              if (!isMuted()) {
+                NotificationsCubit.get(context).sendNotification(
+                  fCMToken: widget.friendData.fCMToken ?? '',
+                  title: sender.userName!,
+                  body: notificationBody ?? '',
+                  imageUrl: friendCubit.mediaUrls.first,
+                );
+              }
+            }
+          },
+        ),
+        BlocListener<FriendCubit, FriendStates>(
+          listener: (_, state) {
+            if (state is SendMediaToFriendSuccess) {
+              debugPrint("HIIIIIIIIIIIIIIIIIII");
+            }
+          },
+        ),
+      ],
       child: Column(
         children: [
           Padding(
@@ -208,7 +233,8 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                 child: TextField(
                                   controller: friendCubit.messageController,
                                   onChanged: (value) {
-                                    setState(() {});
+                                    notificationBody =
+                                        friendCubit.messageController.text;
                                   },
                                   textInputAction: TextInputAction.newline,
                                   minLines: 1,
@@ -227,9 +253,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                               final ImagePicker picker =
                                                   ImagePicker();
                                               final XFile? xFile =
-                                                  await picker.pickImage(
-                                                source: ImageSource.gallery,
-                                              );
+                                                  await picker.pickMedia();
                                               if (xFile != null) {
                                                 File xFilePathToFile(
                                                   XFile xFile,
@@ -237,15 +261,36 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                                   return File(xFile.path);
                                                 }
 
-                                                imageFile =
+                                                mediaFile =
                                                     xFilePathToFile(xFile);
                                                 if (context.mounted) {
+                                                  final String fileType = xFile
+                                                      .name
+                                                      .split('.')
+                                                      .last
+                                                      .toLowerCase();
+                                                  final bool isImage = [
+                                                    'jpg',
+                                                    'jpeg',
+                                                    'png',
+                                                    'gif',
+                                                  ].contains(fileType);
+                                                  final bool isVideo = [
+                                                    'mp4',
+                                                    'mov',
+                                                    'avi',
+                                                    'mkv',
+                                                  ].contains(fileType);
                                                   showDialog(
                                                     context: context,
                                                     builder: (context) {
                                                       return AlertDialog(
-                                                        title: const Text(
-                                                          'Send image?',
+                                                        title: Text(
+                                                          isImage
+                                                              ? 'Send image?'
+                                                              : isVideo
+                                                                  ? 'Send video?'
+                                                                  : 'Send media?',
                                                         ),
                                                         actionsOverflowDirection:
                                                             VerticalDirection
@@ -266,16 +311,62 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                                               'Send',
                                                             ),
                                                             onPressed: () {
-                                                              friendCubit
-                                                                  .sendMediaToFriend(
-                                                                FirebasePath
-                                                                    .images,
-                                                                imageFile!,
-                                                                widget
-                                                                    .friendData
-                                                                    .id!,
-                                                              );
-
+                                                              if (isImage) {
+                                                                friendCubit
+                                                                    .sendMediaToFriend(
+                                                                  FirebasePath
+                                                                      .images,
+                                                                  mediaFile!,
+                                                                  widget
+                                                                      .friendData
+                                                                      .id!,
+                                                                  getImageFileName,
+                                                                )
+                                                                    .then(
+                                                                  (value) {
+                                                                    friendCubit
+                                                                        .sendMessageToFriend(
+                                                                      friend: widget
+                                                                          .friendData,
+                                                                      message:
+                                                                          "",
+                                                                      sender:
+                                                                          sender,
+                                                                      type: MessageType
+                                                                          .image,
+                                                                    );
+                                                                  },
+                                                                );
+                                                              }
+                                                              if (isVideo) {
+                                                                friendCubit
+                                                                    .sendMediaToFriend(
+                                                                  FirebasePath
+                                                                      .images,
+                                                                  mediaFile!,
+                                                                  widget
+                                                                      .friendData
+                                                                      .id!,
+                                                                  getVideoFileName,
+                                                                )
+                                                                    .then(
+                                                                  (value) {
+                                                                    friendCubit
+                                                                        .sendMessageToFriend(
+                                                                      friend: widget
+                                                                          .friendData,
+                                                                      message:
+                                                                          "",
+                                                                      sender:
+                                                                          sender,
+                                                                      type: MessageType
+                                                                          .video,
+                                                                    );
+                                                                    notificationBody =
+                                                                        'sent video';
+                                                                  },
+                                                                );
+                                                              }
                                                               Navigator.pop(
                                                                 context,
                                                               );
@@ -324,34 +415,17 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                           ),
                   ),
                 ),
-                BlocListener<NotificationsCubit, NotificationsStates>(
-                  listener: (_, state) {
-                    if (state is SendNotificationSuccess) {}
-                  },
-                  child: IconButton(
+                if (friendCubit.messageController.text.isNotEmpty)
+                  IconButton(
                     padding: const EdgeInsets.all(4),
                     onPressed: () {
-                      final notificationBody =
-                          friendCubit.messageController.text;
                       if (friendCubit.messageController.text.isNotEmpty) {
                         friendCubit.messageController.clear();
-                        FriendCubit.get(context)
-                            .sendMessageToFriend(
+                        FriendCubit.get(context).sendMessageToFriend(
                           friend: widget.friendData,
-                          message: notificationBody,
+                          message: notificationBody ?? '',
                           sender: sender,
                           type: MessageType.text,
-                        )
-                            .whenComplete(
-                          () {
-                            scrollToBottom();
-                            NotificationsCubit.get(context).sendNotification(
-                              widget.friendData.fCMToken ?? '',
-                              sender.userName!,
-                              notificationBody,
-                              'friend',
-                            );
-                          },
                         );
                       }
                     },
@@ -364,8 +438,66 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                         size: 24,
                       ),
                     ),
-                  ),
-                ),
+                  )
+                else
+                  isRecording
+                      ? IconButton(
+                          padding: const EdgeInsets.all(4),
+                          onPressed: () async {
+                            await _record();
+                            final File recordFile = File(_audioPath!);
+                            await friendCubit
+                                .sendMediaToFriend(
+                              FirebasePath.records,
+                              recordFile,
+                              widget.friendData.id!,
+                              getAudioFileName,
+                            )
+                                .whenComplete(
+                              () {
+                                friendCubit.sendMessageToFriend(
+                                  friend: widget.friendData,
+                                  sender: sender,
+                                  message: '',
+                                  type: MessageType.record,
+                                );
+                                notificationBody = 'Mostafa sent a recording';
+                              },
+                            );
+                            debugPrint('End');
+                          },
+                          icon: CircleAvatar(
+                            backgroundColor: AppColors.primary,
+                            radius: 20.r,
+                            child: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onLongPress: () async {
+                            await audioPlayer
+                                .play(AssetSource("audios/Notification.mp3"))
+                                .whenComplete(
+                                  () => _record(),
+                                );
+                          },
+                          child: isRecording
+                              ? Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.greenAccent,
+                                    radius: 38.r,
+                                    child: const Center(child: Icon(Icons.mic)),
+                                  ),
+                                )
+                              : const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(Icons.mic),
+                                ),
+                        ),
               ],
             ),
           ),

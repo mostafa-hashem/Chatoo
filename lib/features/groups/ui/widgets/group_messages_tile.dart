@@ -4,6 +4,8 @@ import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/image_widget.dart';
+import 'package:chat_app/ui/widgets/record_tile.dart';
+import 'package:chat_app/ui/widgets/video_widget.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -204,15 +206,47 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                           ),
                         ],
                       )
-                    : ImageWidget(
-                        imagePath: widget.groupMessage.mediaUrls?.first ?? '',
-                        sentAt: widget
-                                .groupMessage.sentAt?.millisecondsSinceEpoch ??
-                            DateTime.now().millisecondsSinceEpoch,
-                        senderName: widget.groupMessage.sender?.userName ?? '',
-                        senderId: widget.groupMessage.sender?.id ?? '',
-                        isInGroup: true,
-                      ),
+                    : widget.groupMessage.messageType! == MessageType.image
+                        ? ImageWidget(
+                            imagePath:
+                                widget.groupMessage.mediaUrls?.first ?? '',
+                            sentAt: widget.groupMessage.sentAt
+                                    ?.millisecondsSinceEpoch ??
+                                DateTime.now().millisecondsSinceEpoch,
+                            senderName:
+                                widget.groupMessage.sender?.userName ?? '',
+                            senderId: widget.groupMessage.sender?.id ?? '',
+                            isInGroup: true,
+                          )
+                        : widget.groupMessage.messageType! == MessageType.video
+                            ? VideoWidget(
+                                videoPath:
+                                    widget.groupMessage.mediaUrls?.first ?? '',
+                                sentAt: widget.groupMessage.sentAt
+                                        ?.millisecondsSinceEpoch ??
+                                    DateTime.now().millisecondsSinceEpoch,
+                                senderName:
+                                    widget.groupMessage.sender?.userName ?? '',
+                                senderId: widget.groupMessage.sender?.id ?? '',
+                                isInGroup: true,
+                              )
+                            : widget.groupMessage.messageType! ==
+                                    MessageType.record
+                                ? RecordTile(
+                                    recordPath:
+                                        widget.groupMessage.mediaUrls?.first ??
+                                            '',
+                                    sentAt: widget.groupMessage.sentAt
+                                            ?.millisecondsSinceEpoch ??
+                                        DateTime.now().millisecondsSinceEpoch,
+                                    senderName:
+                                        widget.groupMessage.sender?.userName ??
+                                            '',
+                                    senderId:
+                                        widget.groupMessage.sender?.id ?? '',
+                                    isInGroup: true,
+                                  )
+                                : const SizedBox.shrink(),
               ),
             ),
     );

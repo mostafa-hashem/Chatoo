@@ -109,8 +109,7 @@ class _FriendRequestsTileState extends State<FriendRequestsTile> {
             children: [
               InkWell(
                 onTap: () {
-                  friendCubit
-                      .declineToAddFriend(
+                  friendCubit.declineToAddFriend(
                     widget.friendData.id!,
                   );
                 },
@@ -130,13 +129,20 @@ class _FriendRequestsTileState extends State<FriendRequestsTile> {
                   ),
                 ),
               ),
-             const Spacer(),
+              const Spacer(),
               InkWell(
                 onTap: () {
                   friendCubit
                       .approveToAddFriend(
-                    widget.friendData.id!,
-                  ).whenComplete(() => notificationCubit.sendNotification(friendFcmToken, profileCubit.user.userName!, 'Approved your friend request', 'friend',));
+                        widget.friendData.id!,
+                      )
+                      .whenComplete(
+                        () => notificationCubit.sendNotification(
+                          fCMToken: friendFcmToken,
+                          title: profileCubit.user.userName!,
+                          body: 'Approved your friend request',
+                        ),
+                      );
                 },
                 child: Container(
                   decoration: BoxDecoration(

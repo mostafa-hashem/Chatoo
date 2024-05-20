@@ -17,7 +17,6 @@ class GroupMessage {
   DateTime? sentAt;
   List<String>? mediaUrls;
   MessageType? messageType;
-  double? duration;
   bool? isAction;
 
   GroupMessage({
@@ -29,7 +28,6 @@ class GroupMessage {
     this.sentAt,
     this.mediaUrls,
     this.messageType,
-    this.duration = 0,
     this.isAction,
   });
 
@@ -58,9 +56,6 @@ class GroupMessage {
     if (json['messageType'] != null) {
       messageType = MessageType.values[json['messageType'] as int];
     }
-    if (json['duration'] != null) {
-      duration = json['duration'] as double;
-    }
     if (json['isAction'] != null) {
       isAction = json['isAction'] as bool;
     }
@@ -75,7 +70,6 @@ class GroupMessage {
         if (sentAt != null) 'sentAt': Timestamp.fromDate(sentAt!),
         if (mediaUrls != null) 'mediaUrls': mediaUrls,
         if (messageType != null) 'messageType': messageType!.index,
-        if (duration != null) 'duration': duration,
         if (isAction != null) 'isAction': isAction,
       };
 }

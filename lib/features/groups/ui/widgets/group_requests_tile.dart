@@ -163,10 +163,10 @@ class _GroupRequestsTileState extends State<GroupRequestsTile> {
                         isAction: true,
                       );
                       notificationsCubit.sendNotification(
-                        widget.requesterData.fCMToken!,
-                        widget.group.groupName!,
-                        "Your request to join ${widget.group.groupName} have been accepted",
-                        'group',
+                        fCMToken: widget.requesterData.fCMToken!,
+                        title: widget.group.groupName!,
+                        body:
+                            "Your request to join ${widget.group.groupName} have been accepted",
                       );
                       // groupCubit.getAllGroupMembers(widget.group.groupId!);
                     },

@@ -209,7 +209,8 @@ class GroupFirebaseServices {
   }
 
   Future<String> uploadImage(File imageFile) async {
-    final Reference storageRef = _storage.ref().child('groups');
+    final Reference storageRef =
+        _storage.ref().child(FirebasePath.groups).child('groupIcon');
     final UploadTask uploadImage =
         storageRef.child('${imageFile.hashCode}').putFile(imageFile);
     final TaskSnapshot snapshot = await uploadImage;
@@ -240,7 +241,6 @@ class GroupFirebaseServices {
     User sender,
     List<String> mediaUrls,
     MessageType type,
-    double? duration,
     bool isAction,
   ) async {
     if (message.isEmpty && mediaUrls.isEmpty) {
@@ -262,7 +262,6 @@ class GroupFirebaseServices {
       senderId: currentUserUid,
       sentAt: DateTime.now(),
       messageType: type,
-      duration: duration ?? 0,
       isAction: isAction,
     );
     await groupMessageDocRef.set(
@@ -275,14 +274,48 @@ class GroupFirebaseServices {
       'recentMessageSender': sender.userName,
     });
   }
-  Future<String> uploadMediaToGroup(String mediaPath,File mediaFile, String groupId) async {
-      final Reference storageRef = _storage.ref().child(mediaPath).child(groupId);
-      final UploadTask uploadRecord = storageRef.child('${mediaFile.hashCode}').putFile(mediaFile);
-      final TaskSnapshot snapshot = await uploadRecord;
-      final String downloadUrl = await snapshot.ref.getDownloadURL();
-      return downloadUrl;
-  }
 
+  Future<String> uploadMediaToGroup(
+    String mediaPath,
+    File mediaFile,
+    String groupId,
+    Future<String> Function(File imageFile) getFileName,
+  ) async {
+
+    /*
+    for video
+     final VideoPlayerController videoController = VideoPlayerController.file(mediaFile);
+  await videoController.initialize();
+  final int duration = videoController.value.duration.inSeconds;
+
+  // Create the filename using duration
+  final String fileName = '${duration}s.${mediaFile.path.split('.').last}';
+     */
+    /*
+    for record
+     final AudioPlayer audioPlayer = AudioPlayer();
+  await audioPlayer.setUrl(mediaFile.path, isLocal: true);
+  final Duration duration = await audioPlayer.getDuration();
+
+  // Dispose the audio player to free up resources
+  await audioPlayer.dispose();
+
+  // Create the filename using duration in seconds
+  final int durationInSeconds = duration.inSeconds;
+  final String fileName = '${durationInSeconds}s.${mediaFile.path.split('.').last}';
+     */
+    final String fileName = await getFileName(mediaFile);
+    final Reference storageRef = _storage
+        .ref()
+        .child(FirebasePath.groups)
+        .child(mediaPath)
+        .child(groupId);
+    final UploadTask uploadRecord =
+        storageRef.child(fileName).putFile(mediaFile);
+    final TaskSnapshot snapshot = await uploadRecord;
+    final String downloadUrl = await snapshot.ref.getDownloadURL();
+    return downloadUrl;
+  }
 
   Future<void> leaveGroup(Group group, User user) async {
     await _usersCollection
@@ -316,6 +349,20 @@ class GroupFirebaseServices {
     });
     await _groupsCollection.doc(groupId).update({
       "members": FieldValue.arrayRemove([userId]),
+    });
+  }
+
+  Future<void> muteGroup(String groupId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection.doc(currentUserId).update({
+      "mutedGroups": FieldValue.arrayUnion([groupId]),
+    });
+  }
+
+  Future<void> unMuteGroup(String groupId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection.doc(currentUserId).update({
+      "mutedGroups": FieldValue.arrayRemove([groupId]),
     });
   }
 

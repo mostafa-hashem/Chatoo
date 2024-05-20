@@ -7,6 +7,8 @@ class User {
   String? profileImage;
   List<dynamic>? groups;
   List<dynamic>? friends;
+  List<dynamic>? mutedGroups;
+  List<dynamic>? mutedFriends;
   List<dynamic>? requests;
   String? city;
   String? fCMToken;
@@ -46,6 +48,12 @@ class User {
     if (json['friends'] != null && json['friends'] is List<dynamic>) {
       friends = json['friends'] as List<dynamic>;
     }
+    if (json['mutedGroups'] != null && json['mutedGroups'] is List<dynamic>) {
+      mutedGroups = json['mutedGroups'] as List<dynamic>;
+    }
+    if (json['mutedFriends'] != null && json['mutedFriends'] is List<dynamic>) {
+      mutedFriends = json['mutedFriends'] as List<dynamic>;
+    }
     if (json['requests'] != null && json['requests'] is List<dynamic>) {
       requests = json['requests'] as List<dynamic>;
     }
@@ -66,6 +74,8 @@ class User {
       if (city != null) 'city': city,
       if (groups != null) 'groups': groups,
       if (friends != null) 'friends': friends,
+      if (mutedGroups != null) 'mutedGroups': mutedGroups,
+      if (mutedFriends != null) 'mutedFriends': mutedFriends,
       if (requests != null) 'requests': requests,
       if (onLine != null) 'onLine': onLine,
     };

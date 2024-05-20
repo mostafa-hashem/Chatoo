@@ -34,7 +34,7 @@ class ProfileFirebaseService {
 
   Future<void> uploadProfileImage(String filePath, File imageFile) async {
     final Reference storageRef =
-        _storage.ref().child(FirebasePath.users).child(filePath);
+        _storage.ref().child(FirebasePath.users).child('profilePictures').child(filePath);
     final UploadTask uploadTask =
         storageRef.child('${imageFile.hashCode}').putFile(imageFile);
     final TaskSnapshot snapshot = await uploadTask;

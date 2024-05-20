@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp>  with WidgetsBindingObserver {
     }
   }
 
-  final String requiredVersion = '1.0.2';
+  final String requiredVersion = '1.0.3';
   String? appVersion;
   String routeName = Routes.updateScreen;
 

@@ -28,13 +28,14 @@ class NotificationsServices {
     required String fcmToken,
     required String title,
     required String body,
-    required String action,
+    String? imageUrl,
   }) async {
     final notification = {
       'title': title,
       'body': body,
       'mutable_content': true,
       'sound': 'Tri-tone',
+      if (imageUrl != null) 'image': imageUrl,
     };
 
     final data = {
@@ -44,6 +45,7 @@ class NotificationsServices {
         'click_action': "Flutter_click_action",
         'title': title,
         'body': body,
+        if (imageUrl != null) 'image': imageUrl,
       },
       'to': fcmToken,
     };

@@ -154,15 +154,19 @@ class FriendFirebaseServices {
     String mediaPath,
     File mediaFile,
     String friendPathId,
+    Future<String> Function(File imageFile) getFileName,
   ) async {
+    final String fileName = await getFileName(mediaFile);
+
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final Reference storageRef = _storage
         .ref()
+        .child(FirebasePath.users)
         .child(mediaPath)
         .child(currentUserId)
         .child(friendPathId);
     final UploadTask uploadRecord =
-        storageRef.child('${mediaFile.hashCode}').putFile(mediaFile);
+        storageRef.child(fileName).putFile(mediaFile);
     final TaskSnapshot snapshot = await uploadRecord;
     final String downloadUrl = await snapshot.ref.getDownloadURL();
     return downloadUrl;
@@ -173,8 +177,7 @@ class FriendFirebaseServices {
     String? message,
     User sender,
     List<String>? mediaUrls,
-      MessageType type,
-      double? duration,
+    MessageType type,
   ) async {
     if (message!.isEmpty && mediaUrls!.isEmpty) {
       return;
@@ -201,7 +204,6 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: currentUserUid,
       messageType: type,
-      duration: duration ?? 0,
       sentAt: DateTime.now(),
     );
     final FriendMessage friendMessage = FriendMessage(
@@ -211,7 +213,6 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: friend.id!,
       messageType: type,
-      duration: duration ?? 0,
       sentAt: DateTime.now(),
     );
 
@@ -263,6 +264,20 @@ class FriendFirebaseServices {
               )
               .toList(),
         );
+  }
+
+  Future<void> muteFriend(String friendId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection.doc(currentUserId).update({
+      "mutedFriends": FieldValue.arrayUnion([friendId]),
+    });
+  }
+
+  Future<void> unMuteFriend(String friendId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection.doc(currentUserId).update({
+      "mutedFriends": FieldValue.arrayRemove([friendId]),
+    });
   }
 
   Future<void> removeFriend(String friendId) async {

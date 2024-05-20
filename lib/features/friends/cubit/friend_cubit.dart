@@ -114,7 +114,6 @@ class FriendCubit extends Cubit<FriendStates> {
     required String message,
     required User sender,
     required MessageType type,
-    double? duration,
   }) async {
     emit(SendMessageToFriendLoading());
     try {
@@ -124,7 +123,6 @@ class FriendCubit extends Cubit<FriendStates> {
         sender,
         mediaUrls,
         type,
-        duration,
       );
       emit(SendMessageToFriendSuccess());
     } catch (e) {
@@ -136,12 +134,18 @@ class FriendCubit extends Cubit<FriendStates> {
     String mediaPath,
     File mediaFile,
     String friendPathId,
+    Future<String> Function(File imageFile) getFileName,
   ) async {
     emit(SendMediaToFriendLoading());
     try {
       mediaUrls.clear();
-      final String downloadUrl = await _friendFirebaseServices
-          .sendMediaToFriend(mediaPath, mediaFile, friendPathId);
+      final String downloadUrl =
+          await _friendFirebaseServices.sendMediaToFriend(
+        mediaPath,
+        mediaFile,
+        friendPathId,
+        getFileName,
+      );
       mediaUrls.add(downloadUrl);
       emit(SendMediaToFriendSuccess());
     } catch (e) {
@@ -186,6 +190,26 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(RemoveFriendRequestSuccess());
     } catch (e) {
       emit(RemoveFriendRequestError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> muteFriend(String friendId) async {
+    emit(MuteFriendLoading());
+    try {
+      await _friendFirebaseServices.muteFriend(friendId);
+      emit(MuteFriendSuccess());
+    } catch (e) {
+      emit(MuteFriendError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> unMuteFriend(String friendId) async {
+    emit(UnMuteFriendLoading());
+    try {
+      await _friendFirebaseServices.unMuteFriend(friendId);
+      emit(UnMuteFriendSuccess());
+    } catch (e) {
+      emit(UnMuteFriendError(Failure.fromException(e).message));
     }
   }
 

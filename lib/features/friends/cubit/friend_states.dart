@@ -81,6 +81,7 @@ class GetFriendDataError extends FriendStates {
 
   GetFriendDataError(this.message);
 }
+
 class SearchOnFriendLoading extends FriendStates {}
 
 class SearchOnFriendSuccess extends FriendStates {}
@@ -100,6 +101,7 @@ class SendMediaToFriendError extends FriendStates {
 
   SendMediaToFriendError(this.message);
 }
+
 class SendMessageToFriendLoading extends FriendStates {}
 
 class SendMessageToFriendSuccess extends FriendStates {}
@@ -130,6 +132,26 @@ class GetRecentMessageDataError extends FriendStates {
   GetRecentMessageDataError(this.message);
 }
 
+class MuteFriendLoading extends FriendStates {}
+
+class MuteFriendSuccess extends FriendStates {}
+
+class MuteFriendError extends FriendStates {
+  final String message;
+
+  MuteFriendError(this.message);
+}
+
+class UnMuteFriendLoading extends FriendStates {}
+
+class UnMuteFriendSuccess extends FriendStates {}
+
+class UnMuteFriendError extends FriendStates {
+  final String message;
+
+  UnMuteFriendError(this.message);
+}
+
 class RemoveFriendRequestLoading extends FriendStates {}
 
 class RemoveFriendRequestSuccess extends FriendStates {}
@@ -139,6 +161,7 @@ class RemoveFriendRequestError extends FriendStates {
 
   RemoveFriendRequestError(this.message);
 }
+
 class RemoveFriendLoading extends FriendStates {}
 
 class RemoveFriendSuccess extends FriendStates {}

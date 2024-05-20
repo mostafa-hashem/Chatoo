@@ -7,12 +7,13 @@ import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
-import 'package:chat_app/features/notifications/cubit/notifications_states.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/custom_recording_wave_widget.dart';
 import 'package:chat_app/utils/constants.dart';
+import 'package:chat_app/utils/data/models/user.dart';
+import 'package:chat_app/utils/helper_methods.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
@@ -37,15 +38,18 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   bool emojiShowing = false;
 
   late GroupCubit groupCubit;
+  late User sender;
   bool isRecording = false;
   late final AudioRecorder _audioRecorder;
   String? _audioPath;
   final audioPlayer = AudioPlayer();
-  File? imageFile;
+  File? mediaFile;
+  String? notificationBody;
 
   @override
   void didChangeDependencies() {
     groupCubit = GroupCubit.get(context);
+    sender = ProfileCubit.get(context).user;
     super.didChangeDependencies();
   }
 
@@ -82,7 +86,6 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
 
       await _audioRecorder.start(
         const RecordConfig(
-          // specify the codec to be `.wav`
           encoder: AudioEncoder.wav,
         ),
         path: filePath,
@@ -144,24 +147,39 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
-    final sender = ProfileCubit.get(context).user;
-    return BlocListener<GroupCubit, GroupStates>(
-      listener: (_, state) {
-        if (state is UploadMediaToGroupSuccess) {
-          debugPrint("HIIIIIIIIIIIIIIIIIII");
-          groupCubit.sendMessageToGroup(
-            group: widget.groupData,
-            duration: 0,
-            sender: sender,
-            mediaUrls: groupCubit.mediaUrls,
-            message: groupCubit.messageController.text.isEmpty
-                ? ''
-                : groupCubit.messageController.text,
-            type: MessageType.image,
-            isAction: false,
-          );
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<GroupCubit, GroupStates>(
+          listener: (_, state) {
+            if (state is SendMessageToGroupSuccess) {
+              scrollToBottom();
+              final List<dynamic> memberIds =
+                  widget.groupData.members!.toList();
+              for (final memberId in memberIds) {
+                groupCubit.getUserData(memberId.toString());
+                bool isMuted() {
+                  if (groupCubit.userData?.mutedGroups != null) {
+                    return groupCubit.userData!.mutedGroups!
+                        .any((groupId) => groupId == widget.groupData.groupId);
+                  }
+                  return false;
+                }
+
+                if (memberId == sender.id || isMuted()) {
+                  continue;
+                }
+                NotificationsCubit.get(context).sendNotification(
+                  fCMToken: groupCubit.userData?.fCMToken ?? '',
+                  title: 'New Messages in ${widget.groupData.groupName}',
+                  body:
+                      "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
+                  imageUrl: groupCubit.mediaUrls.first,
+                );
+              }
+            }
+          },
+        ),
+      ],
       child: Column(
         children: [
           Padding(
@@ -223,7 +241,10 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                 child: TextField(
                                   controller: groupCubit.messageController,
                                   onChanged: (value) {
-                                    setState(() {});
+                                    setState(() {
+                                      notificationBody =
+                                          groupCubit.messageController.text;
+                                    });
                                   },
 
                                   textInputAction: TextInputAction.newline,
@@ -245,77 +266,156 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                         provider.themeMode == ThemeMode.light
                                             ? Colors.white
                                             : AppColors.dark,
-                                    suffixIcon: groupCubit
-                                            .messageController.text.isEmpty
-                                        ? IconButton(
-                                            padding: const EdgeInsets.all(4),
-                                            onPressed: () async {
-                                              final ImagePicker picker =
-                                                  ImagePicker();
-                                              final XFile? xFile =
-                                                  await picker.pickImage(
-                                                source: ImageSource.gallery,
-                                              );
-                                              if (xFile != null) {
-                                                File xFilePathToFile(
-                                                  XFile xFile,
-                                                ) {
-                                                  return File(xFile.path);
-                                                }
+                                    suffixIcon:
+                                        groupCubit
+                                                .messageController.text.isEmpty
+                                            ? IconButton(
+                                                padding:
+                                                    const EdgeInsets.all(4),
+                                                onPressed: () async {
+                                                  final ImagePicker picker =
+                                                      ImagePicker();
+                                                  final XFile? xFile =
+                                                      await picker.pickMedia();
+                                                  if (xFile != null) {
+                                                    File xFilePathToFile(
+                                                      XFile xFile,
+                                                    ) {
+                                                      return File(xFile.path);
+                                                    }
 
-                                                imageFile =
-                                                    xFilePathToFile(xFile);
-                                                if (context.mounted) {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) {
-                                                      return AlertDialog(
-                                                        title: const Text(
-                                                          'Send image?',
-                                                        ),
-                                                        actionsOverflowDirection:
-                                                            VerticalDirection
-                                                                .down,
-                                                        actions: [
-                                                          TextButton(
-                                                            child: const Text(
-                                                              'Cancel',
+                                                    mediaFile =
+                                                        xFilePathToFile(xFile);
+                                                    if (context.mounted) {
+                                                      final String fileType =
+                                                          xFile.name
+                                                              .split('.')
+                                                              .last
+                                                              .toLowerCase();
+                                                      final bool isImage = [
+                                                        'jpg',
+                                                        'jpeg',
+                                                        'png',
+                                                        'gif',
+                                                      ].contains(fileType);
+                                                      final bool isVideo = [
+                                                        'mp4',
+                                                        'mov',
+                                                        'avi',
+                                                        'mkv',
+                                                      ].contains(fileType);
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return AlertDialog(
+                                                            title: Text(
+                                                              isImage
+                                                                  ? 'Send image?'
+                                                                  : isVideo
+                                                                      ? 'Send video?'
+                                                                      : 'Send media?',
                                                             ),
-                                                            onPressed: () {
-                                                              Navigator.pop(
-                                                                context,
-                                                              );
-                                                            },
-                                                          ),
-                                                          TextButton(
-                                                            child: const Text(
-                                                              'Send',
-                                                            ),
-                                                            onPressed: () {
-                                                              groupCubit
-                                                                  .uploadMediaToGroup(
-                                                                FirebasePath
-                                                                    .images,
-                                                                imageFile!,
-                                                                widget.groupData
-                                                                    .groupId!,
-                                                              );
-
-                                                              Navigator.pop(
-                                                                context,
-                                                              );
-                                                            },
-                                                          ),
-                                                        ],
+                                                            actionsOverflowDirection:
+                                                                VerticalDirection
+                                                                    .down,
+                                                            actions: [
+                                                              TextButton(
+                                                                child:
+                                                                    const Text(
+                                                                  'Cancel',
+                                                                ),
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                    context,
+                                                                  );
+                                                                },
+                                                              ),
+                                                              TextButton(
+                                                                child:
+                                                                    const Text(
+                                                                  'Send',
+                                                                ),
+                                                                onPressed: () {
+                                                                  if (isImage) {
+                                                                    groupCubit
+                                                                        .uploadMediaToGroup(
+                                                                      FirebasePath
+                                                                          .images,
+                                                                      mediaFile!,
+                                                                      widget
+                                                                          .groupData
+                                                                          .groupId!,
+                                                                      getImageFileName,
+                                                                    )
+                                                                        .then(
+                                                                      (value) {
+                                                                        groupCubit
+                                                                            .sendMessageToGroup(
+                                                                          group:
+                                                                              widget.groupData,
+                                                                          sender:
+                                                                              sender,
+                                                                          mediaUrls:
+                                                                              groupCubit.mediaUrls,
+                                                                          message: groupCubit.messageController.text.isEmpty
+                                                                              ? ''
+                                                                              : groupCubit.messageController.text,
+                                                                          type:
+                                                                              MessageType.image,
+                                                                          isAction:
+                                                                              false,
+                                                                        );
+                                                                      },
+                                                                    );
+                                                                  } else if (isVideo) {
+                                                                    groupCubit
+                                                                        .uploadMediaToGroup(
+                                                                      FirebasePath
+                                                                          .videos,
+                                                                      mediaFile!,
+                                                                      widget
+                                                                          .groupData
+                                                                          .groupId!,
+                                                                      getVideoFileName,
+                                                                    )
+                                                                        .then(
+                                                                      (value) {
+                                                                        groupCubit
+                                                                            .sendMessageToGroup(
+                                                                          group:
+                                                                              widget.groupData,
+                                                                          sender:
+                                                                              sender,
+                                                                          mediaUrls:
+                                                                              groupCubit.mediaUrls,
+                                                                          message: groupCubit.messageController.text.isEmpty
+                                                                              ? ''
+                                                                              : groupCubit.messageController.text,
+                                                                          type:
+                                                                              MessageType.video,
+                                                                          isAction:
+                                                                              false,
+                                                                        );
+                                                                        notificationBody =
+                                                                            'sent video';
+                                                                      },
+                                                                    );
+                                                                  }
+                                                                  Navigator.pop(
+                                                                    context,
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
                                                       );
-                                                    },
-                                                  );
-                                                }
-                                              }
-                                            },
-                                            icon: const Icon(Icons.image),
-                                          )
-                                        : const SizedBox.shrink(),
+                                                    }
+                                                  }
+                                                },
+                                                icon: const Icon(Icons.image),
+                                              )
+                                            : const SizedBox.shrink(),
                                     contentPadding: const EdgeInsets.only(
                                       left: 16.0,
                                       bottom: 8.0,
@@ -344,49 +444,19 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                           ),
                   ),
                 ),
-                // if (groupCubit.messageController.text.isNotEmpty)
-                BlocListener<NotificationsCubit, NotificationsStates>(
-                  listener: (context, state) {
-                    if (state is SendNotificationSuccess) {}
-                  },
-                  child: IconButton(
+                if (groupCubit.messageController.text.isNotEmpty)
+                  IconButton(
                     padding: const EdgeInsets.all(4),
                     onPressed: () async {
-                      final notificationBody =
-                          groupCubit.messageController.text;
                       if (groupCubit.messageController.text.isNotEmpty) {
                         groupCubit.messageController.clear();
-                        groupCubit
-                            .sendMessageToGroup(
+                        groupCubit.sendMessageToGroup(
                           group: widget.groupData,
                           sender: sender,
-                          message: notificationBody,
+                          message: notificationBody ?? '',
                           type: MessageType.text,
                           isAction: false,
-                        )
-                            .whenComplete(() {
-                          scrollToBottom();
-                          final List<dynamic> memberIds =
-                              widget.groupData.members!.toList();
-                          for (final memberId in memberIds) {
-                            if (memberId == ProfileCubit.get(context).user.id) {
-                              continue;
-                            }
-                            groupCubit
-                                .getUserData(memberId.toString())
-                                .whenComplete(
-                              () {
-                                NotificationsCubit.get(context)
-                                    .sendNotification(
-                                  groupCubit.userData?.fCMToken ?? '',
-                                  'New Messages in ${widget.groupData.groupName}',
-                                  "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
-                                  'group',
-                                );
-                              },
-                            );
-                          }
-                        });
+                        );
                       }
                     },
                     icon: CircleAvatar(
@@ -398,55 +468,68 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                         size: 24,
                       ),
                     ),
-                  ),
-                )
-                // else
-                // BlocListener<GroupCubit, GroupStates>(
-                //   listener: (_, state) async {
-                //     if (state is UploadRecordToGroupSuccess)  {
-                //
-                //       final Duration? duration = await audioPlayer.getDuration();
-                //       debugPrint('Duration: $duration');
-                //     //   groupCubit.sendMessageToGroup(
-                //     //     group: widget.groupData,
-                //     //     message: '',
-                //     //     type: MessageType.record,
-                //     //     isAction: false,
-                //     //     mediaUrls: groupCubit.mediaUrls,
-                //     //     duration: 0,
-                //     //   );
-                //     }
-                //   },
-                //   child: GestureDetector(
-                //     onLongPress: () async {
-                //       await audioPlayer
-                //           .play(AssetSource("audios/Notification.mp3"));
-                //       _record();
-                //     },
-                //     onLongPressEnd: (details) async {
-                //       final File recordFile = File(_audioPath!);
-                //       await groupCubit.uploadRecordToGroup(
-                //         recordFile,
-                //         widget.groupData.groupId!,
-                //       );
-                //       debugPrint('End');
-                //     },
-                //     child: isRecording
-                //         ? Padding(
-                //             padding: const EdgeInsets.all(8.0),
-                //             child: CircleAvatar(
-                //               backgroundColor: Colors.greenAccent,
-                //               radius: 38.r,
-                //               child: const Center(child: Icon(Icons.mic)),
-                //             ),
-                //           )
-                //         : const Padding(
-                //             padding: EdgeInsets.all(8.0),
-                //             child: Icon(Icons.mic),
-                //           ),
-                //   ),
-                // ),
-                ,
+                  )
+                else
+                  isRecording
+                      ? IconButton(
+                          padding: const EdgeInsets.all(4),
+                          onPressed: () async {
+                            await _record();
+                            final File recordFile = File(_audioPath!);
+                            await groupCubit
+                                .uploadMediaToGroup(
+                              FirebasePath.records,
+                              recordFile,
+                              widget.groupData.groupId!,
+                              getAudioFileName,
+                            )
+                                .whenComplete(
+                              () {
+                                groupCubit.sendMessageToGroup(
+                                  group: widget.groupData,
+                                  sender: sender,
+                                  message: '',
+                                  type: MessageType.record,
+                                  isAction: false,
+                                  mediaUrls: groupCubit.mediaUrls,
+                                );
+                                notificationBody = 'Mostafa sent a recording';
+                              },
+                            );
+                            debugPrint('End');
+                          },
+                          icon: CircleAvatar(
+                            backgroundColor: AppColors.primary,
+                            radius: 20.r,
+                            child: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onLongPress: () async {
+                            await audioPlayer
+                                .play(AssetSource("audios/Notification.mp3"))
+                                .whenComplete(
+                                  () => _record(),
+                                );
+                          },
+                          child: isRecording
+                              ? Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.greenAccent,
+                                    radius: 38.r,
+                                    child: const Center(child: Icon(Icons.mic)),
+                                  ),
+                                )
+                              : const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(Icons.mic),
+                                ),
+                        ),
               ],
             ),
           ),

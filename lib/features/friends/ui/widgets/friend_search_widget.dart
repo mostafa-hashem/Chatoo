@@ -64,32 +64,33 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
         ),
         trailing: widget.isRequested
             ? InkWell(
-          onTap: (){
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Remove request?'),
-                  actionsOverflowDirection: VerticalDirection.down,
-                  actions: [
-                    TextButton(
-                      child: const Text('Cancel'),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('Remove'),
-                      onPressed: () {
-                        friendCubit.removeFriendRequest(widget.friendData.id!);
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-              child: Container(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Remove request?'),
+                        actionsOverflowDirection: VerticalDirection.down,
+                        actions: [
+                          TextButton(
+                            child: const Text('Cancel'),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('Remove'),
+                            onPressed: () {
+                              friendCubit
+                                  .removeFriendRequest(widget.friendData.id!);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.black,
@@ -104,7 +105,7 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                     style: GoogleFonts.ubuntu(color: Colors.white),
                   ),
                 ),
-            )
+              )
             : widget.isUserFriend
                 ? InkWell(
                     onTap: () {
@@ -156,10 +157,9 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                           .requestToAddFriend(widget.friendData.id!)
                           .whenComplete(
                             () => notificationCubit.sendNotification(
-                              widget.friendData.fCMToken!,
-                              "${profileCubit.user.userName}",
-                              "Friend request",
-                              'friend',
+                              fCMToken: widget.friendData.fCMToken!,
+                              title: "${profileCubit.user.userName}",
+                              body: "Friend request",
                             ),
                           );
                     },

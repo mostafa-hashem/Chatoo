@@ -131,14 +131,35 @@ class SendMessageToGroupError extends GroupStates {
 
   SendMessageToGroupError(this.message);
 }
-class UploadMediaToGroupLoading extends GroupStates {}
 
-class UploadMediaToGroupSuccess extends GroupStates {}
+class UploadImageToGroupLoading extends GroupStates {}
 
-class UploadMediaToGroupError extends GroupStates {
+class UploadImageToGroupSuccess extends GroupStates {}
+
+class UploadImageToGroupError extends GroupStates {
   final String message;
 
-  UploadMediaToGroupError(this.message);
+  UploadImageToGroupError(this.message);
+}
+
+class UploadVideoToGroupLoading extends GroupStates {}
+
+class UploadVideoToGroupSuccess extends GroupStates {}
+
+class UploadVideoToGroupError extends GroupStates {
+  final String message;
+
+  UploadVideoToGroupError(this.message);
+}
+
+class UploadAudioToGroupLoading extends GroupStates {}
+
+class UploadAudioToGroupSuccess extends GroupStates {}
+
+class UploadAudioToGroupError extends GroupStates {
+  final String message;
+
+  UploadAudioToGroupError(this.message);
 }
 
 class SearchOnGroupLoading extends GroupStates {}
@@ -229,6 +250,26 @@ class KickUserFromGroupError extends GroupStates {
   final String message;
 
   KickUserFromGroupError(this.message);
+}
+
+class MuteGroupLoading extends GroupStates {}
+
+class MuteGroupSuccess extends GroupStates {}
+
+class MuteGroupError extends GroupStates {
+  final String message;
+
+  MuteGroupError(this.message);
+}
+
+class UnMuteGroupLoading extends GroupStates {}
+
+class UnMuteGroupSuccess extends GroupStates {}
+
+class UnMuteGroupError extends GroupStates {
+  final String message;
+
+  UnMuteGroupError(this.message);
 }
 
 class DeleteMessageForAllLoading extends GroupStates {}

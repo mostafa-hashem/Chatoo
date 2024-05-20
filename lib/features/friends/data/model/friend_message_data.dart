@@ -14,7 +14,6 @@ class FriendMessage {
   String sender = '';
   List<String>? mediaUrls;
   MessageType? messageType;
-  double? duration;
   DateTime sentAt = DateTime.now();
 
   FriendMessage({
@@ -24,7 +23,6 @@ class FriendMessage {
     required this.sender,
     this.mediaUrls,
     this.messageType,
-    this.duration = 0,
     required this.sentAt,
   });
 
@@ -47,9 +45,6 @@ class FriendMessage {
     if (json['messageType'] != null) {
       messageType = MessageType.values[json['messageType'] as int];
     }
-    if (json['duration'] != null) {
-      duration = json['duration'] as double;
-    }
     if (json['sentAt'] != null) {
       sentAt = (json['sentAt'] as Timestamp).toDate();
     }
@@ -62,7 +57,6 @@ class FriendMessage {
         'sender': sender,
         if (mediaUrls != null) 'mediaUrls': mediaUrls,
         if (messageType != null) 'messageType': messageType!.index,
-        if (duration != null) 'duration': duration,
         'sentAt': Timestamp.fromDate(sentAt),
       };
 }

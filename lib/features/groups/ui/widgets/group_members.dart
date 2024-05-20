@@ -84,10 +84,10 @@ class _GroupMembersState extends State<GroupMembers> {
                             "Requested successfully",
                           );
                           notificationCubit.sendNotification(
-                            groupCubit.allGroupMembers[index]!.fCMToken!,
-                            "${profileCubit.user.userName}",
-                            "Friend request",
-                            'friend',
+                            fCMToken:
+                                groupCubit.allGroupMembers[index]!.fCMToken!,
+                            title: "${profileCubit.user.userName}",
+                            body: "Friend request",
                           );
                         }
                         if (state is RemoveFriendSuccess) {
@@ -131,7 +131,7 @@ class _GroupMembersState extends State<GroupMembers> {
                       (adminId) =>
                           adminId == groupCubit.allGroupMembers[index]!.id,
                     ) &&
-                widget.group.mainAdminId == profileCubit.user.id)
+                    widget.group.mainAdminId == profileCubit.user.id)
                   PopupMenuItem(
                     child: TextButton(
                       onPressed: () {
@@ -156,8 +156,9 @@ class _GroupMembersState extends State<GroupMembers> {
                     widget.group.groupAdmins!.any(
                       (adminId) =>
                           adminId == groupCubit.allGroupMembers[index]!.id,
-                    )  &&
-                    groupCubit.allGroupMembers[index]!.id == profileCubit.user.id)
+                    ) &&
+                    groupCubit.allGroupMembers[index]!.id ==
+                        profileCubit.user.id)
                   PopupMenuItem(
                     child: TextButton(
                       onPressed: () {
@@ -179,10 +180,12 @@ class _GroupMembersState extends State<GroupMembers> {
                   ),
                 if (widget.group.groupAdmins!.any(
                       (adminId) => adminId == profileCubit.user.id,
-                    ) && !widget.group.groupAdmins!.any(
-                      (adminId) => adminId == groupCubit.allGroupMembers[index]!.id,
-                ) &&
-                widget.group.members![index] != profileCubit.user.id &&
+                    ) &&
+                    !widget.group.groupAdmins!.any(
+                      (adminId) =>
+                          adminId == groupCubit.allGroupMembers[index]!.id,
+                    ) &&
+                    widget.group.members![index] != profileCubit.user.id &&
                     widget.group.members![index] != widget.group.mainAdminId)
                   PopupMenuItem(
                     child: TextButton(
