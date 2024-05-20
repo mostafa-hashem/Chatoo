@@ -297,6 +297,30 @@ class FriendFirebaseServices {
     });
   }
 
+  Future<void> deleteChat(String friendId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    _usersCollection
+        .doc(currentUserId)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .update({
+      'sentAt': '',
+      'recentMessage': '',
+      'recentMessageSender': '',
+    });
+    final messagesCollection = _usersCollection
+        .doc(currentUserId)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .collection(FirebasePath.messages);
+
+    final querySnapshot = await messagesCollection.get();
+
+    for (final doc in querySnapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
+
   Future<void> deleteMessageForMe(String friendId, String messageId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     _usersCollection

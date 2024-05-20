@@ -60,7 +60,6 @@ String getFormattedTime(int timestamp) {
   return '$hours:$minutes $period';
 }
 
-
 void showImageDialog(BuildContext context, String imageUrl) {
   showDialog(
     context: context,
@@ -70,15 +69,17 @@ void showImageDialog(BuildContext context, String imageUrl) {
           Navigator.pushNamed(
             context,
             Routes.mediaView,
-            arguments: imageUrl,
+            arguments: {'path': imageUrl, 'isVideo': false},
           );
         },
         child: Dialog(
-          child: SizedBox(
-            child: FancyShimmerImage(
-              imageUrl: imageUrl,
-              boxFit: BoxFit.contain,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FancyShimmerImage(
+                imageUrl: imageUrl,
+              ),
+            ],
           ),
         ),
       );
@@ -105,7 +106,6 @@ Future<String> getVideoFileName(File videoFile) async {
   final int duration = videoController.value.duration.inSeconds;
   final double width = videoController.value.size.width;
   final double height = videoController.value.size.height;
-
 
   await videoController.dispose();
 

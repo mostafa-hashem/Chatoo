@@ -172,6 +172,16 @@ class RemoveFriendError extends FriendStates {
   RemoveFriendError(this.message);
 }
 
+class DeleteChatLoading extends FriendStates {}
+
+class DeleteChatSuccess extends FriendStates {}
+
+class DeleteChatError extends FriendStates {
+  final String message;
+
+  DeleteChatError(this.message);
+}
+
 class DeleteMessageForMeLoading extends FriendStates {}
 
 class DeleteMessageForMeSuccess extends FriendStates {}
