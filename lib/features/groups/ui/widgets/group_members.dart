@@ -73,7 +73,7 @@ class _GroupMembersState extends State<GroupMembers> {
                     child: const Text('View profile'),
                   ),
                 ),
-                if (widget.group.members![index] != profileCubit.user.id)
+                if (widget.group.members?[index] != profileCubit.user.id)
                   PopupMenuItem(
                     child: BlocListener<FriendCubit, FriendStates>(
                       listener: (context, state) {

@@ -29,6 +29,7 @@ class RecordTile extends StatefulWidget {
 class _RecordTileState extends State<RecordTile> {
   late AudioPlayer _audioPlayer;
   bool _isPlaying = false;
+  bool _isLoading = false;
   late int durationInSeconds;
   late User sender;
   Duration _currentPosition = Duration.zero;
@@ -56,6 +57,14 @@ class _RecordTileState extends State<RecordTile> {
       setState(() {
         _currentPosition = position;
       });
+    });
+
+    _audioPlayer.onPlayerStateChanged.listen((state) {
+      if (state == PlayerState.playing) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     });
 
     super.didChangeDependencies();
@@ -111,7 +120,7 @@ class _RecordTileState extends State<RecordTile> {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     if (_isPlaying) {
                       _audioPlayer.stop();
                       setState(() {
@@ -119,15 +128,27 @@ class _RecordTileState extends State<RecordTile> {
                         _currentPosition = Duration.zero;
                       });
                     } else {
-                      _audioPlayer.play(UrlSource(widget.recordPath));
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      await _audioPlayer.play(UrlSource(widget.recordPath));
                       setState(() {
                         _isPlaying = true;
                       });
                     }
                   },
-                  child: Icon(
-                    _isPlaying ? Icons.stop : Icons.play_arrow,
-                    color: Colors.white,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (_isLoading)
+                        const CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      Icon(
+                        _isPlaying ? Icons.stop : Icons.play_arrow,
+                        color: Colors.white,
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
@@ -152,17 +173,12 @@ class _RecordTileState extends State<RecordTile> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
-          Align(
-            alignment: sender.id == widget.senderId
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
-            child: Text(
-              getFormattedTime(widget.sentAt),
-              style: TextStyle(
-                fontSize: 10.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+          Text(
+            getFormattedTime(widget.sentAt),
+            style: TextStyle(
+              fontSize: 10.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

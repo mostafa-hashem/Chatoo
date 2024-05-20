@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 
@@ -13,8 +14,7 @@ class _MediaViewState extends State<MediaView> {
   late VideoPlayerController _videoController;
   bool isVideo = false;
   String mediaPath = '';
-  bool _isPlaying = false;
-  double _currentPosition = 0;
+  bool isPlaying = false;
 
   @override
   void didChangeDependencies() {
@@ -28,18 +28,23 @@ class _MediaViewState extends State<MediaView> {
         ..initialize().then((_) {
           setState(() {});
           _videoController.play();
-          _isPlaying = true;
+          isPlaying = true;
           _videoController.addListener(_updatePosition);
         });
     }
   }
 
   void _updatePosition() {
-    final currentPosition = _videoController.value.position.inSeconds.toDouble();
-    final totalDuration = _videoController.value.duration.inSeconds.toDouble();
-    setState(() {
-      _currentPosition = currentPosition / totalDuration;
-    });
+    _videoController.value.position.inSeconds.toDouble();
+    _videoController.value.duration.inSeconds.toDouble();
+    setState(() {});
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$minutes:$seconds';
   }
 
   @override
@@ -58,50 +63,77 @@ class _MediaViewState extends State<MediaView> {
       body: Center(
         child: isVideo
             ? _videoController.value.isInitialized
-            ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AspectRatio(
-              aspectRatio: _videoController.value.aspectRatio,
-              child: VideoPlayer(_videoController),
-            ),
-            Slider(
-              value: _currentPosition,
-              onChanged: (value) {
-                final newPosition = value *
-                    _videoController.value.duration.inSeconds;
-                _videoController.seekTo(Duration(seconds: newPosition.toInt()));
-              },
-              activeColor: Colors.red,
-              inactiveColor: Colors.grey,
-            ),
-          ],
-        )
-            : const CircularProgressIndicator()
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: _videoController.value.aspectRatio,
+                        child: VideoPlayer(_videoController),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            _formatDuration(
+                              _videoController.value.position,
+                            ),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14.sp),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 9.w),
+                              child: VideoProgressIndicator(
+                                _videoController,
+                                allowScrubbing: true,
+                                colors: const VideoProgressColors(
+                                  playedColor: Colors.red,
+                                  bufferedColor: Colors.grey,
+                                  backgroundColor: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            _formatDuration(
+                              _videoController.value.duration,
+                            ),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14.sp),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                : const CircularProgressIndicator()
             : PhotoView(
-          imageProvider: NetworkImage(mediaPath),
-          backgroundDecoration: const BoxDecoration(
-            color: Colors.black,
-          ),
-        ),
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: 5.0,
+                initialScale: PhotoViewComputedScale.contained,
+                imageProvider: NetworkImage(mediaPath),
+                backgroundDecoration: const BoxDecoration(
+                  color: Colors.black,
+                ),
+              ),
       ),
       floatingActionButton: isVideo
           ? FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            if (_videoController.value.isPlaying) {
-              _videoController.pause();
-              _isPlaying = false;
-            } else {
-              _videoController.play();
-              _isPlaying = true;
-            }
-          });
-        },
-        child: Icon(
-          _videoController.value.isPlaying ? Icons.pause : Icons.play_arrow,
-        ),
-      )
+              onPressed: () {
+                setState(() {
+                  if (_videoController.value.isPlaying) {
+                    _videoController.pause();
+                    isPlaying = false;
+                  } else {
+                    _videoController.play();
+                    isPlaying = true;
+                  }
+                });
+              },
+              child: Icon(
+                _videoController.value.isPlaying
+                    ? Icons.pause
+                    : Icons.play_arrow,
+              ),
+            )
           : null,
     );
   }

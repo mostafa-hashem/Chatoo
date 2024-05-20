@@ -151,17 +151,12 @@ class _VideoWidgetState extends State<VideoWidget> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
-          Align(
-            alignment: sender.id == widget.senderId
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
-            child: Text(
-              getFormattedTime(widget.sentAt),
-              style: TextStyle(
-                fontSize: 10.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+          Text(
+            getFormattedTime(widget.sentAt),
+            style: TextStyle(
+              fontSize: 10.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

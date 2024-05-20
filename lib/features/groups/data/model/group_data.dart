@@ -22,8 +22,8 @@ class Group {
     this.members,
     this.requests,
     this.recentMessage = "",
-    this.recentMessageSender,
-    this.recentMessageSentAt,
+    this.recentMessageSender = "",
+    this.recentMessageSentAt ,
     required this.createdAt,
   });
 

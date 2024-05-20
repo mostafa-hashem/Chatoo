@@ -42,6 +42,13 @@ class _ImageWidgetState extends State<ImageWidget> {
     final width =
         double.tryParse(dimensions[0].split('%').last.substring(2)) ?? 100.0.w;
     final height = double.tryParse(dimensions[1]) ?? 100.0.h;
+
+    final maxWidth = MediaQuery.of(context).size.width * 0.6;
+    final maxHeight = MediaQuery.of(context).size.height * 0.4;
+
+    final adjustedWidth = width > maxWidth ? maxWidth : width;
+    final adjustedHeight = height > maxHeight ? maxHeight : height;
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -68,30 +75,22 @@ class _ImageWidgetState extends State<ImageWidget> {
             height: MediaQuery.of(context).size.height * 0.01,
           ),
           FancyShimmerImage(
-            height: width > MediaQuery.sizeOf(context).width * 3
-                ? MediaQuery.sizeOf(context).height * 0.25
-                : height > MediaQuery.sizeOf(context).height * 1
-                    ? MediaQuery.sizeOf(context).height * 1
-                    : height,
-            width: width,
+            height: adjustedHeight,
+            width: adjustedWidth,
             imageUrl: widget.imagePath,
+            boxFit: BoxFit.cover,
           ),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
-          Align(
-            alignment: sender.id == widget.senderId
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
-            child: Text(
-              getFormattedTime(
-                widget.sentAt,
-              ),
-              style: TextStyle(
-                fontSize: 10.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+          Text(
+            getFormattedTime(
+              widget.sentAt,
+            ),
+            style: TextStyle(
+              fontSize: 10.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
