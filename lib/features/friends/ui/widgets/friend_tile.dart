@@ -50,6 +50,18 @@ class _FriendTileState extends State<FriendTile> {
         if (state is MuteFriendSuccess || state is UnMuteFriendSuccess) {
           profileCubit.getUser();
         }
+        if (state is DeleteChatSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Deleted successfully",
+                style: TextStyle(fontSize: 15),
+              ),
+              backgroundColor: AppColors.primary,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
       },
       builder: (_, state) {
         return Container(
@@ -58,28 +70,28 @@ class _FriendTileState extends State<FriendTile> {
             key: listTileKey,
             leading: widget.friendData.profileImage!.isEmpty
                 ? CircleAvatar(
-              radius: 26.r,
-              backgroundColor: AppColors.primary,
-              child: Text(
-                widget.friendData.userName!.substring(0, 1).toUpperCase(),
-                textAlign: TextAlign.center,
-                style: GoogleFonts.ubuntu(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            )
+                    radius: 26.r,
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      widget.friendData.userName!.substring(0, 1).toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.ubuntu(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
                 : InkWell(
-              onTap: () {
-                showImageDialog(context, widget.friendData.profileImage!);
-              },
-              child: ClipOval(
-                child: FancyShimmerImage(
-                  imageUrl: widget.friendData.profileImage!,
-                  width: 50.w,
-                ),
-              ),
-            ),
+                    onTap: () {
+                      showImageDialog(context, widget.friendData.profileImage!);
+                    },
+                    child: ClipOval(
+                      child: FancyShimmerImage(
+                        imageUrl: widget.friendData.profileImage!,
+                        width: 50.w,
+                      ),
+                    ),
+                  ),
             title: Text(
               widget.friendData.userName ?? 'Unknown',
               style: GoogleFonts.novaSquare(
@@ -98,10 +110,10 @@ class _FriendTileState extends State<FriendTile> {
             ),
             trailing: isMuted()
                 ? const Icon(
-              Icons.notifications_off,
-              color: AppColors.primary,
-              size: 20,
-            )
+                    Icons.notifications_off,
+                    color: AppColors.primary,
+                    size: 20,
+                  )
                 : const SizedBox.shrink(),
             onTap: () {
               friendCubit.getFriendData(
@@ -116,12 +128,11 @@ class _FriendTileState extends State<FriendTile> {
                   const Duration(
                     milliseconds: 50,
                   ),
-                      () =>
-                      Navigator.pushNamed(
-                        context,
-                        Routes.friendChatScreen,
-                        arguments: widget.friendData,
-                      ),
+                  () => Navigator.pushNamed(
+                    context,
+                    Routes.friendChatScreen,
+                    arguments: widget.friendData,
+                  ),
                 );
               });
             },
@@ -130,9 +141,7 @@ class _FriendTileState extends State<FriendTile> {
                 context: context,
                 position: RelativeRect.fromRect(
                   getWidgetPosition(listTileKey),
-                  Offset.zero & MediaQuery
-                      .of(context)
-                      .size,
+                  Offset.zero & MediaQuery.of(context).size,
                 ),
                 items: [
                   PopupMenuItem(
@@ -140,9 +149,9 @@ class _FriendTileState extends State<FriendTile> {
                       onPressed: () {
                         isMuted()
                             ? friendCubit
-                            .unMuteFriend(widget.friendData.id ?? '')
+                                .unMuteFriend(widget.friendData.id ?? '')
                             : friendCubit
-                            .muteFriend(widget.friendData.id ?? '');
+                                .muteFriend(widget.friendData.id ?? '');
                         if (context.mounted) {
                           Navigator.pop(context);
                         }
@@ -155,8 +164,7 @@ class _FriendTileState extends State<FriendTile> {
                   PopupMenuItem(
                     child: TextButton(
                       onPressed: () {
-                        friendCubit
-                            .deleteChat(widget.friendData.id ?? '');
+                        friendCubit.deleteChat(widget.friendData.id ?? '');
                         if (context.mounted) {
                           Navigator.pop(context);
                         }

@@ -1,4 +1,3 @@
-
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_chat_messages.dart';
@@ -24,6 +23,7 @@ class FriendChatScreen extends StatefulWidget {
 class _FriendChatScreenState extends State<FriendChatScreen> {
   late FriendCubit friendCubit;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -35,7 +35,6 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
     friendCubit.filteredMessages.clear();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +53,8 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   friendData.profileImage!.isNotEmpty)
                 ClipOval(
                   child: FancyShimmerImage(
-                    imageUrl: friendData.profileImage!,
+                    imageUrl: friendCubit.friendData?.profileImage ??
+                        friendData.profileImage!,
                     width: 44.w,
                     height: 40.h,
                   ),
@@ -64,7 +64,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   radius: 28,
                   backgroundColor: AppColors.dark,
                   child: Text(
-                    friendData.userName!.substring(0, 1).toUpperCase(),
+                    friendCubit.friendData?.userName
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        friendData.userName!.substring(0, 1).toUpperCase(),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.ubuntu(
                       fontWeight: FontWeight.w500,
@@ -136,7 +139,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                 Navigator.pushNamed(
                   context,
                   Routes.friendInfoScreen,
-                  arguments: friendData,
+                  arguments: friendCubit.friendData ?? friendData,
                 );
               },
               icon: const Icon(Icons.info),
@@ -155,7 +158,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
               },
             ),
             FriendTypeMessageWidget(
-              friendData: friendData,
+              friendData: friendCubit.friendData ?? friendData,
             ),
           ],
         ),

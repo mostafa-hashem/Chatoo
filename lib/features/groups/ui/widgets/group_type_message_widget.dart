@@ -173,7 +173,9 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                   title: 'New Messages in ${widget.groupData.groupName}',
                   body:
                       "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
-                  imageUrl: groupCubit.mediaUrls.first,
+                  imageUrl: groupCubit.mediaUrls.isNotEmpty
+                      ? groupCubit.mediaUrls.first
+                      : null,
                 );
               }
             }
@@ -241,10 +243,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                 child: TextField(
                                   controller: groupCubit.messageController,
                                   onChanged: (value) {
-                                    setState(() {
-                                      notificationBody =
-                                          groupCubit.messageController.text;
-                                    });
+                                    setState(() {});
                                   },
 
                                   textInputAction: TextInputAction.newline,
@@ -448,6 +447,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                   IconButton(
                     padding: const EdgeInsets.all(4),
                     onPressed: () async {
+                      notificationBody = groupCubit.messageController.text;
                       if (groupCubit.messageController.text.isNotEmpty) {
                         groupCubit.messageController.clear();
                         groupCubit.sendMessageToGroup(

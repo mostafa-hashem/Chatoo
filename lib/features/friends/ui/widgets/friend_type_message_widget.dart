@@ -158,7 +158,9 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                   fCMToken: widget.friendData.fCMToken ?? '',
                   title: sender.userName!,
                   body: notificationBody ?? '',
-                  imageUrl: friendCubit.mediaUrls.first,
+                  imageUrl: friendCubit.mediaUrls.isNotEmpty
+                      ? friendCubit.mediaUrls.first
+                      : null,
                 );
               }
             }
@@ -233,8 +235,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                 child: TextField(
                                   controller: friendCubit.messageController,
                                   onChanged: (value) {
-                                    notificationBody =
-                                        friendCubit.messageController.text;
+                                    setState(() {});
                                   },
                                   textInputAction: TextInputAction.newline,
                                   minLines: 1,
@@ -419,6 +420,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                   IconButton(
                     padding: const EdgeInsets.all(4),
                     onPressed: () {
+                      notificationBody = friendCubit.messageController.text;
                       if (friendCubit.messageController.text.isNotEmpty) {
                         friendCubit.messageController.clear();
                         FriendCubit.get(context).sendMessageToFriend(
