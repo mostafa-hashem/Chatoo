@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/utils/constants.dart';
@@ -7,6 +8,7 @@ import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:rxdart/rxdart.dart';
 
 class FriendFirebaseServices {
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -33,12 +35,13 @@ class FriendFirebaseServices {
         );
   }
 
-  Stream<List<User?>> getAllUserFriends() {
+  Stream<List<CombinedFriend>> getCombinedFriends(String userName) {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       return Stream.value([]);
     }
-    return _usersCollection
+
+    final Stream<List<User?>> allUserFriendsStream = _usersCollection
         .doc(currentUser.uid)
         .snapshots()
         .asyncMap((snapshot) async {
@@ -48,17 +51,72 @@ class FriendFirebaseServices {
             (userData['friends'] ?? []) as List<dynamic>;
         final List<Future<User?>> friendFutures =
             friendIds.map((friendId) async {
-          final DocumentSnapshot friendFutures =
+          final DocumentSnapshot friendSnapshot =
               await _usersCollection.doc(friendId.toString()).get();
-          if (friendFutures.exists) {
-            return User.fromJson(friendFutures.data()! as Map<String, dynamic>);
+          if (friendSnapshot.exists) {
+            return User.fromJson(
+              friendSnapshot.data()! as Map<String, dynamic>,
+            );
           }
+          return null;
         }).toList();
         final List<User?> users = await Future.wait(friendFutures);
         return users;
       } else {
         return [];
       }
+    });
+
+    final Stream<List<FriendRecentMessage>> recentMessageDataStream =
+        _friendsCollection.orderBy('sentAt', descending: true).snapshots().map(
+              (querySnapshot) => querySnapshot.docs
+                  .map(
+                    (queryDocSnapshot) =>
+                        FriendRecentMessage.fromJson(queryDocSnapshot.data()),
+                  )
+                  .toList(),
+            );
+
+    return Rx.combineLatest2<List<User?>, List<FriendRecentMessage>,
+        List<CombinedFriend>>(
+      allUserFriendsStream,
+      recentMessageDataStream,
+      (users, messages) {
+        final combinedFriends = users.map((user) {
+          final recentMessage = messages.firstWhere(
+            (message) => message.recentMessageSender == user?.userName,
+            orElse: () => FriendRecentMessage.empty(),
+          );
+          return CombinedFriend(user: user, recentMessageData: recentMessage);
+        }).toList();
+
+        combinedFriends.sort((a, b) {
+          final aTime = a.recentMessageData?.sentAt ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.recentMessageData?.sentAt ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          return bTime.compareTo(aTime);
+        });
+
+        return combinedFriends;
+      },
+    );
+  }
+
+  Stream<List<FriendMessage>> getAllUserMessages(String friendId) {
+    return _friendsCollection
+        .doc(friendId)
+        .collection(FirebasePath.messages)
+        .orderBy('sentAt', descending: true)
+        .snapshots()
+        .map((querySnapshot) {
+      final messages = querySnapshot.docs
+          .map(
+            (queryDocSnapshot) =>
+                FriendMessage.fromJson(queryDocSnapshot.data()),
+          )
+          .toList();
+      return messages;
     });
   }
 
@@ -179,10 +237,12 @@ class FriendFirebaseServices {
     List<String>? mediaUrls,
     MessageType type,
   ) async {
-    if (message!.isEmpty && mediaUrls!.isEmpty) {
+    if (message!.isEmpty && (mediaUrls == null || mediaUrls.isEmpty)) {
       return;
     }
     final String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
+    final Timestamp now = Timestamp.now();
+
     final DocumentReference userMessageDocRef = _usersCollection
         .doc(friend.id)
         .collection(FirebasePath.friends)
@@ -204,7 +264,7 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: currentUserUid,
       messageType: type,
-      sentAt: DateTime.now(),
+      sentAt: now.toDate(),
     );
     final FriendMessage friendMessage = FriendMessage(
       messageId: messageId,
@@ -213,57 +273,24 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: friend.id!,
       messageType: type,
-      sentAt: DateTime.now(),
+      sentAt: now.toDate(),
     );
 
-    userMessageDocRef.set(currentUserMessage.toJson());
+    await userMessageDocRef.set(currentUserMessage.toJson());
+    await friendMessageDocRef.set(friendMessage.toJson());
 
-    friendMessageDocRef.set(friendMessage.toJson());
-
-    _friendsCollection.doc(friend.id).update({
-      'sentAt': FieldValue.serverTimestamp(),
+    final recentMessageData = {
+      'sentAt': now,
       'recentMessage': message,
       'recentMessageSender': sender.userName,
-    });
+    };
 
-    _usersCollection
+    await _friendsCollection.doc(friend.id).update(recentMessageData);
+    await _usersCollection
         .doc(friend.id)
         .collection(FirebasePath.friends)
         .doc(currentUserUid)
-        .update({
-      'sentAt': FieldValue.serverTimestamp(),
-      'recentMessage': message,
-      'recentMessageSender': sender.userName,
-    });
-  }
-
-  Stream<List<FriendMessage>> getAllUserMessages(String friendId) {
-    return _friendsCollection
-        .doc(friendId)
-        .collection(FirebasePath.messages)
-        .orderBy('sentAt', descending: true)
-        .snapshots()
-        .map(
-          (querySnapshot) => querySnapshot.docs
-              .map(
-                (queryDocSnapshot) =>
-                    FriendMessage.fromJson(queryDocSnapshot.data()),
-              )
-              .toList(),
-        );
-  }
-
-  Stream<List<Friend>> getRecentMessageData() {
-    return _friendsCollection
-        .orderBy('sentAt', descending: true)
-        .snapshots()
-        .map(
-          (querySnapshot) => querySnapshot.docs
-              .map(
-                (queryDocSnapshot) => Friend.fromJson(queryDocSnapshot.data()),
-              )
-              .toList(),
-        );
+        .update(recentMessageData);
   }
 
   Future<void> muteFriend(String friendId) async {
@@ -304,7 +331,7 @@ class FriendFirebaseServices {
         .collection(FirebasePath.friends)
         .doc(friendId)
         .update({
-      'sentAt': '',
+      'sentAt': null,
       'recentMessage': '',
       'recentMessageSender': '',
     });
@@ -321,7 +348,13 @@ class FriendFirebaseServices {
     }
   }
 
-  Future<void> deleteMessageForMe(String friendId, String messageId) async {
+  Future<void> deleteMessageForMe(
+    String friendId,
+    String messageId,
+    String lastMessage,
+    String lastMessageSender,
+    DateTime? sentAt,
+  ) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     _usersCollection
         .doc(currentUserId)
@@ -330,9 +363,24 @@ class FriendFirebaseServices {
         .collection(FirebasePath.messages)
         .doc(messageId)
         .delete();
+    _usersCollection
+        .doc(currentUserId)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .update({
+      'sentAt': sentAt,
+      'recentMessage': lastMessage,
+      'recentMessageSender': lastMessageSender,
+    });
   }
 
-  Future<void> deleteMessageForAll(String friendId, String messageId) async {
+  Future<void> deleteMessageForAll(
+    String friendId,
+    String messageId,
+    String lastMessage,
+    String lastMessageSender,
+    DateTime? sentAt,
+  ) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     _usersCollection
         .doc(currentUserId)
@@ -342,11 +390,29 @@ class FriendFirebaseServices {
         .doc(messageId)
         .delete();
     _usersCollection
+        .doc(currentUserId)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .update({
+      'sentAt': sentAt,
+      'recentMessage': lastMessage,
+      'recentMessageSender': lastMessageSender,
+    });
+    _usersCollection
         .doc(friendId)
         .collection(FirebasePath.friends)
         .doc(currentUserId)
         .collection(FirebasePath.messages)
         .doc(messageId)
         .delete();
+    _usersCollection
+        .doc(friendId)
+        .collection(FirebasePath.friends)
+        .doc(currentUserId)
+        .update({
+      'sentAt': sentAt,
+      'recentMessage': lastMessage,
+      'recentMessageSender': lastMessageSender,
+    });
   }
 }

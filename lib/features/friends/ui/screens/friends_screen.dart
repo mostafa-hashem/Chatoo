@@ -15,47 +15,42 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
-
   @override
   Widget build(BuildContext context) {
-    final friends = FriendCubit.get(context);
+    final friendsCubit = FriendCubit.get(context);
 
-    return friends.allFriends.isNotEmpty
-        ? GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: BlocBuilder<FriendCubit, FriendStates>(
-              buildWhen: (_, currentState) =>
-              currentState is GetAllUserFriendsSuccess ||
-                  currentState is GetAllUserFriendsError ||
-                  currentState is GetAllUserFriendsLoading,
-              builder: (_, state) {
-                if (state is GetAllUserFriendsLoading) {
-                  return const LoadingIndicator();
-                } else if (state is GetAllUserFriendsError) {
-                  return const ErrorIndicator();
-                } else {
-                  return ListView.builder(
-                    itemCount: friends.allFriends.length,
-                    itemBuilder: (_, index) {
-                      if (friends.allFriends[index]?.id != null) {
-                        return FriendTile(
-                          friendData: friends.allFriends[index]!,
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: BlocBuilder<FriendCubit, FriendStates>(
+        buildWhen: (_, currentState) =>
+            currentState is GetCombinedFriendsLoading ||
+            currentState is GetCombinedFriendsSuccess ||
+            currentState is GetCombinedFriendsError,
+        builder: (_, state) {
+          if (state is GetCombinedFriendsLoading) {
+            return const LoadingIndicator();
+          } else if (state is GetCombinedFriendsError) {
+            return const ErrorIndicator();
+          } else if (friendsCubit.combinedFriends.isEmpty) {
+            return const NoFriendWidget();
+          } else {
+            return ListView.builder(
+              itemCount: friendsCubit.combinedFriends.length,
+              itemBuilder: (_, index) {
+                final friendData = friendsCubit.combinedFriends[index];
+                if (friendData.user != null) {
+                  return FriendTile(
+                    friendData: friendData,
                   );
                 }
+                return const SizedBox.shrink();
               },
-            ),
-          )
-        : GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: const NoFriendWidget(),
-          );
+            );
+          }
+        },
+      ),
+    );
   }
 }

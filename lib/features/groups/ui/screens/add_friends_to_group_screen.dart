@@ -59,24 +59,24 @@ class AddFriendsToGroupScreen extends StatelessWidget {
                   return Expanded(
                     child: ListView.separated(
                       itemBuilder: (_, index) {
-                        if (friendCubit.allFriends[index] == null) {
+                        if (friendCubit.combinedFriends[index].user == null) {
                           return const SizedBox.shrink();
                         } else {
                           return AddFriendToGroupTile(
-                            friendData: friendCubit.allFriends[index]!,
+                            friendData: friendCubit.combinedFriends[index].user!,
                             groupData: groupData,
                           );
                         }
                       },
                       separatorBuilder: (context, index) {
-                        if (friendCubit.allFriends[index] == null) {
+                        if (friendCubit.combinedFriends[index].user == null) {
                           return const SizedBox.shrink();
                         }
                         return const Divider(
                           color: AppColors.primary,
                         );
                       },
-                      itemCount: friendCubit.allFriends.length,
+                      itemCount: friendCubit.combinedFriends.length,
                     ),
                   );
                 },

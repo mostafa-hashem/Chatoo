@@ -4,7 +4,9 @@ import 'package:chat_app/features/friends/ui/widgets/friend_chat_messages.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_type_message_widget.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
+import 'package:chat_app/utils/helper_methods.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,6 +59,13 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                         friendData.profileImage!,
                     width: 44.w,
                     height: 40.h,
+                    errorWidget: ClipOval(
+                      child: FancyShimmerImage(
+                        imageUrl: FirebasePath.defaultImage,
+                        width: 44.w,
+                        height: 40.w,
+                      ),
+                    ),
                   ),
                 )
               else
@@ -103,18 +112,25 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                   size: 10.r,
                                 )
                               else
-                                Icon(
-                                  Icons.circle,
-                                  color: Colors.grey,
-                                  size: 10.r,
-                                ),
+                                friendCubit.friendData?.lastSeen != null
+                                    ? const SizedBox.shrink()
+                                    : Icon(
+                                        Icons.circle,
+                                        color: Colors.grey,
+                                        size: 10.r,
+                                      ),
                               SizedBox(
                                 width: MediaQuery.sizeOf(context).width * 0.01,
                               ),
                               Text(
                                 friendCubit.friendData!.onLine!
                                     ? 'Online'
-                                    : 'Offline',
+                                    : friendCubit.friendData?.lastSeen != null
+                                        ? "Last seen: ${getFormattedTime(
+                                            friendCubit.friendData!.lastSeen!
+                                                .millisecondsSinceEpoch,
+                                          )}"
+                                        : 'Offline',
                                 style: GoogleFonts.ubuntu(
                                   fontWeight: FontWeight.w400,
                                   fontSize: 12.sp,
@@ -154,7 +170,9 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   currentState is GetAllFriendMessagesError ||
                   currentState is GetAllFriendMessagesLoading,
               builder: (_, state) {
-                return FriendChatMessages();
+                return FriendChatMessages(
+                  friendName: friendCubit.friendData!.userName!,
+                );
               },
             ),
             FriendTypeMessageWidget(

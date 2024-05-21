@@ -1,5 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/widgets/image_widget.dart';
 import 'package:chat_app/ui/widgets/record_tile.dart';
 import 'package:chat_app/ui/widgets/video_widget.dart';
@@ -10,11 +11,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class FriendMessagesTile extends StatefulWidget {
   final bool sentByMe;
   final FriendMessage friendMessage;
+  final String friendName;
 
   const FriendMessagesTile({
     super.key,
     required this.friendMessage,
     required this.sentByMe,
+    required this.friendName,
   });
 
   @override
@@ -30,188 +33,143 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
 
   @override
   Widget build(BuildContext context) {
+    final profileCubit = ProfileCubit.get(context).user;
     final friendCubit = FriendCubit.get(context);
+    final bool isSender = widget.sentByMe;
+    final EdgeInsetsGeometry messagePadding = isSender
+        ? EdgeInsets.only(top: 4.h, bottom: 4.h, left: 0.w, right: 15.w)
+        : EdgeInsets.only(top: 4.h, bottom: 4.h, left: 15.w, right: 0.w);
+    final EdgeInsetsGeometry messageMargin =
+        isSender ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w);
+    final EdgeInsetsGeometry containerPadding =
+        EdgeInsets.symmetric(vertical: 8.h, horizontal: 15.w);
+
     return InkWell(
       onLongPress: () {
-        widget.sentByMe
-            ? showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: const Text('Delete Message'),
-                    content: const Text(
-                      'Are you sure you want to delete this message?',
-                    ),
-                    actionsOverflowDirection: VerticalDirection.up,
-                    actions: [
-                      TextButton(
-                        child: const Text('Cancel'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      TextButton(
-                        child: const Text('Delete for me'),
-                        onPressed: () {
-                          friendCubit
-                              .deleteMessageForMe(
-                                widget.friendMessage.friendId,
-                                widget.friendMessage.messageId,
-                              )
-                              .whenComplete(
-                                () => Navigator.pop(context),
-                              );
-                        },
-                      ),
-                      TextButton(
-                        child: const Text('Delete for everyone'),
-                        onPressed: () {
-                          friendCubit
-                              .deleteMessageForAll(
-                                widget.friendMessage.friendId,
-                                widget.friendMessage.messageId,
-                              )
-                              .whenComplete(
-                                () => Navigator.pop(context),
-                              );
-                        },
-                      ),
-                    ],
-                  );
-                },
-              )
-            : showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: const Text('Delete Message'),
-                    content: const Text(
-                      "Are you sure you want to delete this message?",
-                    ),
-                    actions: [
-                      TextButton(
-                        child: const Text('Cancel'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      TextButton(
-                        child: const Text('Delete for me'),
-                        onPressed: () {
-                          friendCubit
-                              .deleteMessageForMe(
-                                widget.friendMessage.friendId,
-                                widget.friendMessage.messageId,
-                              )
-                              .whenComplete(
-                                () => Navigator.pop(context),
-                              );
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Delete Message'),
+              content:
+                  const Text('Are you sure you want to delete this message?'),
+              actions: [
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Delete for me'),
+                  onPressed: () {
+                    friendCubit
+                        .deleteMessageForMe(
+                          widget.friendMessage.friendId,
+                          widget.friendMessage.messageId,
+                          profileCubit.id!,
+                          profileCubit.userName!,
+                          widget.friendName,
+                        )
+                        .whenComplete(() => Navigator.pop(context));
+                  },
+                ),
+                if (isSender)
+                  TextButton(
+                    child: const Text('Delete for everyone'),
+                    onPressed: () {
+                      friendCubit
+                          .deleteMessageForAll(
+                            widget.friendMessage.friendId,
+                            widget.friendMessage.messageId,
+                            profileCubit.id!,
+                            profileCubit.userName!,
+                            widget.friendName,
+                          )
+                          .whenComplete(() => Navigator.pop(context));
+                    },
+                  ),
+              ],
+            );
+          },
+        );
       },
       child: Container(
-        padding: EdgeInsets.only(
-          top: 4,
-          bottom: 4,
-          left: widget.sentByMe ? 0 : 24,
-          right: widget.sentByMe ? 24 : 0,
-        ),
-        alignment:
-            widget.sentByMe ? Alignment.centerRight : Alignment.centerLeft,
+        padding: messagePadding,
+        alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
-          margin: widget.sentByMe
-              ? const EdgeInsets.only(left: 30)
-              : const EdgeInsets.only(right: 30),
-          padding: widget.sentByMe
-              ? const EdgeInsets.only(
-                  top: 10,
-                  bottom: 10,
-                  left: 20,
-                  right: 18,
-                )
-              : const EdgeInsets.only(
-                  top: 10,
-                  bottom: 10,
-                  left: 18,
-                  right: 20,
-                ),
+          margin: messageMargin,
+          padding: containerPadding,
           decoration: BoxDecoration(
-            borderRadius: widget.sentByMe
-                ? const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                    bottomLeft: Radius.circular(20),
+            borderRadius: isSender
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(20.r),
+                    topRight: Radius.circular(20.r),
+                    bottomLeft: Radius.circular(20.r),
                   )
-                : const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
+                : BorderRadius.only(
+                    topLeft: Radius.circular(20.r),
+                    topRight: Radius.circular(20.r),
+                    bottomRight: Radius.circular(20.r),
                   ),
-            color: widget.sentByMe
-                ? const Color(0xffecae7d)
-                : const Color(0xff8db4ad),
+            color: isSender ? const Color(0xffecae7d) : const Color(0xff8db4ad),
           ),
-          child: widget.friendMessage.messageType! == MessageType.text
-              ? Column(
-                  crossAxisAlignment: widget.sentByMe
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.friendMessage.message,
-                      style: TextStyle(fontSize: 15.sp, color: Colors.white),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.01,
-                    ),
-                    Text(
-                      getFormattedTime(
-                        widget.friendMessage.sentAt.millisecondsSinceEpoch,
-                      ),
-                      style: TextStyle(
-                        fontSize: 9.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                )
-              : widget.friendMessage.messageType! == MessageType.image
-                  ? ImageWidget(
-                      imagePath: widget.friendMessage.mediaUrls?.first ?? '',
-                      sentAt:
-                          widget.friendMessage.sentAt.millisecondsSinceEpoch,
-                      senderName: '',
-                      senderId: widget.friendMessage.sender,
-                      isInGroup: true,
-                    )
-                  : widget.friendMessage.messageType! == MessageType.video
-                      ? VideoWidget(
-                          videoPath:
-                              widget.friendMessage.mediaUrls?.first ?? '',
-                          sentAt: widget
-                              .friendMessage.sentAt.millisecondsSinceEpoch,
-                          senderName: '',
-                          senderId: widget.friendMessage.sender,
-                          isInGroup: true,
-                        )
-                      : widget.friendMessage.messageType! == MessageType.record
-                          ? RecordTile(
-                              recordPath:
-                                  widget.friendMessage.mediaUrls?.first ?? '',
-                              sentAt: widget
-                                  .friendMessage.sentAt.millisecondsSinceEpoch,
-                              senderName: '',
-                              senderId: widget.friendMessage.sender,
-                              isInGroup: true,
-                            )
-                          : const SizedBox.shrink(),
+          child: _buildMessageContent(context, isSender),
         ),
       ),
     );
+  }
+
+  Widget _buildMessageContent(BuildContext context, bool isSender) {
+    switch (widget.friendMessage.messageType!) {
+      case MessageType.text:
+        return Column(
+          crossAxisAlignment:
+              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.friendMessage.message,
+              style: TextStyle(fontSize: 15.sp, color: Colors.white),
+            ),
+            SizedBox(height: 5.h),
+            Text(
+              getFormattedTime(
+                widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+              ),
+              style: TextStyle(
+                fontSize: 9.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        );
+      case MessageType.image:
+        return ImageWidget(
+          imagePath: widget.friendMessage.mediaUrls?.first ?? '',
+          sentAt: widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+          senderName: '',
+          senderId: widget.friendMessage.sender,
+          isInGroup: false,
+        );
+      case MessageType.video:
+        return VideoWidget(
+          videoPath: widget.friendMessage.mediaUrls?.first ?? '',
+          sentAt: widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+          senderName: '',
+          senderId: widget.friendMessage.sender,
+          isInGroup: false,
+        );
+      case MessageType.record:
+        return RecordTile(
+          recordPath: widget.friendMessage.mediaUrls?.first ?? '',
+          sentAt: widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+          senderName: '',
+          senderId: widget.friendMessage.sender,
+          isInGroup: false,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

@@ -193,6 +193,13 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                             boxFit: BoxFit.cover,
                             width: 180.w,
                             height: 170.h,
+                            errorWidget: ClipOval(
+                              child: FancyShimmerImage(
+                                imageUrl: FirebasePath.defaultImage,
+                                width: 180.w,
+                                height: 170.h,
+                              ),
+                            ),
                           ),
                         ),
                       )

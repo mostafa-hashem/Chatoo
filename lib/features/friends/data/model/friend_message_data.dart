@@ -5,6 +5,7 @@ enum MessageType {
   image,
   video,
   record,
+  audio,
 }
 
 class FriendMessage {
@@ -14,7 +15,7 @@ class FriendMessage {
   String sender = '';
   List<String>? mediaUrls;
   MessageType? messageType;
-  DateTime sentAt = DateTime.now();
+  DateTime? sentAt;
 
   FriendMessage({
     required this.friendId,
@@ -25,6 +26,15 @@ class FriendMessage {
     this.messageType,
     required this.sentAt,
   });
+
+  FriendMessage.empty()
+      : friendId = '',
+        messageId = '',
+        message = '',
+        sender = '',
+        mediaUrls = [],
+        messageType = MessageType.text,
+        sentAt = null;
 
   FriendMessage.fromJson(Map<String, dynamic> json) {
     if (json['friendId'] != null) {
@@ -57,6 +67,6 @@ class FriendMessage {
         'sender': sender,
         if (mediaUrls != null) 'mediaUrls': mediaUrls,
         if (messageType != null) 'messageType': messageType!.index,
-        'sentAt': Timestamp.fromDate(sentAt),
+        'sentAt': Timestamp.fromDate(sentAt!),
       };
 }

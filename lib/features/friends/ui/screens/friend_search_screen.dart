@@ -161,10 +161,10 @@ class _FriendSearchScreenState extends State<FriendSearchScreen> {
                   return ListView.separated(
                     itemBuilder: (_, index) => FriendSearchWidget(
                       friendData: friendCubit.searchedFriends[index],
-                      isUserFriend: friendCubit.allFriends.any(
+                      isUserFriend: friendCubit.combinedFriends.any(
                         (friend) =>
-                            friend != null &&
-                            friend.id!.contains(
+                            friend.user != null &&
+                            friend.user!.id!.contains(
                               friendCubit.searchedFriends[index].id!,
                             ),
                       ),

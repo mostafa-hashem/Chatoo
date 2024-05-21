@@ -70,7 +70,7 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
       );
     case Routes.groupsScreen:
       return MaterialPageRoute(
-        builder: (_) => const GroupsScreen(),
+        builder: (_) => GroupsScreen(),
         settings: routeSettings,
       );
     case Routes.groupChatScreen:

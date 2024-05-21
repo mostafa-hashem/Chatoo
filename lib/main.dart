@@ -42,7 +42,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp>  with WidgetsBindingObserver {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late MyAppProvider provider;
 
   @override
@@ -58,8 +58,9 @@ class _MyAppState extends State<MyApp>  with WidgetsBindingObserver {
     await FirebaseFirestore.instance
         .collection(FirebasePath.users)
         .doc(currentUserId)
-        .update({"onLine": status});
+        .update({"onLine": status, "lastSeen": Timestamp.now()});
   }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -69,7 +70,7 @@ class _MyAppState extends State<MyApp>  with WidgetsBindingObserver {
     }
   }
 
-  final String requiredVersion = '1.0.3';
+  final String requiredVersion = '1.0.4';
   String? appVersion;
   String routeName = Routes.updateScreen;
 

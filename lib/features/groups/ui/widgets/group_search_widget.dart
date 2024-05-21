@@ -51,6 +51,14 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                 child: FancyShimmerImage(
                   imageUrl: widget.searchedGroupData.groupIcon!,
                   width: 50.w,
+                  errorWidget: ClipOval(
+                    child: SizedBox(
+                      width: 50.w,
+                      child: const Icon(
+                        Icons.groups_outlined,
+                      ),
+                    ),
+                  ),
                 ),
               ),
         title: Text(

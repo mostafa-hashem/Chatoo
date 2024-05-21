@@ -33,12 +33,21 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isSender =
+        ProfileCubit.get(context).user.id == widget.groupMessage.sender!.id;
+    final EdgeInsetsGeometry messagePadding = isSender
+        ? EdgeInsets.only(top: 6.h, bottom: 2.h, right: 15.w)
+        : EdgeInsets.only(top: 4, bottom: 4, left: 15.w);
+    final EdgeInsetsGeometry messageMargin =
+        isSender ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w);
+    final EdgeInsetsGeometry containerPadding =
+        EdgeInsets.symmetric(vertical: 6.h, horizontal: 10.w);
+
     return InkWell(
       onLongPress: () {
         widget.groupMessage.isAction!
             ? const SizedBox.shrink()
-            : ProfileCubit.get(context).user.id ==
-                    widget.groupMessage.sender!.id
+            : isSender
                 ? showDialog(
                     context: context,
                     builder: (context) {
@@ -68,9 +77,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                                       widget.groupMessage.messageId!,
                                       ProfileCubit.get(context).user.userName!,
                                     )
-                                    .whenComplete(
-                                      () => Navigator.pop(context),
-                                    );
+                                    .whenComplete(() => Navigator.pop(context));
                               },
                             ),
                           ),
@@ -105,51 +112,21 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                 child: Text(
                   widget.groupMessage.message!,
                   style: GoogleFonts.alexandria(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: AppColors.primary,
                   ),
                 ),
               ),
             )
           : Container(
-              padding: EdgeInsets.only(
-                top: 4,
-                bottom: 4,
-                left: ProfileCubit.get(context).user.id ==
-                        widget.groupMessage.sender!.id
-                    ? 0
-                    : 15,
-                right: ProfileCubit.get(context).user.id ==
-                        widget.groupMessage.sender!.id
-                    ? 15
-                    : 0,
-              ),
-              alignment: ProfileCubit.get(context).user.id ==
-                      widget.groupMessage.sender!.id
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
+              padding: messagePadding,
+              alignment:
+                  isSender ? Alignment.centerRight : Alignment.centerLeft,
               child: Container(
-                margin: ProfileCubit.get(context).user.id ==
-                        widget.groupMessage.sender!.id
-                    ? const EdgeInsets.only(left: 30)
-                    : const EdgeInsets.only(right: 30),
-                padding: ProfileCubit.get(context).user.id ==
-                        widget.groupMessage.sender!.id
-                    ? const EdgeInsets.only(
-                        top: 12,
-                        bottom: 12,
-                        left: 15,
-                        right: 15,
-                      )
-                    : const EdgeInsets.only(
-                        top: 15,
-                        bottom: 15,
-                        left: 15,
-                        right: 15,
-                      ),
+                margin: messageMargin,
+                padding: containerPadding,
                 decoration: BoxDecoration(
-                  borderRadius: ProfileCubit.get(context).user.id ==
-                          widget.groupMessage.sender!.id
+                  borderRadius: isSender
                       ? const BorderRadius.only(
                           topLeft: Radius.circular(20),
                           topRight: Radius.circular(20),
@@ -160,95 +137,78 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                           topRight: Radius.circular(20),
                           bottomRight: Radius.circular(20),
                         ),
-                  color: ProfileCubit.get(context).user.id ==
-                          widget.groupMessage.sender!.id
+                  color: isSender
                       ? const Color(0xffecae7d)
                       : const Color(0xff8db4ad),
                 ),
-                child: widget.groupMessage.messageType! == MessageType.text
-                    ? Column(
-                        crossAxisAlignment: ProfileCubit.get(context).user.id ==
-                                widget.groupMessage.sender!.id
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.groupMessage.sender!.userName!,
-                            style: TextStyle(
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.01,
-                          ),
-                          Text(
-                            widget.groupMessage.message!,
-                            style: TextStyle(
-                              fontSize: 15.sp,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.01,
-                          ),
-                          Text(
-                            getFormattedTime(
-                              widget
-                                  .groupMessage.sentAt!.millisecondsSinceEpoch,
-                            ),
-                            style: TextStyle(
-                              fontSize: 9.sp,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      )
-                    : widget.groupMessage.messageType! == MessageType.image
-                        ? ImageWidget(
-                            imagePath:
-                                widget.groupMessage.mediaUrls?.first ?? '',
-                            sentAt: widget.groupMessage.sentAt
-                                    ?.millisecondsSinceEpoch ??
-                                DateTime.now().millisecondsSinceEpoch,
-                            senderName:
-                                widget.groupMessage.sender?.userName ?? '',
-                            senderId: widget.groupMessage.sender?.id ?? '',
-                            isInGroup: true,
-                          )
-                        : widget.groupMessage.messageType! == MessageType.video
-                            ? VideoWidget(
-                                videoPath:
-                                    widget.groupMessage.mediaUrls?.first ?? '',
-                                sentAt: widget.groupMessage.sentAt
-                                        ?.millisecondsSinceEpoch ??
-                                    DateTime.now().millisecondsSinceEpoch,
-                                senderName:
-                                    widget.groupMessage.sender?.userName ?? '',
-                                senderId: widget.groupMessage.sender?.id ?? '',
-                                isInGroup: true,
-                              )
-                            : widget.groupMessage.messageType! ==
-                                    MessageType.record
-                                ? RecordTile(
-                                    recordPath:
-                                        widget.groupMessage.mediaUrls?.first ??
-                                            '',
-                                    sentAt: widget.groupMessage.sentAt
-                                            ?.millisecondsSinceEpoch ??
-                                        DateTime.now().millisecondsSinceEpoch,
-                                    senderName:
-                                        widget.groupMessage.sender?.userName ??
-                                            '',
-                                    senderId:
-                                        widget.groupMessage.sender?.id ?? '',
-                                    isInGroup: true,
-                                  )
-                                : const SizedBox.shrink(),
+                child: _buildMessageContent(context, isSender),
               ),
             ),
     );
+  }
+
+  Widget _buildMessageContent(BuildContext context, bool isSender) {
+    switch (widget.groupMessage.messageType!) {
+      case MessageType.text:
+        return Column(
+          crossAxisAlignment:
+              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.groupMessage.sender!.userName!,
+              style: TextStyle(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 5.h),
+            Text(
+              widget.groupMessage.message!,
+              style: TextStyle(fontSize: 15.sp, color: Colors.white),
+            ),
+            SizedBox(height: 5.h),
+            Text(
+              getFormattedTime(
+                widget.groupMessage.sentAt!.millisecondsSinceEpoch,
+              ),
+              style: TextStyle(
+                fontSize: 9.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        );
+      case MessageType.image:
+        return ImageWidget(
+          imagePath: widget.groupMessage.mediaUrls?.first ?? '',
+          sentAt: widget.groupMessage.sentAt?.millisecondsSinceEpoch ??
+              DateTime.now().millisecondsSinceEpoch,
+          senderName: widget.groupMessage.sender?.userName ?? '',
+          senderId: widget.groupMessage.sender?.id ?? '',
+          isInGroup: true,
+        );
+      case MessageType.video:
+        return VideoWidget(
+          videoPath: widget.groupMessage.mediaUrls?.first ?? '',
+          sentAt: widget.groupMessage.sentAt?.millisecondsSinceEpoch ??
+              DateTime.now().millisecondsSinceEpoch,
+          senderName: widget.groupMessage.sender?.userName ?? '',
+          senderId: widget.groupMessage.sender?.id ?? '',
+          isInGroup: true,
+        );
+      case MessageType.record:
+        return RecordTile(
+          recordPath: widget.groupMessage.mediaUrls?.first ?? '',
+          sentAt: widget.groupMessage.sentAt?.millisecondsSinceEpoch ??
+              DateTime.now().millisecondsSinceEpoch,
+          senderName: widget.groupMessage.sender?.userName ?? '',
+          senderId: widget.groupMessage.sender?.id ?? '',
+          isInGroup: true,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

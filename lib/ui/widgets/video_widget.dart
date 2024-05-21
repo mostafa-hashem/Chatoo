@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,7 @@ class _VideoWidgetState extends State<VideoWidget> {
       });
     }
   }
+
   @override
   void didChangeDependencies() {
     sender = ProfileCubit.get(context).user;
@@ -67,8 +69,13 @@ class _VideoWidgetState extends State<VideoWidget> {
     final width = double.tryParse(dimensions[0].split('%2F').last) ?? 100.0.w;
     final height = double.tryParse(dimensions[1]) ?? 100.0.h;
     final duration = int.tryParse(durationStr) ?? 0;
-    final durationText =
-        '${duration ~/ 60}:${(duration % 60).toString().padLeft(2, '0')}';
+    final durationText = '${duration ~/ 60}:${(duration % 60).toString().padLeft(2, '0')}';
+
+    final maxWidth = MediaQuery.of(context).size.width * 0.8;
+    final maxHeight = MediaQuery.of(context).size.height * 0.4;
+
+    final adjustedWidth = width > maxWidth ? maxWidth : width;
+    final adjustedHeight = height > maxHeight ? maxHeight : height;
 
     return GestureDetector(
       onTap: () {
@@ -92,21 +99,18 @@ class _VideoWidgetState extends State<VideoWidget> {
                 color: Colors.white,
               ),
             ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.01,
-          ),
+          if (widget.isInGroup)
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.01,
+            ),
           if (_thumbnail != null)
             Stack(
               alignment: Alignment.center,
               children: [
                 Image.memory(
                   _thumbnail!,
-                  height: width > MediaQuery.sizeOf(context).width * 3
-                      ? MediaQuery.sizeOf(context).height * 0.25
-                      : height > MediaQuery.sizeOf(context).height * 1
-                      ? MediaQuery.sizeOf(context).height * 1
-                      : height,
-                  width: width,
+                  height: adjustedHeight,
+                  width: adjustedWidth,
                   fit: BoxFit.cover,
                 ),
                 const Icon(
@@ -137,16 +141,10 @@ class _VideoWidgetState extends State<VideoWidget> {
             )
           else
             Container(
-              height: width > MediaQuery.sizeOf(context).width * 3
-                  ? MediaQuery.sizeOf(context).height * 0.25
-                  : height > MediaQuery.sizeOf(context).height * 1
-                  ? MediaQuery.sizeOf(context).height * 1
-                  : height,
-              width: width,
+              height: adjustedHeight,
+              width: adjustedWidth,
               color: Colors.grey,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: const LoadingIndicator(),
             ),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,

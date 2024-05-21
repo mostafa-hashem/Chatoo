@@ -5,6 +5,7 @@ import 'package:chat_app/route_manager.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
+import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
 
 String? validateEmail(String? value) {
@@ -51,14 +52,44 @@ String? validateGeneral(String? value, String label) {
   }
   return null;
 }
-
 String getFormattedTime(int timestamp) {
-  final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  final hours = dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12;
-  final minutes = dateTime.minute.toString().padLeft(2, '0');
-  final period = dateTime.hour >= 12 ? 'PM' : 'AM';
-  return '$hours:$minutes $period';
+  final DateTime lastSeen = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  final DateTime now = DateTime.now();
+
+  if (lastSeen.year == now.year &&
+      lastSeen.month == now.month &&
+      lastSeen.day == now.day) {
+    return DateFormat('hh:mm a').format(lastSeen);
+  }
+
+  final DateTime yesterday = now.subtract(const Duration(days: 1));
+  if (lastSeen.year == yesterday.year &&
+      lastSeen.month == yesterday.month &&
+      lastSeen.day == yesterday.day) {
+    return 'Yesterday';
+  }
+
+  if (lastSeen.year == now.year) {
+    return DateFormat('MMM d').format(lastSeen);
+  }
+
+  return DateFormat('MMM d, yyyy').format(lastSeen);
 }
+String getFormattedDateHeader(int timestamp) {
+  final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  final DateTime now = DateTime.now();
+
+  if (now.year == date.year && now.month == date.month && now.day == date.day) {
+    return 'Today';
+  } else if (now.year == date.year &&
+      now.month == date.month &&
+      now.day == date.day + 1) {
+    return 'Yesterday';
+  } else {
+    return DateFormat('dd MMM yyyy').format(date);
+  }
+}
+
 
 void showImageDialog(BuildContext context, String imageUrl) {
   showDialog(

@@ -10,19 +10,20 @@ class NotificationsServices {
   Future<String?> initNotifications() async {
     await _firebaseMessaging.requestPermission();
     final fCMToken = await _firebaseMessaging.getToken();
-    FirebaseMessaging.onBackgroundMessage(
-      (message) => handelBackgroundMessage(message),
-    );
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
 
-    // Handle notification when app is opened from terminated state
+    FirebaseMessaging.onBackgroundMessage(handelBackgroundMessage);
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    });
+
     await _firebaseMessaging.getInitialMessage();
 
-    // await FirebaseMessaging.instance.setAutoInitEnabled(true);
     return fCMToken;
   }
 
-  Future<void> handelBackgroundMessage(RemoteMessage message) async {}
+  static Future<void> handelBackgroundMessage(RemoteMessage message) async {
+    // Handle background message
+  }
 
   Future<void> sendNotification({
     required String fcmToken,
@@ -42,7 +43,7 @@ class NotificationsServices {
       'notification': notification,
       'priority': 'high',
       'data': {
-        'click_action': "Flutter_click_action",
+        'click_action': "FLUTTER_NOTIFICATION_CLICK",
         'title': title,
         'body': body,
         if (imageUrl != null) 'image': imageUrl,

@@ -11,6 +11,7 @@ class Group {
   String? recentMessage;
   DateTime? recentMessageSentAt;
   String? recentMessageSender;
+  String? recentMessageSenderId;
   DateTime? createdAt;
 
   Group({
@@ -23,46 +24,39 @@ class Group {
     this.requests,
     this.recentMessage = "",
     this.recentMessageSender = "",
-    this.recentMessageSentAt ,
+    this.recentMessageSenderId = "",
+    this.recentMessageSentAt,
     required this.createdAt,
   });
 
-  Group.fromJson(Map<String, dynamic> json){
-    groupId =
-    json['groupId'] as String;
+  Group.fromJson(Map<String, dynamic> json) {
+    groupId = json['groupId'] as String?;
     groupName = json['groupName'] as String;
-    mainAdminId = json['mainAdminId'] as String;
-    groupIcon = json['groupIcon'] as String;
+    mainAdminId = json['mainAdminId'] as String?;
+    groupIcon = json['groupIcon'] as String?;
     groupAdmins = json['groupAdmins'] as List<dynamic>?;
     members = json['members'] as List<dynamic>?;
-    requests = json['requests'] != null
-        ? json['requests'] as List<dynamic>?
-        : [];
-    if(json['recentMessage'] != null){
-    recentMessage = json['recentMessage'] as String;
-    }
-    if(json['recentMessageSentAt'] != null){
-    recentMessageSentAt =
-        (json['recentMessageSentAt'] as Timestamp).toDate();
-    }
-    if(json['recentMessageSender'] != null){
-    recentMessageSender = json['recentMessageSender'] as String;
-    }
+    requests =
+        json['requests'] != null ? json['requests'] as List<dynamic>? : [];
+    recentMessage = json['recentMessage'] as String?;
+    recentMessageSentAt = (json['recentMessageSentAt'] as Timestamp?)?.toDate();
+    recentMessageSender = json['recentMessageSender'] as String?;
+    recentMessageSenderId = json['recentMessageSenderId'] as String?;
     createdAt = (json['createdAt'] as Timestamp).toDate();
   }
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'groupId': groupId,
         'groupName': groupName,
         'mainAdminId': mainAdminId,
         'groupIcon': groupIcon,
         'groupAdmins': groupAdmins,
         'members': members,
-        'requests': requests!.isNotEmpty ? requests : [],
+        'requests': requests?.isNotEmpty == true ? requests : [],
         'recentMessage': recentMessage,
-        'recentMessageSentAt': recentMessageSentAt ?? recentMessageSentAt,
+        'recentMessageSentAt': recentMessageSentAt,
         'recentMessageSender': recentMessageSender,
-        'createdAt': Timestamp.fromDate(createdAt!),
+        'recentMessageSenderId': recentMessageSenderId,
+        'createdAt': createdAt,
       };
 }

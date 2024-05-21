@@ -36,6 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authCubit = AuthCubit.get(context);
+    final notificationsCubit = NotificationsCubit.get(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -108,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     MultiBlocListener(
                       listeners: [
                         BlocListener<AuthCubit, AuthState>(
-                          listener: (context, state) {
+                          listener: (_, state) {
                             if (state is AuthLoading) {
                               showDialog(
                                 context: context,
@@ -136,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         BlocListener<ProfileCubit, ProfileState>(
-                          listener: (context, state) {
+                          listener: (_, state) {
                             if (state is GetUserSuccess) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -148,7 +149,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   duration: Duration(seconds: 3),
                                 ),
                               );
-                              FriendCubit.get(context).getAllUserFriends();
+                              FriendCubit.get(context).getCombinedFriends(
+                                ProfileCubit.get(context).user.userName!,
+                              );
                               Navigator.pushReplacementNamed(
                                 context,
                                 Routes.layout,
@@ -158,18 +161,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                       child: DefaultTextButton(
-                        function: () {
+                        function: () async {
                           if (formKey.currentState!.validate()) {
+                            await notificationsCubit.initNotifications();
                             authCubit.login(
                               LoginData(
                                 email: emailController.text,
                                 password: passwordController.text,
-                                fCMToken:
-                                NotificationsCubit.get(context).fCMToken ??
-                                    "",
+                                fCMToken: notificationsCubit.fCMToken ?? "",
                               ),
                             );
-                            NotificationsCubit.get(context).initNotifications();
                           }
                         },
                         text: "Login",

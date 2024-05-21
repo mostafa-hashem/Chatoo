@@ -100,9 +100,9 @@ class _GroupMembersState extends State<GroupMembers> {
                       },
                       child: TextButton(
                         onPressed: () {
-                          friendCubit.allFriends.any(
+                          friendCubit.combinedFriends.any(
                             (friend) =>
-                                friend?.id ==
+                                friend.user?.id ==
                                 groupCubit.allGroupMembers[index]!.id,
                           )
                               ? friendCubit.removeFriend(
@@ -115,9 +115,9 @@ class _GroupMembersState extends State<GroupMembers> {
                             Navigator.pop(context);
                           }
                         },
-                        child: friendCubit.allFriends.any(
+                        child: friendCubit.combinedFriends.any(
                           (friend) =>
-                              friend?.id ==
+                              friend.user?.id ==
                               groupCubit.allGroupMembers[index]!.id,
                         )
                             ? const Text('Remove friend')

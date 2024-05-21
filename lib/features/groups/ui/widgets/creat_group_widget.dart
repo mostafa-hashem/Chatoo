@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateGroupWidget extends StatefulWidget {
@@ -26,6 +27,56 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
   String groupName = "";
   File? imageFile;
   final formKey = GlobalKey<FormState>();
+
+  Future<void> _pickAndCropImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile =
+        await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9,
+        ],
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+            minimumAspectRatio: 1.0,
+          ),
+          WebUiSettings(
+            context: context,
+            boundary: const CroppieBoundary(
+              width: 520,
+              height: 520,
+            ),
+            viewPort:
+                const CroppieViewPort(width: 480, height: 480, type: 'circle'),
+            enableExif: true,
+            enableZoom: true,
+            showZoomer: true,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        setState(() {
+          imageFile = File(croppedFile.path);
+        });
+        GroupCubit.get(context).uploadGroupImageToFireStorage(imageFile!);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,25 +139,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                       }
                     },
                     builder: (context, state) => GestureDetector(
-                      onTap: () async {
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? xFile = await picker.pickImage(
-                          source: ImageSource.gallery,
-                        );
-                        if (xFile != null) {
-                          File xFilePathToFile(XFile xFile) {
-                            return File(xFile.path);
-                          }
-
-                          imageFile = xFilePathToFile(xFile);
-                          if (context.mounted) {
-                            GroupCubit.get(context)
-                                .uploadGroupImageToFireStorage(
-                              imageFile!,
-                            );
-                          }
-                        }
-                      },
+                      onTap: _pickAndCropImage,
                       child: Stack(
                         alignment: Alignment.topRight,
                         children: [

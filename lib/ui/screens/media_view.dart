@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
@@ -15,6 +17,8 @@ class _MediaViewState extends State<MediaView> {
   bool isVideo = false;
   String mediaPath = '';
   bool isPlaying = false;
+  bool _showPlayPauseButton = false;
+  Timer? _hideButtonTimer;
 
   @override
   void didChangeDependencies() {
@@ -36,7 +40,6 @@ class _MediaViewState extends State<MediaView> {
 
   void _updatePosition() {
     _videoController.value.position.inSeconds.toDouble();
-    _videoController.value.duration.inSeconds.toDouble();
     setState(() {});
   }
 
@@ -47,11 +50,31 @@ class _MediaViewState extends State<MediaView> {
     return '$minutes:$seconds';
   }
 
+  void _togglePlayPause() {
+    setState(() {
+      if (_videoController.value.isPlaying) {
+        _videoController.pause();
+        isPlaying = false;
+      } else {
+        _videoController.play();
+        isPlaying = true;
+      }
+      _showPlayPauseButton = true;
+      _hideButtonTimer?.cancel();
+      _hideButtonTimer = Timer(const Duration(milliseconds: 1000), () {
+        setState(() {
+          _showPlayPauseButton = false;
+        });
+      });
+    });
+  }
+
   @override
   void dispose() {
     if (isVideo) {
       _videoController.dispose();
     }
+    _hideButtonTimer?.cancel();
     super.dispose();
   }
 
@@ -63,78 +86,79 @@ class _MediaViewState extends State<MediaView> {
       body: Center(
         child: isVideo
             ? _videoController.value.isInitialized
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AspectRatio(
-                        aspectRatio: _videoController.value.aspectRatio,
-                        child: VideoPlayer(_videoController),
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            _formatDuration(
-                              _videoController.value.position,
-                            ),
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 14.sp),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 9.w),
-                              child: VideoProgressIndicator(
-                                _videoController,
-                                allowScrubbing: true,
-                                colors: const VideoProgressColors(
-                                  playedColor: Colors.red,
-                                  bufferedColor: Colors.grey,
-                                  backgroundColor: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            _formatDuration(
-                              _videoController.value.duration,
-                            ),
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 14.sp),
-                          ),
-                        ],
-                      ),
-                    ],
-                  )
-                : const CircularProgressIndicator()
-            : PhotoView(
-                minScale: PhotoViewComputedScale.contained,
-                maxScale: 5.0,
-                initialScale: PhotoViewComputedScale.contained,
-                imageProvider: NetworkImage(mediaPath),
-                backgroundDecoration: const BoxDecoration(
-                  color: Colors.black,
+            ? Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                AspectRatio(
+                  aspectRatio: _videoController.value.aspectRatio,
+                  child: VideoPlayer(_videoController),
                 ),
-              ),
+                AnimatedOpacity(
+                  opacity: _showPlayPauseButton ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: GestureDetector(
+                    onTap: _togglePlayPause,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.black45,
+                      radius: 30,
+                      child: Icon(
+                        isPlaying ? Icons.pause : Icons.play_arrow,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  _formatDuration(
+                    _videoController.value.position,
+                  ),
+                  style:
+                  TextStyle(color: Colors.white, fontSize: 14.sp),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 9.w),
+                    child: VideoProgressIndicator(
+                      _videoController,
+                      allowScrubbing: true,
+                      colors: const VideoProgressColors(
+                        playedColor: Colors.red,
+                        bufferedColor: Colors.grey,
+                        backgroundColor: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+                Text(
+                  _formatDuration(
+                    _videoController.value.duration,
+                  ),
+                  style:
+                  TextStyle(color: Colors.white, fontSize: 14.sp),
+                ),
+              ],
+            ),
+          ],
+        )
+            : const LoadingIndicator()
+            : PhotoView(
+          minScale: PhotoViewComputedScale.contained,
+          maxScale: 5.0,
+          initialScale: PhotoViewComputedScale.contained,
+          imageProvider: NetworkImage(mediaPath),
+          backgroundDecoration: const BoxDecoration(
+            color: Colors.black,
+          ),
+        ),
       ),
-      floatingActionButton: isVideo
-          ? FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  if (_videoController.value.isPlaying) {
-                    _videoController.pause();
-                    isPlaying = false;
-                  } else {
-                    _videoController.play();
-                    isPlaying = true;
-                  }
-                });
-              },
-              child: Icon(
-                _videoController.value.isPlaying
-                    ? Icons.pause
-                    : Icons.play_arrow,
-              ),
-            )
-          : null,
     );
   }
 }

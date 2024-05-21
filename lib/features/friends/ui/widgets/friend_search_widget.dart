@@ -2,6 +2,7 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +51,12 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                 child: FancyShimmerImage(
                   imageUrl: widget.friendData.profileImage!,
                   width: 50.w,
+                  errorWidget: ClipOval(
+                    child: FancyShimmerImage(
+                      imageUrl: FirebasePath.defaultImage,
+                      width: 50.w,
+                    ),
+                  ),
                 ),
               ),
         title: Text(

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class User {
   String? id;
   String? email;
@@ -13,6 +15,7 @@ class User {
   String? city;
   String? fCMToken;
   bool? onLine;
+  DateTime? lastSeen;
 
   User({
     required this.id,
@@ -25,6 +28,7 @@ class User {
     this.groups,
     this.friends,
     this.requests,
+    this.lastSeen,
     this.city = '',
     this.onLine = true,
   });
@@ -60,6 +64,9 @@ class User {
     if (json['onLine'] != null) {
       onLine = json['onLine'] as bool?;
     }
+    if (json['lastSeen'] != null) {
+      lastSeen = (json['lastSeen'] as Timestamp?)?.toDate();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -78,6 +85,7 @@ class User {
       if (mutedFriends != null) 'mutedFriends': mutedFriends,
       if (requests != null) 'requests': requests,
       if (onLine != null) 'onLine': onLine,
+      if (lastSeen != null) 'lastSeen': lastSeen,
     };
   }
 }

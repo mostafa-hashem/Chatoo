@@ -132,6 +132,16 @@ class GetRecentMessageDataError extends FriendStates {
   GetRecentMessageDataError(this.message);
 }
 
+class GetCombinedFriendsLoading extends FriendStates {}
+
+class GetCombinedFriendsSuccess extends FriendStates {}
+
+class GetCombinedFriendsError extends FriendStates {
+  final String message;
+
+  GetCombinedFriendsError(this.message);
+}
+
 class MuteFriendLoading extends FriendStates {}
 
 class MuteFriendSuccess extends FriendStates {}

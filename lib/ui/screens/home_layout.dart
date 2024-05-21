@@ -5,6 +5,7 @@ import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/widgets/creat_group_widget.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -34,7 +35,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
     Future.wait([
       GroupCubit.get(context).getAllUserGroups(),
       FriendCubit.get(context).getAllUserRequests(),
-      FriendCubit.get(context).getAllUserFriends(),
+      FriendCubit.get(context).getCombinedFriends(ProfileCubit.get(context).user.userName!),
     ]);
   }
 
@@ -104,9 +105,9 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
               children: [
                 BlocBuilder<FriendCubit, FriendStates>(
                   buildWhen: (_, currentState) =>
-                      currentState is GetAllUserFriendsSuccess ||
-                      currentState is GetAllUserFriendsError ||
-                      currentState is GetAllUserFriendsLoading,
+                      currentState is GetCombinedFriendsLoading ||
+                      currentState is GetCombinedFriendsSuccess ||
+                      currentState is GetCombinedFriendsError,
                   builder: (_, state) {
                     if (state is GetAllUserFriendsLoading) {
                       return const LoadingIndicator();
@@ -117,7 +118,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                     }
                   },
                 ),
-                BlocConsumer<GroupCubit, GroupStates>(
+                BlocListener<GroupCubit, GroupStates>(
                   listener: (_, state) {
                     if (state is CreateGroupLoading) {
                       showDialog(
@@ -155,16 +156,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                       }
                     }
                   },
-                  buildWhen: (_, currentState) =>
-                      currentState is GetAllGroupsSuccess ||
-                      currentState is GetAllGroupsError ||
-                      currentState is GetAllGroupsLoading ||
-                          currentState is CreateGroupLoading ||
-                          currentState is CreateGroupSuccess ||
-                          currentState is CreateGroupError,
-                  builder: (_, state) {
-                    return const GroupsScreen();
-                  },
+                  child: GroupsScreen(),
                 ),
               ],
             ),

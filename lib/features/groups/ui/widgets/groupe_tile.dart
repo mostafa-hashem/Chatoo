@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class GroupTile extends StatefulWidget {
   const GroupTile({
@@ -59,12 +60,12 @@ class _GroupTileState extends State<GroupTile> {
           current is ProfileLoading,
       builder: (_, state) {
         return Container(
-          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
+          padding: EdgeInsets.symmetric(vertical: 8.h),
           child: ListTile(
             key: listTileKey,
             leading: widget.groupData.groupIcon!.isEmpty
                 ? CircleAvatar(
-                    radius: 30,
+                    radius: 26.r,
                     backgroundColor: AppColors.primary,
                     child: Text(
                       widget.groupData.groupName!.substring(0, 1).toUpperCase(),
@@ -72,6 +73,7 @@ class _GroupTileState extends State<GroupTile> {
                       style: GoogleFonts.ubuntu(
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
+                        fontSize: 18.sp,
                       ),
                     ),
                   )
@@ -82,30 +84,66 @@ class _GroupTileState extends State<GroupTile> {
                       child: FancyShimmerImage(
                         imageUrl: widget.groupData.groupIcon!,
                         width: 50.w,
+                        height: 50.w,
+                        errorWidget: CircleAvatar(
+                          radius: 26.r,
+                          backgroundColor: AppColors.primary,
+                          child: Text(
+                            widget.groupData.groupName!
+                                .substring(0, 1)
+                                .toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.ubuntu(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-            title: Text(
-              widget.groupData.groupName!,
-              style: GoogleFonts.novaSquare(
-                fontWeight: FontWeight.bold,
-                fontSize: 16.sp,
-              ),
-              overflow: TextOverflow.ellipsis,
+            title: Row(
+              children: [
+                Text(
+                  widget.groupData.groupName!,
+                  style: GoogleFonts.novaSquare(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Spacer(),
+                Text(
+                  widget.groupData.recentMessageSentAt != null
+                      ? getFormattedTime(
+                          widget.groupData.recentMessageSentAt!
+                              .millisecondsSinceEpoch,
+                        )
+                      : '',
+                  style: GoogleFonts.novaSquare(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10.sp,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
             subtitle: Text(
-              "Test for last message",
+              widget.groupData.recentMessage!.isNotEmpty
+                  ? "${widget.groupData.recentMessageSenderId == profileCubit.user.id ? 'You' : widget.groupData.recentMessageSender}: ${widget.groupData.recentMessage ?? ''}"
+                  : '',
               style: GoogleFonts.ubuntu(
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
             ),
             trailing: isMuted()
-                ? const Icon(
+                ? Icon(
                     Icons.notifications_off,
                     color: AppColors.primary,
-                    size: 20,
+                    size: 20.sp,
                   )
                 : const SizedBox.shrink(),
             onTap: () {
@@ -175,7 +213,7 @@ class _GroupTileState extends State<GroupTile> {
                           builder: (context) {
                             return AlertDialog(
                               content: const Text(
-                                "Are you sure you want leave the group ?",
+                                "Are you sure you want leave the group?",
                               ),
                               actions: [
                                 TextButton(

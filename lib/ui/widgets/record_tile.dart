@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
@@ -140,10 +141,7 @@ class _RecordTileState extends State<RecordTile> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      if (_isLoading)
-                        const CircularProgressIndicator(
-                          color: Colors.white,
-                        ),
+                      if (_isLoading) const LoadingIndicator(),
                       Icon(
                         _isPlaying ? Icons.stop : Icons.play_arrow,
                         color: Colors.white,

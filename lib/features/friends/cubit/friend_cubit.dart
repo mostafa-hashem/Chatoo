@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
-import 'package:chat_app/features/friends/data/model/friend_data.dart';
+import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/friends/data/services/friend_firebase_services.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
@@ -15,12 +15,11 @@ class FriendCubit extends Cubit<FriendStates> {
 
   static FriendCubit get(BuildContext context) => BlocProvider.of(context);
   final _friendFirebaseServices = FriendFirebaseServices();
-  List<User?> allFriends = [];
   List<User> allUserRequests = [];
+  List<CombinedFriend> combinedFriends = [];
   List<User> searchedFriends = [];
   User? friendData;
   List<FriendMessage> filteredMessages = [];
-  List<Friend> recentMessageData = [];
   ScrollController scrollController = ScrollController();
   List<String> mediaUrls = [];
   TextEditingController messageController = TextEditingController();
@@ -32,18 +31,6 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(RequestToAddFriendSuccess());
     } catch (e) {
       emit(RequestToAddFriendError(Failure.fromException(e).message));
-    }
-  }
-
-  Future<void> getAllUserFriends() async {
-    emit(GetAllUserFriendsLoading());
-    try {
-      _friendFirebaseServices.getAllUserFriends().listen((friends) {
-        allFriends = friends;
-        emit(GetAllUserFriendsSuccess());
-      });
-    } catch (e) {
-      emit(GetAllUserFriendsError(Failure.fromException(e).message));
     }
   }
 
@@ -156,11 +143,13 @@ class FriendCubit extends Cubit<FriendStates> {
   Future<void> getAllFriendMessages(String friendId) async {
     emit(GetAllFriendMessagesLoading());
     try {
-      _friendFirebaseServices.getAllUserMessages(friendId).listen((
-        messages,
-      ) {
-        filteredMessages = messages;
-        filteredMessages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+      _friendFirebaseServices.getAllUserMessages(friendId).listen((messages) {
+        filteredMessages =
+            messages.where((message) => message.sentAt != null).toList();
+
+        if (filteredMessages.isNotEmpty) {
+          filteredMessages.sort((a, b) => b.sentAt!.compareTo(a.sentAt!));
+        }
         emit(GetAllFriendMessagesSuccess());
       });
     } catch (e) {
@@ -168,18 +157,32 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> getRecentMessageData() async {
-    emit(GetRecentMessageDataLoading());
+  Future<void> getCombinedFriends(String userName) async {
+    emit(GetCombinedFriendsLoading());
     try {
-      _friendFirebaseServices.getRecentMessageData().listen((
-        messages,
-      ) {
-        recentMessageData = messages;
-        recentMessageData.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
+      _friendFirebaseServices
+          .getCombinedFriends(userName)
+          .listen((combinedFriend) {
+        combinedFriends = combinedFriend;
+
+        // Filter out CombinedFriend entries where recentMessageData is null
+        combinedFriends = combinedFriends
+            .where((friend) => friend.recentMessageData != null)
+            .toList();
+
+        // Sort the combinedFriends list
+        combinedFriends.sort((a, b) {
+          final aTime = a.recentMessageData!.sentAt ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.recentMessageData!.sentAt ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          return bTime.compareTo(aTime);
+        });
+
+        emit(GetCombinedFriendsSuccess());
       });
-      emit(GetRecentMessageDataSuccess());
     } catch (e) {
-      emit(GetRecentMessageDataError(Failure.fromException(e).message));
+      emit(GetCombinedFriendsError(Failure.fromException(e).message));
     }
   }
 
@@ -233,21 +236,62 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-
-  Future<void> deleteMessageForMe(String friendId, String messageId) async {
+  Future<void> deleteMessageForMe(
+    String friendId,
+    String messageId,
+    String currentUserId,
+    String currentUserName,
+    String friendName,
+  ) async {
     emit(DeleteMessageForMeLoading());
     try {
-      await _friendFirebaseServices.deleteMessageForMe(friendId, messageId);
+      await _friendFirebaseServices.deleteMessageForMe(
+        friendId,
+        messageId,
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).message
+            : '',
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).sender ==
+                    currentUserId
+                ? currentUserName
+                : friendName
+            : '',
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt!
+            : null,
+      );
       emit(DeleteMessageForMeSuccess());
     } catch (e) {
       emit(DeleteMessageForMeError(Failure.fromException(e).message));
     }
   }
 
-  Future<void> deleteMessageForAll(String friendId, String messageId) async {
+  Future<void> deleteMessageForAll(
+    String friendId,
+    String messageId,
+    String currentUserId,
+    String currentUserName,
+    String friendName,
+  ) async {
     emit(DeleteMessageForMeAndFriendLoading());
     try {
-      await _friendFirebaseServices.deleteMessageForAll(friendId, messageId);
+      await _friendFirebaseServices.deleteMessageForAll(
+        friendId,
+        messageId,
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).message
+            : '',
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).sender ==
+                    currentUserId
+                ? currentUserName
+                : friendName
+            : '',
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt!
+            : null,
+      );
       emit(DeleteMessageForMeAndFriendSuccess());
     } catch (e) {
       emit(DeleteMessageForMeAndFriendError(Failure.fromException(e).message));

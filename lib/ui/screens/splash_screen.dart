@@ -25,7 +25,6 @@ class _SplashScreenState extends State<SplashScreen> {
       Future.wait([
         ProfileCubit.get(context).getUser(),
         NotificationsCubit.get(context).initNotifications(),
-        // FriendCubit.get(context).getRecentMessageData(),
       ]);
     } else {
       Future.delayed(const Duration(seconds: 3), () {

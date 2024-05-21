@@ -7,6 +7,7 @@ import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:rxdart/rxdart.dart';
 
 class GroupFirebaseServices {
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -24,24 +25,32 @@ class GroupFirebaseServices {
     return _usersCollection
         .doc(currentUser.uid)
         .snapshots()
-        .asyncMap((snapshot) async {
-      final dynamic userData = snapshot.data();
-      if (userData != null && userData is Map<String, dynamic>) {
+        .asyncExpand((snapshot) {
+      final userData = snapshot.data();
+      if (userData != null) {
         final List<dynamic> groupIds =
-            (userData['groups'] ?? []) as List<dynamic>;
-        final List<Future<Group?>> groupFutures = groupIds.map((groupId) async {
-          final DocumentSnapshot groupSnapshot =
-              await _groupsCollection.doc(groupId.toString()).get();
-          if (groupSnapshot.exists) {
-            return Group.fromJson(
-              groupSnapshot.data()! as Map<String, dynamic>,
-            );
-          }
+            userData['groups'] as List<dynamic>? ?? [];
+        if (groupIds.isEmpty) {
+          return Stream.value([]);
+        }
+
+        final List<Stream<Group?>> groupStreams = groupIds.map((groupId) {
+          return _groupsCollection
+              .doc(groupId.toString())
+              .snapshots()
+              .map((groupSnapshot) {
+            if (groupSnapshot.exists) {
+              return Group.fromJson(groupSnapshot.data()!);
+            }
+            return null;
+          });
         }).toList();
-        final List<Group?> groups = await Future.wait(groupFutures);
-        return groups;
+
+        return Rx.combineLatestList(groupStreams).map((groups) {
+          return groups.where((group) => group != null).toList();
+        });
       } else {
-        return [];
+        return Stream.value([]);
       }
     });
   }
@@ -62,7 +71,7 @@ class GroupFirebaseServices {
             return User.fromJson(userData);
           }
         }
-        return null; // or handle the absence of user data differently
+        return null;
       }).toList();
       final List<User?> users = await Future.wait(userFutures);
       return users.where((user) => user != null).toList();
@@ -270,8 +279,9 @@ class GroupFirebaseServices {
 
     await _groupsCollection.doc(group.groupId).update({
       'recentMessage': message,
-      'recentMessageSentAt': DateTime.now(),
+      'recentMessageSentAt': Timestamp.fromDate(DateTime.now()),
       'recentMessageSender': sender.userName,
+      'recentMessageSenderId': sender.id,
     });
   }
 
@@ -281,29 +291,6 @@ class GroupFirebaseServices {
     String groupId,
     Future<String> Function(File imageFile) getFileName,
   ) async {
-
-    /*
-    for video
-     final VideoPlayerController videoController = VideoPlayerController.file(mediaFile);
-  await videoController.initialize();
-  final int duration = videoController.value.duration.inSeconds;
-
-  // Create the filename using duration
-  final String fileName = '${duration}s.${mediaFile.path.split('.').last}';
-     */
-    /*
-    for record
-     final AudioPlayer audioPlayer = AudioPlayer();
-  await audioPlayer.setUrl(mediaFile.path, isLocal: true);
-  final Duration duration = await audioPlayer.getDuration();
-
-  // Dispose the audio player to free up resources
-  await audioPlayer.dispose();
-
-  // Create the filename using duration in seconds
-  final int durationInSeconds = duration.inSeconds;
-  final String fileName = '${durationInSeconds}s.${mediaFile.path.split('.').last}';
-     */
     final String fileName = await getFileName(mediaFile);
     final Reference storageRef = _storage
         .ref()
@@ -372,6 +359,8 @@ class GroupFirebaseServices {
     String senderName,
     String lastMessage,
     String lastMessageSender,
+    DateTime? lastMessageSentAt,
+    String lastMessageSenderId,
   ) async {
     _groupsCollection
         .doc(groupId)
@@ -386,6 +375,8 @@ class GroupFirebaseServices {
         _groupsCollection.doc(groupId).update({
           'recentMessage': lastMessage,
           'recentMessageSender': lastMessageSender,
+          'recentMessageSentAt': lastMessageSentAt,
+          'recentMessageSenderId': lastMessageSenderId,
         });
       }
     });

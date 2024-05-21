@@ -12,11 +12,11 @@ import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
-import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -47,10 +47,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
     addressController.text = profile.city!;
   }
 
+  Future<void> _pickAndCropImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (pickedFile != null) {
+      final CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9
+        ],
+        compressQuality: 100,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+            minimumAspectRatio: 1.0,
+          ),
+          WebUiSettings(
+            context: context,
+            boundary: const CroppieBoundary(
+              width: 520,
+              height: 520,
+            ),
+            viewPort:
+                const CroppieViewPort(width: 480, height: 480, type: 'circle'),
+            enableExif: true,
+            enableZoom: true,
+            showZoomer: true,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        setState(() {
+          imageFile = File(croppedFile.path);
+        });
+        if (context.mounted) {
+          final profile = ProfileCubit.get(context);
+          profile.uploadProfileImageToFireStorage(
+            profile.user.id!,
+            imageFile!,
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
     final profile = ProfileCubit.get(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -79,97 +139,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 autovalidateMode: AutovalidateMode.always,
                 child: Column(
                   children: [
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     BlocListener<AuthCubit, AuthState>(
-                    //       listener: (context, state) {
-                    //         if (state is DeleteAccountLoading) {
-                    //           showDialog(
-                    //             context: context,
-                    //             builder: (BuildContext context) {
-                    //               return const Center(
-                    //                 child: CircularProgressIndicator(),
-                    //               );
-                    //             },
-                    //           );
-                    //         } else {
-                    //           if (state is DeleteAccountSuccess) {
-                    //             ScaffoldMessenger.of(context).showSnackBar(
-                    //               const SnackBar(
-                    //                 content: Text(
-                    //                   "Successfully deleted",
-                    //                   style: TextStyle(fontSize: 15),
-                    //                 ),
-                    //                 backgroundColor: AppColors.snackBar,
-                    //                 duration: Duration(seconds: 3),
-                    //               ),
-                    //             );
-                    //           } else if (state is DeleteAccountError) {
-                    //             ScaffoldMessenger.of(context).showSnackBar(
-                    //               SnackBar(
-                    //                 content: Text(
-                    //                   state.message,
-                    //                   style: const TextStyle(fontSize: 15),
-                    //                 ),
-                    //                 backgroundColor: AppColors.primary,
-                    //                 duration: const Duration(seconds: 3),
-                    //               ),
-                    //             );
-                    //           }
-                    //         }
-                    //       },
-                    //       child: DefaultTextButton(
-                    //         backgroundColor: Colors.black,
-                    //         borderColor: Colors.white,
-                    //         width: MediaQuery.sizeOf(context).width * 0.35,
-                    //         height: 50,
-                    //         function: () {
-                    //           showDialog(
-                    //             barrierDismissible: false,
-                    //             context: context,
-                    //             builder: (context) {
-                    //               return AlertDialog(
-                    //                 title: const Text("Delete account"),
-                    //                 content: const Text(
-                    //                   "Are you sure you want to delete your account?",
-                    //                 ),
-                    //                 actions: [
-                    //                   TextButton(
-                    //                     onPressed: () {
-                    //                       Navigator.pop(context);
-                    //                     },
-                    //                     child: const Text('Cancel'),
-                    //                   ),
-                    //                   TextButton(
-                    //                     onPressed: () {
-                    //                       if (context.mounted) {
-                    //                         Navigator.pop(context);
-                    //                       }
-                    //                       authCubit
-                    //                           .deleteAccount()
-                    //                           .whenComplete(
-                    //                             () => Navigator
-                    //                                 .pushNamedAndRemoveUntil(
-                    //                               context,
-                    //                               Routes.login,
-                    //                               (route) => false,
-                    //                             ),
-                    //                           );
-                    //                     },
-                    //                     child: const Text('Delete'),
-                    //                   ),
-                    //                 ],
-                    //               );
-                    //             },
-                    //           );
-                    //         },
-                    //         text: 'Delete account',
-                    //       ),
-                    //     ),
-                    //     const Spacer(),
-                    //   ],
-                    // ),
                     SizedBox(height: 16.h),
                     BlocConsumer<ProfileCubit, ProfileState>(
                       listener: (_, state) {
@@ -213,8 +182,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         alignment: Alignment.topRight,
                         children: [
                           Container(
-                            height: 130.h,
-                            width: 145.w,
+                            height: 150.h,
+                            width: 165.w,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(40.r),
                             ),
@@ -225,40 +194,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       context,
                                       profile.user.profileImage!,
                                     ),
-                                    child:CircleAvatar(
+                                    child: CircleAvatar(
                                       backgroundColor: Colors.transparent,
-                                      backgroundImage:
-                                      NetworkImage(profile.user.profileImage!),
+                                      backgroundImage: NetworkImage(
+                                        profile.user.profileImage!,
+                                      ),
                                     ),
                                   )
-                                :
-                            CircleAvatar(
-                              backgroundColor: Colors.transparent,
-                              radius: 125.r,
-                              backgroundImage:
-                              const NetworkImage(FirebasePath.defaultImage),
-                            ),
+                                : CircleAvatar(
+                                    backgroundColor: Colors.transparent,
+                                    radius: 135.r,
+                                    backgroundImage: const NetworkImage(
+                                      FirebasePath.defaultImage,
+                                    ),
+                                  ),
                           ),
                           GestureDetector(
-                            onTap: () async {
-                              final ImagePicker picker = ImagePicker();
-                              final XFile? xFile = await picker.pickImage(
-                                source: ImageSource.gallery,
-                              );
-                              if (xFile != null) {
-                                File xFilePathToFile(XFile xFile) {
-                                  return File(xFile.path);
-                                }
-
-                                imageFile = xFilePathToFile(xFile);
-                                if (context.mounted) {
-                                  profile.uploadProfileImageToFireStorage(
-                                    profile.user.id!,
-                                    imageFile!,
-                                  );
-                                }
-                              }
-                            },
+                            onTap: _pickAndCropImage,
                             child: const Icon(Icons.edit),
                           ),
                         ],
@@ -311,7 +263,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         labelText: "User Name",
                         textInputType: TextInputType.name,
                         controller: userNameController,
-                        // isReadOnly: true,
                         validator: (value) =>
                             validateGeneral(value, 'user name'),
                       ),
@@ -359,7 +310,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Divider(
                       height: 30.h,
                     ),
-                    // InfoRow(text: "Phone Num: ", info: phoneNumberController.text),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                     BlocListener<ProfileCubit, ProfileState>(
                       listener: (_, state) {

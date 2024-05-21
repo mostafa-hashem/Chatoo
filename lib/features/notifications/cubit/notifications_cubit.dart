@@ -35,7 +35,7 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
         fcmToken: fCMToken,
         title: title,
         body: body,
-        imageUrl: imageUrl
+        imageUrl: imageUrl,
       );
       emit(SendNotificationSuccess());
     } catch (e) {

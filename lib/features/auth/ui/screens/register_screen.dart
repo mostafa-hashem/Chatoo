@@ -129,7 +129,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   topLeft: Radius.circular(20.0),
                                   topRight: Radius.circular(20.0),
                                 ),
-                                //Optional. Styles the search field.
                                 inputDecoration: InputDecoration(
                                   labelText: 'Search',
                                   hintText: 'Start typing to search',
@@ -174,7 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       height: MediaQuery.of(context).size.height * 0.02,
                     ),
                     BlocListener<AuthCubit, AuthState>(
-                      listener: (context, state) {
+                      listener: (_, state) {
                         if (state is EmailVerifyRequestSentLoading) {
                           showDialog(
                             context: context,

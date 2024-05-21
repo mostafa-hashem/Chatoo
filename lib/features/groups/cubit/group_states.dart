@@ -92,6 +92,16 @@ class GetAllGroupMessagesError extends GroupStates {
   GetAllGroupMessagesError(this.message);
 }
 
+class GetGroupsRecentMessageDataLoading extends GroupStates {}
+
+class GetGroupsRecentMessageDataSuccess extends GroupStates {}
+
+class GetGroupsRecentMessageDataError extends GroupStates {
+  final String message;
+
+  GetGroupsRecentMessageDataError(this.message);
+}
+
 class GetAllGroupMembersLoading extends GroupStates {}
 
 class GetAllGroupMembersSuccess extends GroupStates {}

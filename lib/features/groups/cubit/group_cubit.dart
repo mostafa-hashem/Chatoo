@@ -110,11 +110,25 @@ class GroupCubit extends Cubit<GroupStates> {
       _groupFirebaseServices.getAllUserGroups().listen((groups) {
         allUserGroups = groups;
         allUserGroups.sort((a, b) {
-          if (a?.recentMessageSentAt != null &&
-              b?.recentMessageSentAt != null) {
-            return b!.recentMessageSentAt!.compareTo(a!.recentMessageSentAt!);
+          final recentMessageA = a?.recentMessageSentAt;
+          final recentMessageB = b?.recentMessageSentAt;
+
+          if (recentMessageA != null && recentMessageB != null) {
+            return recentMessageB.compareTo(recentMessageA);
+          } else {
+            final createdAtA = a?.createdAt;
+            final createdAtB = b?.createdAt;
+
+            if (createdAtA != null && createdAtB != null) {
+              return createdAtB.compareTo(createdAtA);
+            } else if (createdAtA == null && createdAtB == null) {
+              return 0;
+            } else if (createdAtA == null) {
+              return 1;
+            } else {
+              return -1;
+            }
           }
-          return b!.createdAt!.compareTo(a!.createdAt!);
         });
 
         emit(GetAllGroupsSuccess());
@@ -138,7 +152,6 @@ class GroupCubit extends Cubit<GroupStates> {
         if (filteredMessages.isNotEmpty) {
           filteredMessages.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
         }
-
         emit(GetAllGroupMessagesSuccess());
       });
     } catch (e) {
@@ -379,11 +392,24 @@ class GroupCubit extends Cubit<GroupStates> {
         groupId,
         messageId,
         senderName,
-        filteredMessages.elementAt(filteredMessages.length - 2).message!,
-        filteredMessages
-            .elementAt(filteredMessages.length - 2)
-            .sender!
-            .userName!,
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).message!
+            : '',
+        filteredMessages.length > 2
+            ? filteredMessages
+                .elementAt(filteredMessages.length - 2)
+                .sender!
+                .userName!
+            : '',
+        filteredMessages.length > 2
+            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt!
+            : null,
+        filteredMessages.length > 2
+            ? filteredMessages
+                .elementAt(filteredMessages.length - 2)
+                .sender!
+                .id!
+            : '',
       );
       emit(DeleteMessageForAllSuccess());
     } catch (e) {

@@ -58,6 +58,16 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     imageUrl: groupData.groupIcon!,
                     width: 40.w,
                     height: 36.h,
+                    errorWidget: ClipOval(
+                      child: SizedBox(
+                        height: 40.h,
+                        width: 40.w,
+                        child: const Icon(
+                          Icons.groups_outlined,
+                          size: 35,
+                        ),
+                      ),
+                    ),
                   ),
                 )
               else
@@ -128,7 +138,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   currentState is GetAllGroupMessagesError ||
                   currentState is GetAllGroupMessagesLoading,
               builder: (_, state) {
-                return  ChatMessages();
+                return GroupChatMessages();
               },
             ),
             SizedBox(

@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_cropper/image_cropper.dart';  // إضافة مكتبة القص
 import 'package:image_picker/image_picker.dart';
 
 class GroupInfo extends StatefulWidget {
@@ -54,7 +55,7 @@ class _GroupInfoState extends State<GroupInfo> {
                   return AlertDialog(
                     title: const Text("Exit"),
                     content:
-                        const Text("Are you sure you want Exit the group ?"),
+                    const Text("Are you sure you want Exit the group ?"),
                     actions: [
                       IconButton(
                         onPressed: () {
@@ -78,14 +79,14 @@ class _GroupInfoState extends State<GroupInfo> {
                                 group: groupData,
                                 sender: profileCubit.user,
                                 message:
-                                    '${profileCubit.user.userName} left the group',
+                                '${profileCubit.user.userName} left the group',
                                 type: MessageType.text,
                                 isAction: true,
                               );
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
                                 Routes.layout,
-                                (route) => false,
+                                    (route) => false,
                               );
                             }
                             if (state is LeaveGroupError) {
@@ -184,23 +185,23 @@ class _GroupInfoState extends State<GroupInfo> {
                           ),
                           items: [
                             if (groupData.groupAdmins!.any(
-                              (adminId) => adminId == profileCubit.user.id,
+                                  (adminId) => adminId == profileCubit.user.id,
                             ))
-                                PopupMenuItem(
-                                  child: TextButton(
-                                    onPressed: () {
-                                      if (context.mounted) {
-                                        Navigator.pop(context);
-                                      }
-                                      showChangeGroupNameSheet(
-                                        context,
-                                        groupData.groupId!,
-                                        groupData.groupName!,
-                                      );
-                                    },
-                                    child: const Text('Change group name'),
-                                  ),
+                              PopupMenuItem(
+                                child: TextButton(
+                                  onPressed: () {
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                    showChangeGroupNameSheet(
+                                      context,
+                                      groupData.groupId!,
+                                      groupData.groupName!,
+                                    );
+                                  },
+                                  child: const Text('Change group name'),
                                 ),
+                              ),
                             PopupMenuItem(
                               child: TextButton(
                                 onPressed: () {
@@ -236,14 +237,14 @@ class _GroupInfoState extends State<GroupInfo> {
                                                 GroupStates>(
                                               listener: (_, state) {
                                                 if (state
-                                                    is DeleteGroupLoading) {
+                                                is DeleteGroupLoading) {
                                                   const LoadingIndicator();
                                                 } else {
                                                   if (context.mounted) {
                                                     Navigator.pop(context);
                                                   }
                                                   if (state
-                                                      is DeleteGroupSuccess) {
+                                                  is DeleteGroupSuccess) {
                                                     Navigator
                                                         .pushReplacementNamed(
                                                       context,
@@ -251,7 +252,7 @@ class _GroupInfoState extends State<GroupInfo> {
                                                     );
                                                   }
                                                   if (state
-                                                      is DeleteGroupError) {
+                                                  is DeleteGroupError) {
                                                     const ErrorIndicator();
                                                   }
                                                 }
@@ -336,7 +337,16 @@ class _GroupInfoState extends State<GroupInfo> {
                             width: 170.w,
                             boxFit: BoxFit.contain,
                             errorWidget:
-                                const Icon(Icons.error_outline_outlined),
+                            ClipOval(
+                              child: SizedBox(
+                                height: 140.h,
+                                width: 170.w,
+                                child: const Icon(
+                                  Icons.groups_outlined,
+                                  size: 90,
+                                ),
+                              ),
+                            ),
                           ),
                         )
                       else
@@ -351,35 +361,11 @@ class _GroupInfoState extends State<GroupInfo> {
                           ),
                         ),
                       if (groupData.groupAdmins!.any(
-                        (adminId) =>
-                            adminId == ProfileCubit.get(context).user.id!,
+                            (adminId) =>
+                        adminId == ProfileCubit.get(context).user.id!,
                       ))
                         GestureDetector(
-                          onTap: () async {
-                            final ImagePicker picker = ImagePicker();
-                            final XFile? xFile = await picker.pickImage(
-                              source: ImageSource.gallery,
-                            );
-                            if (xFile != null) {
-                              File xFilePathToFile(XFile xFile) {
-                                return File(xFile.path);
-                              }
-
-                              imageFile = xFilePathToFile(xFile);
-                              if (context.mounted) {
-                                GroupCubit.get(context)
-                                    .uploadImageAndUpdateGroupIcon(
-                                  imageFile!,
-                                  groupData.groupId!,
-                                )
-                                    .then((downloadUrl) {
-                                  setState(() {
-                                    groupData.groupIcon = downloadUrl;
-                                  });
-                                });
-                              }
-                            }
-                          },
+                          onTap: _pickAndCropImage,
                           child: const Icon(Icons.edit),
                         ),
                     ],
@@ -416,5 +402,62 @@ class _GroupInfoState extends State<GroupInfo> {
         ),
       ),
     );
+  }
+  Future<void> _pickAndCropImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.ratio4x3,
+          CropAspectRatioPreset.ratio16x9
+        ],
+        compressQuality: 100,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+            minimumAspectRatio: 1.0,
+          ),
+          WebUiSettings(
+            context: context,
+            boundary: const CroppieBoundary(
+              width: 520,
+              height: 520,
+            ),
+            viewPort:
+            const CroppieViewPort(width: 480, height: 480, type: 'circle'),
+            enableExif: true,
+            enableZoom: true,
+            showZoomer: true,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        setState(() {
+          imageFile = File(croppedFile.path);
+        });
+        final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
+        GroupCubit.get(context).uploadImageAndUpdateGroupIcon(
+          imageFile!,
+          groupData.groupId!,
+        ).then((downloadUrl) {
+          setState(() {
+            groupData.groupIcon = downloadUrl;
+          });
+        });
+      }
+    }
   }
 }
