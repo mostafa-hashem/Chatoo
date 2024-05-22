@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
@@ -61,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           CropAspectRatioPreset.ratio3x2,
           CropAspectRatioPreset.original,
           CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
+          CropAspectRatioPreset.ratio16x9,
         ],
         compressQuality: 100,
         uiSettings: [
@@ -128,248 +127,230 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           body: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.only(
-                left: 22.w,
-                right: 22.w,
-                top: 22.h,
-                bottom: MediaQuery.of(context).viewInsets.bottom * 0.2,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 22.h),
               child: Form(
                 key: formKey,
                 autovalidateMode: AutovalidateMode.always,
                 child: Column(
                   children: [
                     SizedBox(height: 16.h),
-                    BlocConsumer<ProfileCubit, ProfileState>(
-                      listener: (_, state) {
-                        if (state is UploadProfileImageLoading) {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return const LoadingIndicator();
-                            },
-                          );
-                        } else {
-                          if (state is UploadProfileImageError) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  state.message,
-                                  style: const TextStyle(fontSize: 15),
-                                ),
-                                backgroundColor: AppColors.error,
-                                duration: const Duration(seconds: 3),
-                              ),
-                            );
-                          }
-                          if (state is UploadProfileImageSuccess) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "Successfully Uploaded",
-                                  style: TextStyle(fontSize: 15),
-                                ),
-                                backgroundColor: AppColors.primary,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      builder: (context, state) => Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          Container(
-                            height: 150.h,
-                            width: 165.w,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(40.r),
-                            ),
-                            child: profile.user.profileImage != null &&
-                                    profile.user.profileImage!.isNotEmpty
-                                ? InkWell(
-                                    onTap: () => showImageDialog(
-                                      context,
-                                      profile.user.profileImage!,
-                                    ),
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.transparent,
-                                      backgroundImage: NetworkImage(
-                                        profile.user.profileImage!,
-                                      ),
-                                    ),
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor: Colors.transparent,
-                                    radius: 135.r,
-                                    backgroundImage: const NetworkImage(
-                                      FirebasePath.defaultImage,
-                                    ),
-                                  ),
-                          ),
-                          GestureDetector(
-                            onTap: _pickAndCropImage,
-                            child: const Icon(Icons.edit),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.03,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text("Bio"),
-                        SizedBox(
-                          width: 8.w,
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            showEditBioSheet(context, bioController.text);
-                          },
-                          child: const Icon(
-                            Icons.edit,
-                            size: 24,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.01,
-                    ),
-                    BlocBuilder<ProfileCubit, ProfileState>(
-                      buildWhen: (_, currentState) =>
-                          currentState is UpdateUserBioLoading ||
-                          currentState is UpdateUserBioSuccess ||
-                          currentState is UpdateUserBioError,
-                      builder: (context, state) {
-                        return Text(
-                          bioController.text,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                    color: AppColors.primary,
-                                  ),
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.02,
-                    ),
-                    BlocBuilder<ProfileCubit, ProfileState>(
-                      builder: (_, state) => CustomProfileContainer(
-                        labelText: "User Name",
-                        textInputType: TextInputType.name,
-                        controller: userNameController,
-                        validator: (value) =>
-                            validateGeneral(value, 'user name'),
-                      ),
-                    ),
-                    Divider(
-                      height: 30.h,
-                    ),
-                    CustomProfileContainer(
-                      labelText: "Email",
-                      isClickable: false,
-                      textInputType: TextInputType.name,
-                      controller: emailController,
-                      validator: validateEmail,
-                    ),
-                    Divider(
-                      height: 30.h,
-                    ),
-                    BlocBuilder<ProfileCubit, ProfileState>(
-                      builder: (_, state) => CustomProfileContainer(
-                        labelText: "Phone Num",
-                        textInputType: TextInputType.number,
-                        controller: phoneNumberController,
-                        validator: validatePhoneNumber,
-                      ),
-                    ),
-                    Divider(
-                      height: 30.h,
-                    ),
-                    BlocBuilder<ProfileCubit, ProfileState>(
-                      builder: (_, state) => CustomProfileContainer(
-                        labelText: "Country",
-                        textInputType: TextInputType.name,
-                        isReadOnly: true,
-                        controller: addressController,
-                        onSelectCountry: (country) {
-                          setState(() {
-                            addressController.text = country;
-                          });
-                        },
-                        validator: (value) {
-                          return null;
-                        },
-                      ),
-                    ),
-                    Divider(
-                      height: 30.h,
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                    BlocListener<ProfileCubit, ProfileState>(
-                      listener: (_, state) {
-                        if (state is UpdateUserSuccess) {
-                          profile.getUser();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Successfully Updated",
-                                style: TextStyle(fontSize: 15),
-                              ),
-                              backgroundColor: AppColors.primary,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      },
-                      child: DefaultTextButton(
-                        function: () {
-                          if (formKey.currentState!.validate()) {
-                            if (userNameController.text !=
-                                    profile.user.userName! ||
-                                emailController.text != profile.user.email! ||
-                                bioController.text != profile.user.bio! ||
-                                phoneNumberController.text !=
-                                    profile.user.phoneNumber! ||
-                                addressController.text != profile.user.city!) {
-                              profile.updateUser(
-                                User(
-                                  fCMToken:
-                                      NotificationsCubit.get(context).fCMToken,
-                                  id: profile.user.id,
-                                  userName: userNameController.text,
-                                  email: profile.user.email,
-                                  phoneNumber: phoneNumberController.text,
-                                  bio: profile.user.bio,
-                                  friends: profile.user.friends,
-                                  groups: profile.user.groups,
-                                  requests: profile.user.requests,
-                                  profileImage: profile.user.profileImage,
-                                  city: addressController.text,
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        text: provider.language == "en"
-                            ? "Save changes"
-                            : "حفظ التعديلات",
-                      ),
-                    ),
-                    SizedBox(
-                      height: 24.h,
-                    ),
+                    _buildProfileImage(context, profile),
+                    SizedBox(height: 24.h),
+                    _buildBioSection(context),
+                    SizedBox(height: 24.h),
+                    _buildTextFields(context),
+                    SizedBox(height: 40.h),
+                    _buildSaveButton(context, profile, provider),
+                    SizedBox(height: 24.h),
                   ],
                 ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileImage(BuildContext context, ProfileCubit profile) {
+    return BlocConsumer<ProfileCubit, ProfileState>(
+      listener: (_, state) {
+        if (state is UploadProfileImageLoading) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const LoadingIndicator();
+            },
+          );
+        } else {
+          Navigator.pop(context);
+          if (state is UploadProfileImageError) {
+            _showSnackBar(context, state.message, AppColors.error);
+          } else if (state is UploadProfileImageSuccess) {
+            _showSnackBar(context, "Successfully Uploaded", AppColors.primary);
+          }
+        }
+      },
+      builder: (context, state) {
+        return Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Container(
+              height: 150.h,
+              width: 165.w,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(40.r),
+              ),
+              child: profile.user.profileImage != null &&
+                      profile.user.profileImage!.isNotEmpty
+                  ? InkWell(
+                      onTap: () =>
+                          showImageDialog(context, profile.user.profileImage!),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        backgroundImage:
+                            NetworkImage(profile.user.profileImage!),
+                      ),
+                    )
+                  : CircleAvatar(
+                      backgroundColor: Colors.transparent,
+                      radius: 135.r,
+                      backgroundImage:
+                          const NetworkImage(FirebasePath.defaultImage),
+                    ),
+            ),
+            GestureDetector(
+              onTap: _pickAndCropImage,
+              child: const Icon(Icons.edit),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBioSection(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("Bio"),
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: () {
+                showEditBioSheet(context, bioController.text);
+              },
+              child: const Icon(Icons.edit, size: 24),
+            ),
+          ],
+        ),
+        SizedBox(height: 8.h),
+        BlocBuilder<ProfileCubit, ProfileState>(
+          buildWhen: (_, current) =>
+              current is UpdateUserBioLoading ||
+              current is UpdateUserBioSuccess ||
+              current is UpdateUserBioError,
+          builder: (context, state) {
+            return Text(
+              bioController.text,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .copyWith(color: AppColors.primary),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextFields(BuildContext context) {
+    return Column(
+      children: [
+        BlocBuilder<ProfileCubit, ProfileState>(
+          builder: (_, state) {
+            return CustomProfileContainer(
+              labelText: "User Name",
+              textInputType: TextInputType.name,
+              controller: userNameController,
+              validator: (value) => validateGeneral(value, 'user name'),
+            );
+          },
+        ),
+        Divider(height: 30.h),
+        CustomProfileContainer(
+          labelText: "Email",
+          isClickable: false,
+          textInputType: TextInputType.emailAddress,
+          controller: emailController,
+          validator: validateEmail,
+        ),
+        Divider(height: 30.h),
+        BlocBuilder<ProfileCubit, ProfileState>(
+          builder: (_, state) {
+            return CustomProfileContainer(
+              labelText: "Phone Num",
+              textInputType: TextInputType.phone,
+              controller: phoneNumberController,
+              validator: validatePhoneNumber,
+            );
+          },
+        ),
+        Divider(height: 30.h),
+        BlocBuilder<ProfileCubit, ProfileState>(
+          builder: (_, state) {
+            return CustomProfileContainer(
+              labelText: "Country",
+              textInputType: TextInputType.text,
+              isReadOnly: true,
+              controller: addressController,
+              onSelectCountry: (country) {
+                setState(() {
+                  addressController.text = country;
+                });
+              },
+              validator: (value) => null,
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton(
+    BuildContext context,
+    ProfileCubit profile,
+    MyAppProvider provider,
+  ) {
+    return BlocListener<ProfileCubit, ProfileState>(
+      listener: (_, state) {
+        if (state is UpdateUserSuccess) {
+          profile.getUser();
+          _showSnackBar(context, "Successfully Updated", AppColors.primary);
+        }
+      },
+      child: DefaultTextButton(
+        function: () {
+          if (formKey.currentState!.validate()) {
+            if (userNameController.text != profile.user.userName ||
+                emailController.text != profile.user.email ||
+                bioController.text != profile.user.bio ||
+                phoneNumberController.text != profile.user.phoneNumber ||
+                addressController.text != profile.user.city) {
+              profile.updateUser(
+                User(
+                  fCMToken: NotificationsCubit.get(context).fCMToken,
+                  id: profile.user.id,
+                  userName: userNameController.text,
+                  email: profile.user.email,
+                  phoneNumber: phoneNumberController.text,
+                  bio: profile.user.bio,
+                  friends: profile.user.friends,
+                  groups: profile.user.groups,
+                  requests: profile.user.requests,
+                  profileImage: profile.user.profileImage,
+                  city: addressController.text,
+                ),
+              );
+            }
+          }
+        },
+        text: provider.language == "en" ? "Save changes" : "حفظ التعديلات",
+      ),
+    );
+  }
+
+  void _showSnackBar(
+    BuildContext context,
+    String message,
+    Color backgroundColor,
+  ) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontSize: 15)),
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 3),
       ),
     );
   }

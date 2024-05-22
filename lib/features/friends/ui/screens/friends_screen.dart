@@ -27,7 +27,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
         buildWhen: (_, currentState) =>
             currentState is GetCombinedFriendsLoading ||
             currentState is GetCombinedFriendsSuccess ||
-            currentState is GetCombinedFriendsError,
+            currentState is GetCombinedFriendsError ||
+            currentState is GetFriendDataError ||
+            currentState is GetFriendDataSuccess ||
+            currentState is GetFriendDataLoading,
         builder: (_, state) {
           if (state is GetCombinedFriendsLoading) {
             return const LoadingIndicator();

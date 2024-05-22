@@ -38,7 +38,6 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
           appBar: AppBar(
             toolbarHeight: MediaQuery.sizeOf(context).height * 0.1,
             backgroundColor: Colors.transparent,
-            iconTheme: const IconThemeData.fallback(),
             actions: [
               if (profileCubit.friends!.contains(friendData.id))
                 BlocListener<FriendCubit, FriendStates>(

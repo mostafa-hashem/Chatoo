@@ -296,10 +296,12 @@ class GroupFirebaseServices {
         .ref()
         .child(FirebasePath.groups)
         .child(mediaPath)
-        .child(groupId);
-    final UploadTask uploadRecord =
-        storageRef.child(fileName).putFile(mediaFile);
-    final TaskSnapshot snapshot = await uploadRecord;
+        .child(groupId)
+        .child(fileName);
+
+    final UploadTask uploadTask = storageRef.putFile(mediaFile);
+    final TaskSnapshot snapshot = await uploadTask;
+
     final String downloadUrl = await snapshot.ref.getDownloadURL();
     return downloadUrl;
   }

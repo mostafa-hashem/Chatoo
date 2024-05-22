@@ -30,7 +30,7 @@ class _GroupChatMessagesState extends State<GroupChatMessages> {
       }
     }
 
-    final List<MapEntry<String, List<GroupMessage>>> dateEntries = messagesByDate.entries.toList();
+    final List<MapEntry<String, List<GroupMessage>>> dateEntries = messagesByDate.entries.toList().reversed.toList();
 
     return Expanded(
       child: ListView.builder(

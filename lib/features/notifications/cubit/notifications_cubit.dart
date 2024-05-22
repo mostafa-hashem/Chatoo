@@ -1,6 +1,8 @@
+import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_states.dart';
 import 'package:chat_app/features/notifications/data/services/notification_services.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -28,6 +30,8 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
     required String title,
     required String body,
     String? imageUrl,
+    User? friendData,
+    Group? groupData,
   }) async {
     emit(SendNotificationLoading());
     try {
@@ -36,6 +40,8 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
         title: title,
         body: body,
         imageUrl: imageUrl,
+        friendData: friendData,
+        groupData: groupData,
       );
       emit(SendNotificationSuccess());
     } catch (e) {

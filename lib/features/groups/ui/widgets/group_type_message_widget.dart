@@ -15,10 +15,12 @@ import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -144,6 +146,201 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
     );
   }
 
+  Future<void> _cropImage(File imageFile) async {
+    final croppedImage = await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      aspectRatioPresets: [
+        CropAspectRatioPreset.square,
+        CropAspectRatioPreset.ratio3x2,
+        CropAspectRatioPreset.original,
+        CropAspectRatioPreset.ratio4x3,
+        CropAspectRatioPreset.ratio16x9,
+      ],
+      compressQuality: 100,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: Colors.deepOrange,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+        ),
+        IOSUiSettings(
+          title: 'Crop Image',
+          minimumAspectRatio: 1.0,
+        ),
+        WebUiSettings(
+          context: context,
+          boundary: const CroppieBoundary(
+            width: 520,
+            height: 520,
+          ),
+          viewPort:
+              const CroppieViewPort(width: 480, height: 480, type: 'circle'),
+          enableExif: true,
+          enableZoom: true,
+          showZoomer: true,
+        ),
+      ],
+    );
+    if (croppedImage != null) {
+      setState(() {
+        mediaFile = File(croppedImage.path);
+      });
+      if (context.mounted) {
+        notificationBody = 'sent photo';
+        groupCubit
+            .uploadMediaToGroup(
+          FirebasePath.images,
+          mediaFile!,
+          widget.groupData.groupId!,
+          getImageFileName,
+        )
+            .then(
+          (value) {
+            notificationBody = 'sent photo';
+            groupCubit.sendMessageToGroup(
+              group: widget.groupData,
+              sender: sender,
+              mediaUrls: groupCubit.mediaUrls,
+              message: notificationBody ?? '',
+              type: MessageType.image,
+              isAction: false,
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> _handleAudioFile(File audioFile) async {
+    debugPrint('Selected audio file: ${audioFile.path}');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'Send audio?',
+          ),
+          actionsOverflowDirection: VerticalDirection.down,
+          actions: [
+            TextButton(
+              child: const Text(
+                'Cancel',
+              ),
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                );
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Send',
+              ),
+              onPressed: ()  {
+                groupCubit
+                    .uploadMediaToGroup(
+                  FirebasePath.audios,
+                  mediaFile!,
+                  widget.groupData.groupId!,
+                  getAudioFileName,
+                )
+                    .whenComplete(
+                  () {
+                    notificationBody = 'sent audio';
+                    groupCubit.sendMessageToGroup(
+                      group: widget.groupData,
+                      sender: sender,
+                      message: notificationBody ?? '',
+                      type: MessageType.record,
+                      isAction: false,
+                      mediaUrls: groupCubit.mediaUrls,
+                    );
+                  },
+                );
+                Navigator.pop(
+                  context,
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _pickAudioFile() async {
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'],
+    );
+
+    if (result != null) {
+      final File audioFile = File(result.files.single.path!);
+      await _handleAudioFile(audioFile);
+    } else {
+      debugPrint('No audio file selected.');
+    }
+  }
+
+  Future<void> _handleVideoFile(File videoFile) async {
+    debugPrint('Selected video file: ${videoFile.path}');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'Send video?',
+          ),
+          actionsOverflowDirection: VerticalDirection.down,
+          actions: [
+            TextButton(
+              child: const Text(
+                'Cancel',
+              ),
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                );
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Send',
+              ),
+              onPressed: () {
+                groupCubit
+                    .uploadMediaToGroup(
+                  FirebasePath.videos,
+                  mediaFile!,
+                  widget.groupData.groupId!,
+                  getVideoFileName,
+                )
+                    .then(
+                  (value) {
+                    notificationBody = 'sent video';
+                    groupCubit.sendMessageToGroup(
+                      group: widget.groupData,
+                      sender: sender,
+                      mediaUrls: groupCubit.mediaUrls,
+                      message: notificationBody ?? '',
+                      type: MessageType.video,
+                      isAction: false,
+                    );
+                  },
+                );
+                Navigator.pop(
+                  context,
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
@@ -176,6 +373,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                   imageUrl: groupCubit.mediaUrls.isNotEmpty
                       ? groupCubit.mediaUrls.first
                       : null,
+                  groupData: widget.groupData,
                 );
               }
             }
@@ -213,234 +411,124 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                         BoxConstraints(minHeight: 40.h, maxHeight: 180.h),
                     child: isRecording
                         ? Row(
-                            children: [
-                              Flexible(
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () async {
-                                        await _stopRecording();
-                                        setState(() {
-                                          isRecording = false;
-                                        });
-                                      },
-                                      icon: const Icon(
-                                        Icons.cancel,
-                                        color: Colors.red,
-                                        size: 45,
-                                      ),
-                                    ),
-                                    const Flexible(
-                                      child: CustomRecordingWaveWidget(),
-                                    ),
-                                  ],
-                                ),
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                await _stopRecording();
+                                setState(() {
+                                  isRecording = false;
+                                });
+                              },
+                              icon: const Icon(
+                                Icons.cancel,
+                                color: Colors.red,
+                                size: 45,
                               ),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Flexible(
-                                child: TextField(
-                                  controller: groupCubit.messageController,
-                                  onChanged: (value) {
-                                    setState(() {});
-                                  },
-                                  textInputAction: TextInputAction.newline,
-                                  minLines: 1,
-                                  maxLines: null,
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    color: provider.themeMode == ThemeMode.light
-                                        ? Colors.black87
-                                        : AppColors.light,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Type a message',
-                                    hintStyle:
-                                        Theme.of(context).textTheme.bodySmall,
-                                    filled: true,
-                                    fillColor:
-                                        provider.themeMode == ThemeMode.light
-                                            ? Colors.white
-                                            : AppColors.dark,
-                                    suffixIcon:
-                                        groupCubit
-                                                .messageController.text.isEmpty
-                                            ? IconButton(
-                                                padding:
-                                                    const EdgeInsets.all(4),
-                                                onPressed: () async {
-                                                  final ImagePicker picker =
-                                                      ImagePicker();
-                                                  final XFile? xFile =
-                                                      await picker.pickMedia();
-                                                  if (xFile != null) {
-                                                    File xFilePathToFile(
-                                                      XFile xFile,
-                                                    ) {
-                                                      return File(xFile.path);
-                                                    }
-
-                                                    mediaFile =
-                                                        xFilePathToFile(xFile);
-                                                    if (context.mounted) {
-                                                      final String fileType =
-                                                          xFile.name
-                                                              .split('.')
-                                                              .last
-                                                              .toLowerCase();
-                                                      final bool isImage = [
-                                                        'jpg',
-                                                        'jpeg',
-                                                        'png',
-                                                        'gif',
-                                                      ].contains(fileType);
-                                                      final bool isAudio = [
-                                                        'mp3',
-                                                        'wav',
-                                                        'aac',
-                                                        'flac',
-                                                        'ogg',
-                                                        'm4a',
-                                                      ].contains(fileType);
-                                                      final bool isVideo = [
-                                                        'mp4',
-                                                        'mov',
-                                                        'avi',
-                                                        'mkv',
-                                                      ].contains(fileType);
-                                                      if (context.mounted) {
-                                                        if (isVideo ||
-                                                            isAudio) {
-                                                          showDialog(
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return AlertDialog(
-                                                                title: Text(
-                                                                  isVideo
-                                                                      ? 'Send video?'
-                                                                      : 'Send audio?',
-                                                                ),
-                                                                actionsOverflowDirection:
-                                                                    VerticalDirection
-                                                                        .down,
-                                                                actions: [
-                                                                  TextButton(
-                                                                    child:
-                                                                        const Text(
-                                                                      'Cancel',
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator
-                                                                          .pop(
-                                                                        context,
-                                                                      );
-                                                                    },
-                                                                  ),
-                                                                  TextButton(
-                                                                    child:
-                                                                        const Text(
-                                                                      'Send',
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {
-                                                                      if (isImage) {
-                                                                        groupCubit
-                                                                            .uploadMediaToGroup(
-                                                                          FirebasePath
-                                                                              .audios,
-                                                                          mediaFile!,
-                                                                          widget
-                                                                              .groupData
-                                                                              .groupId!,
-                                                                          getAudioFileName,
-                                                                        )
-                                                                            .then(
-                                                                          (value) {
-                                                                            notificationBody =
-                                                                                'sent audio';
-                                                                            groupCubit.sendMessageToGroup(
-                                                                              group: widget.groupData,
-                                                                              sender: sender,
-                                                                              mediaUrls: groupCubit.mediaUrls,
-                                                                              message: notificationBody ?? '',
-                                                                              type: MessageType.record,
-                                                                              isAction: false,
-                                                                            );
-                                                                          },
-                                                                        );
-                                                                      } else if (isVideo) {
-                                                                        groupCubit
-                                                                            .uploadMediaToGroup(
-                                                                          FirebasePath
-                                                                              .videos,
-                                                                          mediaFile!,
-                                                                          widget
-                                                                              .groupData
-                                                                              .groupId!,
-                                                                          getVideoFileName,
-                                                                        )
-                                                                            .then(
-                                                                          (value) {
-                                                                            notificationBody =
-                                                                                'sent video';
-                                                                            groupCubit.sendMessageToGroup(
-                                                                              group: widget.groupData,
-                                                                              sender: sender,
-                                                                              mediaUrls: groupCubit.mediaUrls,
-                                                                              message: notificationBody ?? '',
-                                                                              type: MessageType.video,
-                                                                              isAction: false,
-                                                                            );
-                                                                          },
-                                                                        );
-                                                                      }
-                                                                      Navigator
-                                                                          .pop(
-                                                                        context,
-                                                                      );
-                                                                    },
-                                                                  ),
-                                                                ],
-                                                              );
-                                                            },
-                                                          );
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                },
-                                                icon: const Icon(Icons.image),
-                                              )
-                                            : const SizedBox.shrink(),
-                                    contentPadding: const EdgeInsets.only(
-                                      left: 16.0,
-                                      bottom: 8.0,
-                                      top: 8.0,
-                                      right: 16.0,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        color: AppColors.primary,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        color: AppColors.primary,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
+                            const Flexible(
+                              child: CustomRecordingWaveWidget(),
+                            ),
+                          ],
+                        )
+                        : TextField(
+                          controller: groupCubit.messageController,
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                          textInputAction: TextInputAction.newline,
+                          minLines: 1,
+                          maxLines: null,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: provider.themeMode == ThemeMode.light
+                                ? Colors.black87
+                                : AppColors.light,
                           ),
+                          decoration: InputDecoration(
+                            hintText: 'Type a message',
+                            hintStyle:
+                                Theme.of(context).textTheme.bodySmall,
+                            filled: true,
+                            fillColor:
+                                provider.themeMode == ThemeMode.light
+                                    ? Colors.white
+                                    : AppColors.dark,
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (groupCubit
+                                    .messageController.text.isEmpty)
+                                  IconButton(
+                                    onPressed: () async {
+                                      final ImagePicker picker =
+                                          ImagePicker();
+                                      final XFile? xFile =
+                                          await picker.pickMedia();
+                                      if (xFile != null) {
+                                        File xFilePathToFile(
+                                          XFile xFile,
+                                        ) {
+                                          return File(xFile.path);
+                                        }
+
+                                        mediaFile =
+                                            xFilePathToFile(xFile);
+                                        final String fileType = xFile
+                                            .name
+                                            .split('.')
+                                            .last
+                                            .toLowerCase();
+                                        if ([
+                                          'jpg',
+                                          'jpeg',
+                                          'png',
+                                          'gif',
+                                        ].contains(fileType)) {
+                                          await _cropImage(mediaFile!);
+                                        } else if ([
+                                          'mp4',
+                                          'mov',
+                                          'avi',
+                                          'mkv',
+                                        ].contains(fileType)) {
+                                          await _handleVideoFile(
+                                            mediaFile!,
+                                          );
+                                        }
+                                      }
+                                    },
+                                    icon: const Icon(Icons.image),
+                                  ),
+                                if (false)
+                                  IconButton(
+                                    onPressed: _pickAudioFile,
+                                    icon: const Icon(Icons.audiotrack),
+                                  ),
+                              ],
+                            ),
+                            contentPadding: const EdgeInsets.only(
+                              left: 16.0,
+                              bottom: 8.0,
+                              top: 8.0,
+                              right: 16.0,
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                              ),
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                              ),
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                          ),
+                        ),
                   ),
                 ),
                 if (groupCubit.messageController.text.isNotEmpty)

@@ -6,6 +6,7 @@ import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
 String? validateEmail(String? value) {
@@ -52,6 +53,7 @@ String? validateGeneral(String? value, String label) {
   }
   return null;
 }
+
 String getFormattedTime(int timestamp) {
   final DateTime lastSeen = DateTime.fromMillisecondsSinceEpoch(timestamp);
   final DateTime now = DateTime.now();
@@ -75,6 +77,7 @@ String getFormattedTime(int timestamp) {
 
   return DateFormat('MMM d, yyyy').format(lastSeen);
 }
+
 String getFormattedDateHeader(int timestamp) {
   final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
   final DateTime now = DateTime.now();
@@ -89,7 +92,6 @@ String getFormattedDateHeader(int timestamp) {
     return DateFormat('dd MMM yyyy').format(date);
   }
 }
-
 
 void showImageDialog(BuildContext context, String imageUrl) {
   showDialog(
@@ -118,7 +120,23 @@ void showImageDialog(BuildContext context, String imageUrl) {
   );
 }
 
+Future<void> _requestPermissions() async {
+  final statuses = await [
+    Permission.storage,
+    Permission.microphone,
+    Permission.audio,
+  ].request();
+
+  final isAllGranted =
+      statuses.values.every((status) => status == PermissionStatus.granted);
+  if (!isAllGranted) {
+    debugPrint('Permissions not granted');
+  }
+}
+
 Future<String> getImageFileName(File imageFile) async {
+  await _requestPermissions();
+
   final image = img.decodeImage(imageFile.readAsBytesSync());
   if (image == null) {
     throw Exception('Unable to decode image');
@@ -131,6 +149,7 @@ Future<String> getImageFileName(File imageFile) async {
 }
 
 Future<String> getVideoFileName(File videoFile) async {
+  await _requestPermissions();
   final VideoPlayerController videoController =
       VideoPlayerController.file(videoFile);
   await videoController.initialize();
@@ -146,6 +165,7 @@ Future<String> getVideoFileName(File videoFile) async {
 }
 
 Future<String> getAudioFileName(File audioFile) async {
+  await _requestPermissions();
   final AudioPlayer audioPlayer = AudioPlayer();
   await audioPlayer.setSourceUrl(
     audioFile.path,

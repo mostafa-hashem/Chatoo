@@ -6,6 +6,7 @@ import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/image_widget.dart';
 import 'package:chat_app/ui/widgets/record_tile.dart';
 import 'package:chat_app/ui/widgets/video_widget.dart';
+import 'package:chat_app/utils/data/models/audio_manager.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +26,7 @@ class GroupMessagesTile extends StatefulWidget {
 }
 
 class _GroupMessagesTileState extends State<GroupMessagesTile> {
+  AudioManager audioManager = AudioManager();
   @override
   void didChangeDependencies() {
     widget.groupMessage.messageType ??= MessageType.text;
@@ -206,6 +208,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
           senderName: widget.groupMessage.sender?.userName ?? '',
           senderId: widget.groupMessage.sender?.id ?? '',
           isInGroup: true,
+          audioManager: audioManager,
         );
       default:
         return const SizedBox.shrink();

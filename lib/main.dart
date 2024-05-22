@@ -11,7 +11,7 @@ import 'package:chat_app/utils/bloc_observer.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/cubit/suggestion_cubit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,6 +36,9 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   const MyApp({super.key});
 
   @override
@@ -48,10 +51,35 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     _initPackageInfo();
+    super.initState();
+    // FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    //   Future.delayed(Duration.zero, () => _handleMessage(message));
+    // });
     WidgetsBinding.instance.addObserver(this);
     updateStatus(true);
-    super.initState();
   }
+
+  // void _handleMessage(RemoteMessage message) {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     final currentContext = MyApp
+  //         .navigatorKey.currentState?.context;
+  //     if (currentContext != null) {
+  //       if (message.data.containsKey('friendData')) {
+  //         final User friendData = message.data['friendData'] as User;
+  //         Navigator.pushNamed(currentContext, Routes.friendChatScreen,
+  //             arguments: friendData);
+  //       } else if (message.data.containsKey('groupData')) {
+  //         final Group groupData =
+  //             Group.fromJson(message.data['groupData'] as Map<String, dynamic>);
+  //         Navigator.pushNamed(
+  //           currentContext,
+  //           Routes.groupChatScreen,
+  //           arguments: groupData,
+  //         );
+  //       }
+  //     }
+  //   });
+  // }
 
   Future<void> updateStatus(bool status) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
@@ -70,9 +98,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  final String requiredVersion = '1.0.4';
+  final String requiredVersion = '1.0.0';
   String? appVersion;
-  String routeName = Routes.updateScreen;
+  String routeName = Routes.splash;
 
   Future<void> _initPackageInfo() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -118,6 +146,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
           ],
           child: MaterialApp(
+            navigatorKey: MyApp.navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: darkTheme,

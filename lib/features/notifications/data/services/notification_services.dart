@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/utils/constants.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,8 +15,7 @@ class NotificationsServices {
 
     FirebaseMessaging.onBackgroundMessage(handelBackgroundMessage);
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    });
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {});
 
     await _firebaseMessaging.getInitialMessage();
 
@@ -30,6 +31,8 @@ class NotificationsServices {
     required String title,
     required String body,
     String? imageUrl,
+    User? friendData,
+    Group? groupData,
   }) async {
     final notification = {
       'title': title,
@@ -46,6 +49,8 @@ class NotificationsServices {
         'click_action': "FLUTTER_NOTIFICATION_CLICK",
         'title': title,
         'body': body,
+        // if (friendData != null) 'friendData': friendData.toJson(),
+        // if (groupData != null) 'groupData': groupData.toJson(),
         if (imageUrl != null) 'image': imageUrl,
       },
       'to': fcmToken,

@@ -14,6 +14,7 @@ import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -206,6 +207,118 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
     }
   }
 
+  Future<void> _handleAudioFile(File audioFile) async {
+    debugPrint('Selected audio file: ${audioFile.path}');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Send audio?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                debugPrint('Audio sending canceled');
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text('Send'),
+              onPressed: () {
+                debugPrint('Sending audio file...');
+                friendCubit
+                    .sendMediaToFriend(
+                  FirebasePath.audios,
+                  audioFile,
+                  widget.friendData.id!,
+                  getAudioFileName,
+                )
+                    .then((value) {
+                  notificationBody = 'sent audio';
+                  debugPrint('Audio file sent successfully');
+                  friendCubit.sendMessageToFriend(
+                    friend: widget.friendData,
+                    message: notificationBody ?? '',
+                    sender: sender,
+                    type: MessageType.record,
+                  );
+                }).catchError((error) {
+                  debugPrint('Error sending audio file: $error');
+                });
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleVideoFile(File videoFile) async {
+    debugPrint('Selected video file: ${videoFile.path}');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Send video?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                debugPrint('Video sending canceled');
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text('Send'),
+              onPressed: () {
+                debugPrint('Sending video file...');
+                friendCubit
+                    .sendMediaToFriend(
+                  FirebasePath.videos,
+                  videoFile,
+                  widget.friendData.id!,
+                  getVideoFileName,
+                )
+                    .then((value) {
+                  notificationBody = 'sent video';
+                  debugPrint('Video file sent successfully');
+                  friendCubit.sendMessageToFriend(
+                    friend: widget.friendData,
+                    message: notificationBody ?? '',
+                    sender: sender,
+                    type: MessageType.video,
+                  );
+                }).catchError((error) {
+                  debugPrint('Error sending video file: $error');
+                });
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _pickAudioFile() async {
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'],
+    );
+
+    if (result != null) {
+      final File audioFile = File(result.files.single.path!);
+      await _handleAudioFile(audioFile);
+    } else {
+      debugPrint('No audio file selected.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
@@ -223,6 +336,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                   imageUrl: friendCubit.mediaUrls.isNotEmpty
                       ? friendCubit.mediaUrls.first
                       : null,
+                  friendData: ProfileCubit.get(context).user,
                 );
               }
             }
@@ -267,230 +381,112 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                         BoxConstraints(minHeight: 50.h, maxHeight: 180.h),
                     child: isRecording
                         ? Row(
-                            children: [
-                              Flexible(
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () async {
-                                        await _stopRecording();
-                                        setState(() {
-                                          isRecording = false;
-                                        });
-                                      },
-                                      icon: const Icon(
-                                        Icons.cancel,
-                                        color: Colors.red,
-                                        size: 45,
-                                      ),
-                                    ),
-                                    const Flexible(
-                                      child: CustomRecordingWaveWidget(),
-                                    ),
-                                  ],
-                                ),
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                await _stopRecording();
+                                setState(() {
+                                  isRecording = false;
+                                });
+                              },
+                              icon: const Icon(
+                                Icons.cancel,
+                                color: Colors.red,
+                                size: 45,
                               ),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Flexible(
-                                child: TextField(
-                                  controller: friendCubit.messageController,
-                                  onChanged: (value) {
-                                    setState(() {});
-                                  },
-                                  textInputAction: TextInputAction.newline,
-                                  minLines: 1,
-                                  maxLines: null,
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    color: provider.themeMode == ThemeMode.light
-                                        ? Colors.black87
-                                        : AppColors.light,
-                                  ),
-                                  decoration: InputDecoration(
-                                    suffixIcon: friendCubit
-                                            .messageController.text.isEmpty
-                                        ? IconButton(
-                                            onPressed: () async {
-                                              final ImagePicker picker =
-                                                  ImagePicker();
-                                              final XFile? xFile =
-                                                  await picker.pickMedia();
-                                              if (xFile != null) {
-                                                File xFilePathToFile(
-                                                  XFile xFile,
-                                                ) {
-                                                  return File(xFile.path);
-                                                }
-
-                                                mediaFile =
-                                                    xFilePathToFile(xFile);
-                                                final String fileType = xFile
-                                                    .name
-                                                    .split('.')
-                                                    .last
-                                                    .toLowerCase();
-                                                final bool isImage = [
-                                                  'jpg',
-                                                  'jpeg',
-                                                  'png',
-                                                  'gif',
-                                                ].contains(fileType);
-                                                final bool isAudio = [
-                                                  'mp3',
-                                                  'wav',
-                                                  'aac',
-                                                  'flac',
-                                                  'ogg',
-                                                  'm4a',
-                                                ].contains(fileType);
-                                                final bool isVideo = [
-                                                  'mp4',
-                                                  'mov',
-                                                  'avi',
-                                                  'mkv',
-                                                ].contains(fileType);
-
-                                                if (isImage) {
-                                                  await _cropImage(mediaFile!);
-                                                }
-                                                if (context.mounted) {
-                                                  if (isVideo || isAudio) {
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) {
-                                                        return AlertDialog(
-                                                          title: Text(
-                                                            isVideo
-                                                                ? 'Send video?'
-                                                                : 'Send audio?',
-                                                          ),
-                                                          actionsOverflowDirection:
-                                                              VerticalDirection
-                                                                  .down,
-                                                          actions: [
-                                                            TextButton(
-                                                              child: const Text(
-                                                                'Cancel',
-                                                              ),
-                                                              onPressed: () {
-                                                                Navigator.pop(
-                                                                  context,
-                                                                );
-                                                              },
-                                                            ),
-                                                            TextButton(
-                                                              child: const Text(
-                                                                'Send',
-                                                              ),
-                                                              onPressed: () {
-                                                                if (isVideo) {
-                                                                  friendCubit
-                                                                      .sendMediaToFriend(
-                                                                    FirebasePath
-                                                                        .images,
-                                                                    mediaFile!,
-                                                                    widget
-                                                                        .friendData
-                                                                        .id!,
-                                                                    getVideoFileName,
-                                                                  )
-                                                                      .then(
-                                                                          (value) {
-                                                                    friendCubit
-                                                                        .sendMessageToFriend(
-                                                                      friend: widget
-                                                                          .friendData,
-                                                                      message:
-                                                                          "",
-                                                                      sender:
-                                                                          sender,
-                                                                      type: MessageType
-                                                                          .video,
-                                                                    );
-                                                                    notificationBody =
-                                                                        'sent video';
-                                                                  });
-                                                                }
-                                                                if (isAudio) {
-                                                                  friendCubit
-                                                                      .sendMediaToFriend(
-                                                                    FirebasePath
-                                                                        .audios,
-                                                                    mediaFile!,
-                                                                    widget
-                                                                        .friendData
-                                                                        .id!,
-                                                                    getAudioFileName,
-                                                                  )
-                                                                      .then(
-                                                                    (value) {
-                                                                      notificationBody =
-                                                                          'sent audio';
-                                                                      friendCubit
-                                                                          .sendMessageToFriend(
-                                                                        friend:
-                                                                            widget.friendData,
-                                                                        message:
-                                                                            notificationBody ??
-                                                                                '',
-                                                                        sender:
-                                                                            sender,
-                                                                        type: MessageType
-                                                                            .record,
-                                                                      );
-                                                                    },
-                                                                  );
-                                                                }
-                                                                Navigator.pop(
-                                                                  context,
-                                                                );
-                                                              },
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
-                                                    );
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            icon: const Icon(Icons.image),
-                                          )
-                                        : const SizedBox.shrink(),
-                                    hintText: 'Type a message',
-                                    hintStyle:
-                                        Theme.of(context).textTheme.bodySmall,
-                                    filled: true,
-                                    fillColor:
-                                        provider.themeMode == ThemeMode.light
-                                            ? Colors.white
-                                            : AppColors.dark,
-                                    contentPadding: const EdgeInsets.only(
-                                      left: 16.0,
-                                      bottom: 8.0,
-                                      top: 8.0,
-                                      right: 16.0,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        color: AppColors.primary,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
+                            const Flexible(
+                              child: CustomRecordingWaveWidget(),
+                            ),
+                          ],
+                        )
+                        : TextField(
+                          controller: friendCubit.messageController,
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                          textInputAction: TextInputAction.newline,
+                          minLines: 1,
+                          maxLines: null,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: provider.themeMode == ThemeMode.light
+                                ? Colors.black87
+                                : AppColors.light,
                           ),
+                          decoration: InputDecoration(
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (friendCubit
+                                    .messageController.text.isEmpty)
+                                  IconButton(
+                                    onPressed: () async {
+                                      final ImagePicker picker =
+                                          ImagePicker();
+                                      final XFile? xFile =
+                                          await picker.pickMedia();
+                                      if (xFile != null) {
+                                        File xFilePathToFile(XFile xFile) {
+                                          return File(xFile.path);
+                                        }
+
+                                        mediaFile = xFilePathToFile(xFile);
+                                        final String fileType = xFile.name
+                                            .split('.')
+                                            .last
+                                            .toLowerCase();
+                                        if (['jpg', 'jpeg', 'png', 'gif']
+                                            .contains(fileType)) {
+                                          await _cropImage(mediaFile!);
+                                        } else if ([
+                                          'mp4',
+                                          'mov',
+                                          'avi',
+                                          'mkv',
+                                        ].contains(fileType)) {
+                                          await _handleVideoFile(
+                                            mediaFile!,
+                                          );
+                                        }
+                                      }
+                                    },
+                                    icon: const Icon(Icons.image),
+                                  ),
+                                if (false)
+                                  IconButton(
+                                    onPressed: _pickAudioFile,
+                                    icon: const Icon(Icons.audiotrack),
+                                  ),
+                              ],
+                            ),
+                            hintText: 'Type a message',
+                            hintStyle:
+                                Theme.of(context).textTheme.bodySmall,
+                            filled: true,
+                            fillColor: provider.themeMode == ThemeMode.light
+                                ? Colors.white
+                                : AppColors.dark,
+                            contentPadding: const EdgeInsets.only(
+                              left: 16.0,
+                              bottom: 8.0,
+                              top: 8.0,
+                              right: 16.0,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: AppColors.primary,
+                              ),
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                          ),
+                        ),
                   ),
                 ),
                 if (friendCubit.messageController.text.isNotEmpty)
@@ -500,7 +496,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                       notificationBody = friendCubit.messageController.text;
                       if (friendCubit.messageController.text.isNotEmpty) {
                         friendCubit.messageController.clear();
-                       await friendCubit.sendMessageToFriend(
+                        await friendCubit.sendMessageToFriend(
                           friend: widget.friendData,
                           message: notificationBody ?? '',
                           sender: sender,
@@ -557,13 +553,11 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                         )
                       : GestureDetector(
                           onLongPress: () async {
-                            await audioPlayer
-                                .play(
-                                  AssetSource("audios/Notification.mp3"),
-                                )
-                                .whenComplete(
-                                  () => _record(),
-                                );
+                            // await audioPlayer
+                            //     .play(
+                            //       AssetSource("audios/Notification.mp3"),
+                            //     );
+                            _record();
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),

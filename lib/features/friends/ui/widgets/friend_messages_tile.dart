@@ -4,6 +4,7 @@ import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/widgets/image_widget.dart';
 import 'package:chat_app/ui/widgets/record_tile.dart';
 import 'package:chat_app/ui/widgets/video_widget.dart';
+import 'package:chat_app/utils/data/models/audio_manager.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,6 +26,7 @@ class FriendMessagesTile extends StatefulWidget {
 }
 
 class _FriendMessagesTileState extends State<FriendMessagesTile> {
+  AudioManager audioManager = AudioManager();
   @override
   void didChangeDependencies() {
     widget.friendMessage.messageType ??= MessageType.text;
@@ -167,6 +169,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
           senderName: '',
           senderId: widget.friendMessage.sender,
           isInGroup: false,
+          audioManager: audioManager,
         );
       default:
         return const SizedBox.shrink();

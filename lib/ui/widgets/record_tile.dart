@@ -2,10 +2,14 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
+import 'package:chat_app/utils/data/models/audio_manager.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 
 class RecordTile extends StatefulWidget {
   final String recordPath;
@@ -13,6 +17,7 @@ class RecordTile extends StatefulWidget {
   final String senderId;
   final bool isInGroup;
   final int sentAt;
+  final AudioManager audioManager;
 
   const RecordTile({
     super.key,
@@ -21,6 +26,7 @@ class RecordTile extends StatefulWidget {
     required this.senderName,
     required this.senderId,
     required this.isInGroup,
+    required this.audioManager,
   });
 
   @override
@@ -34,6 +40,7 @@ class _RecordTileState extends State<RecordTile> {
   late int durationInSeconds;
   late User sender;
   Duration _currentPosition = Duration.zero;
+  late String localFilePath;
 
   @override
   void didChangeDependencies() {
@@ -75,6 +82,29 @@ class _RecordTileState extends State<RecordTile> {
     final fileName = widget.recordPath.split('/').last;
     final durationStr = fileName.split('%').last.substring(2).split('s').first;
     durationInSeconds = int.tryParse(durationStr) ?? 0;
+  }
+
+  Future<void> _loadFile() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      localFilePath = '${directory.path}/${widget.recordPath.split('/').last}';
+      final localFile = File(localFilePath);
+
+      if (!await localFile.exists()) {
+        final response = await http.get(Uri.parse(widget.recordPath));
+        await localFile.writeAsBytes(response.bodyBytes);
+      }
+    } catch (e) {
+      print('Error loading file: $e');
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -123,16 +153,14 @@ class _RecordTileState extends State<RecordTile> {
                 GestureDetector(
                   onTap: () async {
                     if (_isPlaying) {
-                      _audioPlayer.stop();
+                      widget.audioManager.stop(_audioPlayer);
                       setState(() {
                         _isPlaying = false;
                         _currentPosition = Duration.zero;
                       });
                     } else {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                      await _audioPlayer.play(UrlSource(widget.recordPath));
+                      await _loadFile();
+                      await widget.audioManager.play(_audioPlayer, localFilePath);
                       setState(() {
                         _isPlaying = true;
                       });

@@ -213,16 +213,15 @@ class GroupCubit extends Cubit<GroupStates> {
     String groupId,
     Future<String> Function(File imageFile) getFileName,
   ) async {
-    if (mediaPath == FirebasePath.images) {
-      emit(UploadImageToGroupLoading());
-    }
-    if (mediaPath == FirebasePath.videos) {
-      emit(UploadVideoToGroupLoading());
-    }
-    if (mediaPath == FirebasePath.images) {
-      emit(UploadAudioToGroupLoading());
-    }
     try {
+      if (mediaPath == FirebasePath.images) {
+        emit(UploadImageToGroupLoading());
+      } else if (mediaPath == FirebasePath.videos) {
+        emit(UploadVideoToGroupLoading());
+      } else if (mediaPath == FirebasePath.records) {
+        emit(UploadAudioToGroupLoading());
+      }
+
       mediaUrls.clear();
       final String downloadUrl =
           await _groupFirebaseServices.uploadMediaToGroup(
@@ -231,21 +230,29 @@ class GroupCubit extends Cubit<GroupStates> {
         groupId,
         getFileName,
       );
-      mediaUrls.add(downloadUrl);
-      if (mediaPath == FirebasePath.images) {
-        emit(UploadImageToGroupSuccess());
-      } else if (mediaPath == FirebasePath.videos) {
-        emit(UploadVideoToGroupSuccess());
+
+      if (downloadUrl.isNotEmpty) {
+        mediaUrls.add(downloadUrl);
+
+        if (mediaPath == FirebasePath.images) {
+          emit(UploadImageToGroupSuccess());
+        } else if (mediaPath == FirebasePath.videos) {
+          emit(UploadVideoToGroupSuccess());
+        } else {
+          emit(UploadAudioToGroupSuccess());
+        }
       } else {
-        emit(UploadAudioToGroupSuccess());
+        throw Exception('Download URL is empty');
       }
     } catch (e) {
+      final errorMessage = Failure.fromException(e).message;
+
       if (mediaPath == FirebasePath.images) {
-        emit(UploadImageToGroupError(Failure.fromException(e).message));
+        emit(UploadImageToGroupError(errorMessage));
       } else if (mediaPath == FirebasePath.videos) {
-        emit(UploadVideoToGroupError(Failure.fromException(e).message));
+        emit(UploadVideoToGroupError(errorMessage));
       } else {
-        emit(UploadAudioToGroupError(Failure.fromException(e).message));
+        emit(UploadAudioToGroupError(errorMessage));
       }
     }
   }
