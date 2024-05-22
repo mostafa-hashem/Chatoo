@@ -48,7 +48,7 @@ class _FriendTileState extends State<FriendTile> {
           current is GetUserSuccess ||
           current is GetUserError ||
           current is ProfileLoading,
-      builder: (context, state) {
+      builder: (_, state) {
         return Container(
           padding: EdgeInsets.symmetric(vertical: 8.h),
           child: ListTile(
@@ -60,12 +60,15 @@ class _FriendTileState extends State<FriendTile> {
             ),
             title: FriendTitle(
               userName: widget.friendData.user!.userName,
-              sentAt: Timestamp.fromDate(
-                widget.friendData.recentMessageData!.sentAt ?? DateTime.now(),
-              ),
+              sentAt: widget.friendData.recentMessageData?.sentAt != null
+                  ? Timestamp.fromDate(
+                      widget.friendData.recentMessageData!.sentAt!,
+                    )
+                  : null,
             ),
             subtitle: RecentMessage(
               recentMessage: widget.friendData.recentMessageData?.recentMessage,
+              isTyping: widget.friendData.recentMessageData?.typing ?? false,
             ),
             trailing: isMuted()
                 ? Icon(
@@ -83,7 +86,7 @@ class _FriendTileState extends State<FriendTile> {
                   Navigator.pushNamed(
                     context,
                     Routes.friendChatScreen,
-                    arguments: widget.friendData.user,
+                    arguments: widget.friendData,
                   );
                 });
               });
@@ -270,14 +273,16 @@ class RecentMessage extends StatelessWidget {
   const RecentMessage({
     super.key,
     required this.recentMessage,
+    this.isTyping = false,
   });
 
   final String? recentMessage;
+  final bool isTyping;
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      recentMessage ?? '',
+      isTyping ? 'Typing...' : recentMessage ?? '',
       style: GoogleFonts.novaSquare(
         fontWeight: FontWeight.w700,
         fontSize: 12.sp,

@@ -36,8 +36,8 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  static final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey<NavigatorState>();
+  // static final GlobalKey<NavigatorState> navigatorKey =
+  //     GlobalKey<NavigatorState>();
 
   const MyApp({super.key});
 
@@ -146,7 +146,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
           ],
           child: MaterialApp(
-            navigatorKey: MyApp.navigatorKey,
+            // navigatorKey: MyApp.navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: darkTheme,

@@ -103,6 +103,18 @@ class FriendFirebaseServices {
     );
   }
 
+  Future<void> updateTypingStatus({
+    required String friendId,
+    required bool isTyping,
+  }) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection
+        .doc(friendId)
+        .collection(FirebasePath.friends)
+        .doc(currentUserId)
+        .update({'typing': isTyping});
+  }
+
   Stream<List<FriendMessage>> getAllUserMessages(String friendId) {
     return _friendsCollection
         .doc(friendId)
@@ -173,7 +185,7 @@ class FriendFirebaseServices {
     await friendRef.collection(FirebasePath.friends).doc(currentUserId).set({
       'recentMessage': '',
       'recentMessageSender': '',
-      'sentAt': DateTime.now(),
+      'sentAt': null,
       'addedAt': DateTime.now(),
     });
 
@@ -184,7 +196,7 @@ class FriendFirebaseServices {
         .set({
       'recentMessage': '',
       'recentMessageSender': '',
-      'sentAt': DateTime.now(),
+      'sentAt': null,
       'addedAt': DateTime.now(),
     });
     // Update the current user's friends field

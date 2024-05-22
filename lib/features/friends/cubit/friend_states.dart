@@ -12,26 +12,6 @@ class RequestToAddFriendError extends FriendStates {
   RequestToAddFriendError(this.message);
 }
 
-class CheckIsUserFriendLoading extends FriendStates {}
-
-class CheckIsUserFriendSuccess extends FriendStates {}
-
-class CheckIsUserFriendError extends FriendStates {
-  final String message;
-
-  CheckIsUserFriendError(this.message);
-}
-
-class GetAllUsersLoading extends FriendStates {}
-
-class GetAllUsersSuccess extends FriendStates {}
-
-class GetAllUsersError extends FriendStates {
-  final String message;
-
-  GetAllUsersError(this.message);
-}
-
 class GetAllUserFriendsLoading extends FriendStates {}
 
 class GetAllUserFriendsSuccess extends FriendStates {}
@@ -122,16 +102,6 @@ class GetAllFriendMessagesError extends FriendStates {
   GetAllFriendMessagesError(this.message);
 }
 
-class GetRecentMessageDataLoading extends FriendStates {}
-
-class GetRecentMessageDataSuccess extends FriendStates {}
-
-class GetRecentMessageDataError extends FriendStates {
-  final String message;
-
-  GetRecentMessageDataError(this.message);
-}
-
 class GetCombinedFriendsLoading extends FriendStates {}
 
 class GetCombinedFriendsSuccess extends FriendStates {}
@@ -140,6 +110,20 @@ class GetCombinedFriendsError extends FriendStates {
   final String message;
 
   GetCombinedFriendsError(this.message);
+}
+
+class UpdateTypingStatus extends FriendStates {
+  bool isTyping;
+  UpdateTypingStatus(this.isTyping);
+}
+class UpdateTypingStatusLoading extends FriendStates {}
+
+class UpdateTypingStatusSuccess extends FriendStates {}
+
+class UpdateTypingStatusError extends FriendStates {
+  final String message;
+
+  UpdateTypingStatusError(this.message);
 }
 
 class MuteFriendLoading extends FriendStates {}

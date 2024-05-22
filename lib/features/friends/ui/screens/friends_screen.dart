@@ -15,6 +15,7 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
+
   @override
   Widget build(BuildContext context) {
     final friendsCubit = FriendCubit.get(context);

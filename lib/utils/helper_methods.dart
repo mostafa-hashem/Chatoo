@@ -122,9 +122,10 @@ void showImageDialog(BuildContext context, String imageUrl) {
 
 Future<void> _requestPermissions() async {
   final statuses = await [
-    Permission.storage,
-    Permission.microphone,
     Permission.audio,
+    Permission.videos,
+    Permission.photos,
+    Permission.microphone,
   ].request();
 
   final isAllGranted =
@@ -175,7 +176,7 @@ Future<String> getAudioFileName(File audioFile) async {
   await audioPlayer.dispose();
 
   final int? durationInSeconds = duration?.inSeconds;
-  final String fileName =
-      '${durationInSeconds}s.${audioFile.path.split('.').last}';
+  final String fileExtension = audioFile.path.split('.').last;
+  final String fileName = '${durationInSeconds}s.$fileExtension';
   return fileName;
 }

@@ -1,11 +1,11 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
+import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_chat_messages.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_type_message_widget.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/utils/constants.dart';
-import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
@@ -24,12 +24,15 @@ class FriendChatScreen extends StatefulWidget {
 
 class _FriendChatScreenState extends State<FriendChatScreen> {
   late FriendCubit friendCubit;
+  late CombinedFriend friendData;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     friendCubit = FriendCubit.get(context);
+    friendData = ModalRoute.of(context)!.settings.arguments! as CombinedFriend;
+    friendCubit.listenToTypingStatus(friendData.user!.id!);
   }
 
   @override
@@ -40,7 +43,6 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final friendData = ModalRoute.of(context)!.settings.arguments! as User;
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -51,12 +53,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
           centerTitle: false,
           title: Row(
             children: [
-              if (friendData.profileImage != null &&
-                  friendData.profileImage!.isNotEmpty)
+              if (friendData.user?.profileImage != null &&
+                  friendData.user!.profileImage!.isNotEmpty)
                 ClipOval(
                   child: FancyShimmerImage(
                     imageUrl: friendCubit.friendData?.profileImage ??
-                        friendData.profileImage!,
+                        friendData.user!.profileImage!,
                     width: 44.w,
                     height: 40.h,
                     errorWidget: ClipOval(
@@ -76,7 +78,9 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                     friendCubit.friendData?.userName
                             ?.substring(0, 1)
                             .toUpperCase() ??
-                        friendData.userName!.substring(0, 1).toUpperCase(),
+                        friendData.user!.userName!
+                            .substring(0, 1)
+                            .toUpperCase(),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.ubuntu(
                       fontWeight: FontWeight.w500,
@@ -98,8 +102,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                     ),
                     BlocBuilder<FriendCubit, FriendStates>(
                       buildWhen: (_, current) =>
+                          current is UpdateTypingStatusSuccess ||
+                          current is UpdateTypingStatusError ||
+                          current is UpdateTypingStatusLoading ||
                           current is GetFriendDataError ||
                           current is GetFriendDataSuccess ||
+                          current is UpdateTypingStatus ||
                           current is GetFriendDataLoading,
                       builder: (_, state) {
                         if (friendCubit.friendData?.onLine != null) {
@@ -123,14 +131,19 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                 width: MediaQuery.sizeOf(context).width * 0.01,
                               ),
                               Text(
-                                friendCubit.friendData!.onLine!
-                                    ? 'Online'
-                                    : friendCubit.friendData?.lastSeen != null
-                                        ? "Last seen: ${getFormattedTime(
-                                            friendCubit.friendData!.lastSeen!
-                                                .millisecondsSinceEpoch,
-                                          )}"
-                                        : 'Offline',
+                                friendCubit.isTyping
+                                    ? 'Typing...'
+                                    : friendCubit.friendData!.onLine!
+                                        ? 'Online'
+                                        : friendCubit.friendData?.lastSeen !=
+                                                null
+                                            ? "Last seen: ${getFormattedTime(
+                                                friendCubit
+                                                    .friendData!
+                                                    .lastSeen!
+                                                    .millisecondsSinceEpoch,
+                                              )}"
+                                            : 'Offline',
                                 style: GoogleFonts.ubuntu(
                                   fontWeight: FontWeight.w400,
                                   fontSize: 12.sp,
@@ -176,7 +189,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
               },
             ),
             FriendTypeMessageWidget(
-              friendData: friendCubit.friendData ?? friendData,
+              friendData: friendCubit.friendData ?? friendData.user!,
             ),
           ],
         ),

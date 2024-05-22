@@ -5,8 +5,11 @@ import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/friends/data/services/friend_firebase_services.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
 import 'package:chat_app/utils/data/models/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -184,6 +187,40 @@ class FriendCubit extends Cubit<FriendStates> {
     } catch (e) {
       emit(GetCombinedFriendsError(Failure.fromException(e).message));
     }
+  }
+
+  Future<void> updateTypingStatus({
+    required String friendId,
+    required bool isTyping,
+  }) async {
+    emit(UpdateTypingStatusLoading());
+    try {
+      await _friendFirebaseServices.updateTypingStatus(
+        friendId: friendId,
+        isTyping: isTyping,
+      );
+      emit(UpdateTypingStatusSuccess());
+    } catch (e) {
+      emit(UpdateTypingStatusError(Failure.fromException(e).message));
+    }
+  }
+
+  bool isTyping = false;
+
+  void listenToTypingStatus(String friendId) {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance
+        .collection(FirebasePath.users)
+        .doc(currentUserId)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists && snapshot.data() != null) {
+        isTyping = (snapshot.data()!['typing'] as bool?)!;
+        emit(UpdateTypingStatus(isTyping));
+      }
+    });
   }
 
   Future<void> removeFriendRequest(String friendId) async {
