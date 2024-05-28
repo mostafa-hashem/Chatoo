@@ -35,7 +35,6 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
     friendCubit = FriendCubit.get(context);
     friendData = ModalRoute.of(context)!.settings.arguments! as CombinedFriend;
     friendCubit.listenToTypingStatus(friendData.user!.id!);
-    friendCubit.markMessagesAsRead(friendData.user!.id!);
   }
 
   @override

@@ -31,7 +31,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void didChangeDependencies() {
     groupCubit = GroupCubit.get(context);
     groupData = ModalRoute.of(context)!.settings.arguments! as Group;
-    groupCubit.markMessagesAsRead(groupId: groupData.groupId!);
     super.didChangeDependencies();
   }
 
