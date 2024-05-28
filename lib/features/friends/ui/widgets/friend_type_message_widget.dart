@@ -375,145 +375,142 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                IconButton(
-                  padding: const EdgeInsets.all(4),
-                  onPressed: () {
-                    setState(() {
-                      emojiShowing = !emojiShowing;
-                      FocusScope.of(context).unfocus();
-                    });
-                  },
-                  icon: CircleAvatar(
-                    backgroundColor: AppColors.primary,
-                    radius: 20.r,
-                    child: const Icon(
-                      Icons.emoji_emotions,
-                      color: Colors.white,
-                      size: 24,
+                if (isRecording)
+                  IconButton(
+                    padding: const EdgeInsets.all(4),
+                    onPressed: () async {
+                      await _stopRecording();
+                      setState(() {
+                        isRecording = false;
+                      });
+                    },
+                    icon: CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      radius: 20.r,
+                      child: const Icon(
+                        Icons.cancel,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  )
+                else
+                  IconButton(
+                    padding: const EdgeInsets.all(4),
+                    onPressed: () {
+                      setState(() {
+                        emojiShowing = !emojiShowing;
+                        FocusScope.of(context).unfocus();
+                      });
+                    },
+                    icon: CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      radius: 20.r,
+                      child: const Icon(
+                        Icons.emoji_emotions,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
-                ),
-                Flexible(
-                  child: Container(
-                    constraints:
-                        BoxConstraints(minHeight: 50.h, maxHeight: 180.h),
-                    child: isRecording
-                        ? Row(
-                            children: [
+                if (isRecording)
+                  const Flexible(
+                    child: CustomRecordingWaveWidget(),
+                  )
+                else
+                  Flexible(
+                    child: TextField(
+                      controller: friendCubit.messageController,
+                      onChanged: (value) {
+                        setState(() {
+                          final bool isTyping =
+                              friendCubit.messageController.text.isNotEmpty;
+                          if (isTyping) {
+                            friendCubit.updateTypingStatus(
+                              friendId: widget.friendData.id!,
+                              isTyping: true,
+                            );
+                          } else {
+                            friendCubit.updateTypingStatus(
+                              friendId: widget.friendData.id!,
+                              isTyping: false,
+                            );
+                          }
+                        });
+                      },
+                      textInputAction: TextInputAction.newline,
+                      minLines: 1,
+                      maxLines: null,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: provider.themeMode == ThemeMode.light
+                            ? Colors.black87
+                            : AppColors.light,
+                      ),
+                      decoration: InputDecoration(
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (friendCubit.messageController.text.isEmpty)
                               IconButton(
                                 onPressed: () async {
-                                  await _stopRecording();
-                                  setState(() {
-                                    isRecording = false;
-                                  });
-                                },
-                                icon: const Icon(
-                                  Icons.cancel,
-                                  color: Colors.red,
-                                  size: 45,
-                                ),
-                              ),
-                              const Flexible(
-                                child: CustomRecordingWaveWidget(),
-                              ),
-                            ],
-                          )
-                        : TextField(
-                            controller: friendCubit.messageController,
-                            onChanged: (value) {
-                              setState(() {
-                                final bool isTyping = friendCubit
-                                    .messageController.text.isNotEmpty;
-                                if (isTyping) {
-                                  friendCubit.updateTypingStatus(
-                                    friendId: widget.friendData.id!,
-                                    isTyping: true,
-                                  );
-                                } else {
-                                  friendCubit.updateTypingStatus(
-                                    friendId: widget.friendData.id!,
-                                    isTyping: false,
-                                  );
-                                }
-                              });
-                            },
-                            textInputAction: TextInputAction.newline,
-                            minLines: 1,
-                            maxLines: null,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: provider.themeMode == ThemeMode.light
-                                  ? Colors.black87
-                                  : AppColors.light,
-                            ),
-                            decoration: InputDecoration(
-                              suffixIcon: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (friendCubit
-                                      .messageController.text.isEmpty)
-                                    IconButton(
-                                      onPressed: () async {
-                                        final ImagePicker picker =
-                                            ImagePicker();
-                                        final XFile? xFile =
-                                            await picker.pickMedia();
-                                        if (xFile != null) {
-                                          File xFilePathToFile(XFile xFile) {
-                                            return File(xFile.path);
-                                          }
+                                  final ImagePicker picker = ImagePicker();
+                                  final XFile? xFile = await picker.pickMedia();
+                                  if (xFile != null) {
+                                    File xFilePathToFile(XFile xFile) {
+                                      return File(xFile.path);
+                                    }
 
-                                          mediaFile = xFilePathToFile(xFile);
-                                          final String fileType = xFile.name
-                                              .split('.')
-                                              .last
-                                              .toLowerCase();
-                                          if (['jpg', 'jpeg', 'png', 'gif']
-                                              .contains(fileType)) {
-                                            await _cropImage(mediaFile!);
-                                          } else if ([
-                                            'mp4',
-                                            'mov',
-                                            'avi',
-                                            'mkv',
-                                          ].contains(fileType)) {
-                                            await _handleVideoFile(
-                                              mediaFile!,
-                                            );
-                                          }
-                                        }
-                                      },
-                                      icon: const Icon(Icons.image),
-                                    ),
-                                  if (false)
-                                    IconButton(
-                                      onPressed: _pickAudioFile,
-                                      icon: const Icon(Icons.audiotrack),
-                                    ),
-                                ],
+                                    mediaFile = xFilePathToFile(xFile);
+                                    final String fileType = xFile.name
+                                        .split('.')
+                                        .last
+                                        .toLowerCase();
+                                    if (['jpg', 'jpeg', 'png', 'gif']
+                                        .contains(fileType)) {
+                                      await _cropImage(mediaFile!);
+                                    } else if ([
+                                      'mp4',
+                                      'mov',
+                                      'avi',
+                                      'mkv',
+                                    ].contains(fileType)) {
+                                      await _handleVideoFile(
+                                        mediaFile!,
+                                      );
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.image),
                               ),
-                              hintText: 'Type a message',
-                              hintStyle: Theme.of(context).textTheme.bodySmall,
-                              filled: true,
-                              fillColor: provider.themeMode == ThemeMode.light
-                                  ? Colors.white
-                                  : AppColors.dark,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.r),
+                            if (false)
+                              IconButton(
+                                onPressed: _pickAudioFile,
+                                icon: const Icon(Icons.audiotrack),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: AppColors.primary,
-                                ),
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                            ),
+                          ],
+                        ),
+                        hintText: 'Type a message',
+                        hintStyle: Theme.of(context).textTheme.bodySmall,
+                        filled: true,
+                        fillColor: provider.themeMode == ThemeMode.light
+                            ? Colors.white
+                            : AppColors.dark,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
                           ),
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
                 if (friendCubit.messageController.text.isNotEmpty)
                   IconButton(
                     padding: const EdgeInsets.all(4),

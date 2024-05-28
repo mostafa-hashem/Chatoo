@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomRecordingWaveWidget extends StatefulWidget {
   const CustomRecordingWaveWidget({super.key});
@@ -10,7 +11,7 @@ class CustomRecordingWaveWidget extends StatefulWidget {
 }
 
 class _RecordingWaveWidgetState extends State<CustomRecordingWaveWidget> {
-  final List<double> _heights = [0.05, 0.07, 0.1, 0.07, 0.05];
+  final List<double> _heights = [0.02, 0.04, 0.1, 0.04, 0.02];
   Timer? _timer;
 
   @override
@@ -37,13 +38,13 @@ class _RecordingWaveWidgetState extends State<CustomRecordingWaveWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.1,
+      height: MediaQuery.sizeOf(context).height * 0.05,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: _heights.map((height) {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            width: 20,
+            width: 20.w,
             height: MediaQuery.sizeOf(context).height * height,
             margin: const EdgeInsets.only(right: 10),
             decoration: BoxDecoration(
