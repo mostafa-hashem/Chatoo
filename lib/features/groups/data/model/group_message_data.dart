@@ -48,7 +48,7 @@ class GroupMessage {
       sender = User.fromJson(json['sender'] as Map<String, dynamic>);
     }
     if (json['sentAt'] != null) {
-      sentAt = (json['sentAt'] as Timestamp).toDate();
+      sentAt = (json['sentAt'] as Timestamp).toDate().toLocal();
     }
     if (json['mediaUrls'] != null) {
       mediaUrls = List<String>.from(json['mediaUrls'] as List<dynamic>);
@@ -67,7 +67,7 @@ class GroupMessage {
         if (message != null) 'message': message,
         if (senderId != null) 'senderId': senderId,
         if (sender != null) 'sender': sender!.toJson(),
-        if (sentAt != null) 'sentAt': Timestamp.fromDate(sentAt!),
+        if (sentAt != null) 'sentAt': Timestamp.fromDate(sentAt!.toLocal()),
         if (mediaUrls != null) 'mediaUrls': mediaUrls,
         if (messageType != null) 'messageType': messageType!.index,
         if (isAction != null) 'isAction': isAction,

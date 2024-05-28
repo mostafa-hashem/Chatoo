@@ -32,7 +32,20 @@ class User {
     this.city = '',
     this.onLine = true,
   });
-
+  User.empty()
+      : id = '',
+        email = '',
+        userName = '',
+        bio = "",
+        phoneNumber = '',
+        profileImage = '',
+        fCMToken = '',
+        groups = [],
+        friends = [],
+        requests = [],
+        lastSeen = DateTime.now().toLocal(),
+        city = '',
+        onLine = false;
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'] as String?;
     email = json['email'] as String?;
@@ -65,7 +78,7 @@ class User {
       onLine = json['onLine'] as bool?;
     }
     if (json['lastSeen'] != null) {
-      lastSeen = (json['lastSeen'] as Timestamp?)?.toDate();
+      lastSeen = (json['lastSeen'] as Timestamp?)?.toDate().toLocal();
     }
   }
 

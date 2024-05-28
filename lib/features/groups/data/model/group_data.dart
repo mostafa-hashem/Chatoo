@@ -39,10 +39,11 @@ class Group {
     requests =
         json['requests'] != null ? json['requests'] as List<dynamic>? : [];
     recentMessage = json['recentMessage'] as String?;
-    recentMessageSentAt = (json['recentMessageSentAt'] as Timestamp?)?.toDate();
+    recentMessageSentAt =
+        (json['recentMessageSentAt'] as Timestamp?)?.toDate().toLocal();
     recentMessageSender = json['recentMessageSender'] as String?;
     recentMessageSenderId = json['recentMessageSenderId'] as String?;
-    createdAt = (json['createdAt'] as Timestamp).toDate();
+    createdAt = (json['createdAt'] as Timestamp).toDate().toLocal();
   }
 
   Map<String, dynamic> toJson() => {
@@ -54,9 +55,9 @@ class Group {
         'members': members,
         'requests': requests?.isNotEmpty == true ? requests : [],
         'recentMessage': recentMessage,
-        'recentMessageSentAt': recentMessageSentAt,
+        'recentMessageSentAt': recentMessageSentAt?.toLocal() ?? DateTime.now().toLocal(),
         'recentMessageSender': recentMessageSender,
         'recentMessageSenderId': recentMessageSenderId,
-        'createdAt': createdAt,
+        'createdAt': createdAt!.toLocal(),
       };
 }

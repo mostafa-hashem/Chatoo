@@ -69,7 +69,7 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> getFriendData(String friendId) async {
+  void getFriendData(String friendId) {
     emit(GetFriendDataLoading());
     try {
       _friendFirebaseServices.getFriendData(friendId).listen((friend) {
@@ -160,24 +160,20 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> getCombinedFriends(String userName) async {
+  void getCombinedFriends() {
     emit(GetCombinedFriendsLoading());
     try {
-      _friendFirebaseServices
-          .getCombinedFriends(userName)
-          .listen((combinedFriend) {
+      _friendFirebaseServices.getCombinedFriends().listen((combinedFriend) {
         combinedFriends = combinedFriend;
 
         // Filter out CombinedFriend entries where recentMessageData is null
-        combinedFriends = combinedFriends
-            .where((friend) => friend.recentMessageData != null)
-            .toList();
+        combinedFriends = combinedFriends.toList();
 
         // Sort the combinedFriends list
         combinedFriends.sort((a, b) {
-          final aTime = a.recentMessageData!.sentAt ??
+          final aTime = a.recentMessageData.sentAt ??
               DateTime.fromMillisecondsSinceEpoch(0);
-          final bTime = b.recentMessageData!.sentAt ??
+          final bTime = b.recentMessageData.sentAt ??
               DateTime.fromMillisecondsSinceEpoch(0);
           return bTime.compareTo(aTime);
         });
@@ -186,6 +182,18 @@ class FriendCubit extends Cubit<FriendStates> {
       });
     } catch (e) {
       emit(GetCombinedFriendsError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> markMessagesAsRead(String friendId) async {
+    emit(MarkMessagesAsReadLoading());
+    try {
+      await _friendFirebaseServices.markMessagesAsRead(
+        friendId,
+      );
+      emit(MarkMessagesAsReadSuccess());
+    } catch (e) {
+      emit(MarkMessagesAsReadError(Failure.fromException(e).message));
     }
   }
 
@@ -263,10 +271,10 @@ class FriendCubit extends Cubit<FriendStates> {
     }
   }
 
-  Future<void> deleteChat(String friendId) async {
+  Future<void> deleteChat(String friendId, DateTime addedAt) async {
     emit(DeleteChatLoading());
     try {
-      await _friendFirebaseServices.deleteChat(friendId);
+      await _friendFirebaseServices.deleteChat(friendId, addedAt);
       emit(DeleteChatSuccess());
     } catch (e) {
       emit(DeleteChatError(Failure.fromException(e).message));
@@ -295,7 +303,7 @@ class FriendCubit extends Cubit<FriendStates> {
                 : friendName
             : '',
         filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt!
+            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt
             : null,
       );
       emit(DeleteMessageForMeSuccess());

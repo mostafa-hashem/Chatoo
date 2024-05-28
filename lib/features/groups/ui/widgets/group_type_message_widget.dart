@@ -506,12 +506,6 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                   ),
                               ],
                             ),
-                            contentPadding: const EdgeInsets.only(
-                              left: 16.0,
-                              bottom: 8.0,
-                              top: 8.0,
-                              right: 16.0,
-                            ),
                             border: OutlineInputBorder(
                               borderSide: const BorderSide(
                                 color: AppColors.primary,
@@ -602,13 +596,14 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                             await _record();
                           },
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.all(4.0),
                             child: CircleAvatar(
                               backgroundColor: AppColors.primary,
                               radius: 20.r,
                               child: const Center(
                                 child: Icon(
                                   Icons.mic,
+                                  color: Colors.white,
                                   size: 24,
                                 ),
                               ),

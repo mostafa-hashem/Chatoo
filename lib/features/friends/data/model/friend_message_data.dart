@@ -56,7 +56,7 @@ class FriendMessage {
       messageType = MessageType.values[json['messageType'] as int];
     }
     if (json['sentAt'] != null) {
-      sentAt = (json['sentAt'] as Timestamp).toDate();
+      sentAt = (json['sentAt'] as Timestamp).toDate().toLocal();
     }
   }
 
@@ -67,6 +67,6 @@ class FriendMessage {
         'sender': sender,
         if (mediaUrls != null) 'mediaUrls': mediaUrls,
         if (messageType != null) 'messageType': messageType!.index,
-        'sentAt': Timestamp.fromDate(sentAt!),
+        'sentAt':  Timestamp.fromDate(sentAt!.toLocal()),
       };
 }

@@ -33,6 +33,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
     friendCubit = FriendCubit.get(context);
     friendData = ModalRoute.of(context)!.settings.arguments! as CombinedFriend;
     friendCubit.listenToTypingStatus(friendData.user!.id!);
+    friendCubit.markMessagesAsRead(friendData.user!.id!);
   }
 
   @override
@@ -102,12 +103,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                     ),
                     BlocBuilder<FriendCubit, FriendStates>(
                       buildWhen: (_, current) =>
+                          current is UpdateTypingStatus ||
                           current is UpdateTypingStatusSuccess ||
                           current is UpdateTypingStatusError ||
                           current is UpdateTypingStatusLoading ||
                           current is GetFriendDataError ||
                           current is GetFriendDataSuccess ||
-                          current is UpdateTypingStatus ||
                           current is GetFriendDataLoading,
                       builder: (_, state) {
                         if (friendCubit.friendData?.onLine != null) {
@@ -177,7 +178,15 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
         ),
         body: Column(
           children: [
-            BlocBuilder<FriendCubit, FriendStates>(
+            BlocConsumer<FriendCubit, FriendStates>(
+              listener: (_, state) {
+                if (state is GetAllFriendMessagesSuccess) {
+                  Future.delayed(
+                    const Duration(milliseconds: 500),
+                    () => friendCubit.markMessagesAsRead(friendData.user!.id!),
+                  );
+                }
+              },
               buildWhen: (_, currentState) =>
                   currentState is GetAllFriendMessagesSuccess ||
                   currentState is GetAllFriendMessagesError ||

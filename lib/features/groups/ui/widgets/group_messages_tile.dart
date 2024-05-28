@@ -121,13 +121,13 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
               ),
             )
           : Container(
-              padding: messagePadding,
+              padding:  widget.groupMessage.messageType == MessageType.record ? null :  messagePadding,
               alignment:
                   isSender ? Alignment.centerRight : Alignment.centerLeft,
               child: Container(
                 margin: messageMargin,
                 padding: containerPadding,
-                decoration: BoxDecoration(
+                decoration: widget.groupMessage.messageType == MessageType.record ? null : BoxDecoration(
                   borderRadius: isSender
                       ? const BorderRadius.only(
                           topLeft: Radius.circular(20),

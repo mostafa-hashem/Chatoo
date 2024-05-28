@@ -60,15 +60,16 @@ class _FriendTileState extends State<FriendTile> {
             ),
             title: FriendTitle(
               userName: widget.friendData.user!.userName,
-              sentAt: widget.friendData.recentMessageData?.sentAt != null
+              sentAt: widget.friendData.recentMessageData.sentAt != null
                   ? Timestamp.fromDate(
-                      widget.friendData.recentMessageData!.sentAt!,
+                      widget.friendData.recentMessageData.sentAt!,
                     )
                   : null,
             ),
             subtitle: RecentMessage(
-              recentMessage: widget.friendData.recentMessageData?.recentMessage,
-              isTyping: widget.friendData.recentMessageData?.typing ?? false,
+              recentMessage: widget.friendData.recentMessageData.recentMessage,
+              isTyping: widget.friendData.recentMessageData.typing ?? false,
+              unreadCount: widget.friendData.recentMessageData.unreadCount,
             ),
             trailing: isMuted()
                 ? Icon(
@@ -79,16 +80,17 @@ class _FriendTileState extends State<FriendTile> {
                 : const SizedBox.shrink(),
             onTap: () {
               friendCubit.getFriendData(widget.friendData.user!.id!);
-              friendCubit
-                  .getAllFriendMessages(widget.friendData.user!.id!)
-                  .whenComplete(() {
-                Future.delayed(const Duration(milliseconds: 50), () {
-                  Navigator.pushNamed(
-                    context,
-                    Routes.friendChatScreen,
-                    arguments: widget.friendData,
-                  );
-                });
+              Future.wait([
+                friendCubit.markMessagesAsRead(widget.friendData.user!.id!),
+                friendCubit.getAllFriendMessages(widget.friendData.user!.id!),
+              ]);
+
+              Future.delayed(Duration.zero, () {
+                Navigator.pushNamed(
+                  context,
+                  Routes.friendChatScreen,
+                  arguments: widget.friendData,
+                );
               });
             },
             onLongPress: () {
@@ -128,8 +130,11 @@ class _FriendTileState extends State<FriendTile> {
                   PopupMenuItem(
                     child: TextButton(
                       onPressed: () {
-                        friendCubit
-                            .deleteChat(widget.friendData.user!.id ?? '');
+                        friendCubit.deleteChat(
+                          widget.friendData.user?.id ?? '',
+                          widget.friendData.recentMessageData.addedAt ??
+                              DateTime.now().toLocal(),
+                        );
                         if (context.mounted) {
                           Navigator.pop(context);
                         }
@@ -273,21 +278,45 @@ class RecentMessage extends StatelessWidget {
   const RecentMessage({
     super.key,
     required this.recentMessage,
+    required this.unreadCount,
     this.isTyping = false,
   });
 
   final String? recentMessage;
+  final int? unreadCount;
   final bool isTyping;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      isTyping ? 'Typing...' : recentMessage ?? '',
-      style: GoogleFonts.novaSquare(
-        fontWeight: FontWeight.w700,
-        fontSize: 12.sp,
-      ),
-      overflow: TextOverflow.ellipsis,
+    return Row(
+      children: [
+        Text(
+          isTyping ? 'Typing...' : recentMessage ?? '',
+          style: GoogleFonts.novaSquare(
+            fontWeight: FontWeight.w700,
+            fontSize: 12.sp,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        const Spacer(),
+        if (unreadCount != null && unreadCount! > 0)
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Text(
+              "$unreadCount",
+              style: GoogleFonts.novaSquare(
+                fontWeight: FontWeight.w400,
+                fontSize: 12.sp,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
     );
   }
 }

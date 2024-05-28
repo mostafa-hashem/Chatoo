@@ -97,12 +97,12 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         );
       },
       child: Container(
-        padding: messagePadding,
+        padding: widget.friendMessage.messageType == MessageType.record ? null :  messagePadding,
         alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: messageMargin,
           padding: containerPadding,
-          decoration: BoxDecoration(
+          decoration: widget.friendMessage.messageType == MessageType.record ? null : BoxDecoration(
             borderRadius: isSender
                 ? BorderRadius.only(
                     topLeft: Radius.circular(20.r),

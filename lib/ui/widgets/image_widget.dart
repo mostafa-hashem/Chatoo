@@ -71,6 +71,7 @@ class _ImageWidgetState extends State<ImageWidget> {
                 color: Colors.white,
               ),
             ),
+          if (widget.isInGroup)
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),

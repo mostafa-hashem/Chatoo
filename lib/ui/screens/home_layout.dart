@@ -5,7 +5,6 @@ import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/widgets/creat_group_widget.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -35,8 +34,8 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
     Future.wait([
       GroupCubit.get(context).getAllUserGroups(),
       FriendCubit.get(context).getAllUserRequests(),
-      FriendCubit.get(context).getCombinedFriends(ProfileCubit.get(context).user.userName!),
     ]);
+    FriendCubit.get(context).getCombinedFriends();
   }
 
   void _handleTabChange() {

@@ -73,7 +73,9 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
         setState(() {
           imageFile = File(croppedFile.path);
         });
+        if(context.mounted){
         GroupCubit.get(context).uploadGroupImageToFireStorage(imageFile!);
+        }
       }
     }
   }
@@ -214,7 +216,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                     groupIcon: GroupCubit.get(context).groupIcon,
                     groupName: groupName,
                     mainAdminId: userData.user.id,
-                    createdAt: DateTime.now(),
+                    createdAt: DateTime.now().toLocal(),
                     requests: [],
                     groupAdmins: [],
                   );
@@ -235,7 +237,6 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                         .whenComplete(
                       () {
                         Navigator.pop(context);
-                        // GroupCubit.get(context).groupIcon = '';
                       },
                     );
                   }

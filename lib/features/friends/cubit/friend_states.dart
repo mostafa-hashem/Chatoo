@@ -111,6 +111,15 @@ class GetCombinedFriendsError extends FriendStates {
 
   GetCombinedFriendsError(this.message);
 }
+class MarkMessagesAsReadLoading extends FriendStates {}
+
+class MarkMessagesAsReadSuccess extends FriendStates {}
+
+class MarkMessagesAsReadError extends FriendStates {
+  final String message;
+
+  MarkMessagesAsReadError(this.message);
+}
 
 class UpdateTypingStatus extends FriendStates {
   bool isTyping;

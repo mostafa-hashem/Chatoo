@@ -262,6 +262,8 @@ class GroupFirebaseServices {
         .collection(FirebasePath.messages)
         .doc();
     final messageId = groupMessageDocRef.id;
+    final DateTime now = DateTime.now().toLocal();
+
     final GroupMessage groupMessage = GroupMessage(
       groupId: group.groupId,
       messageId: messageId,
@@ -269,17 +271,16 @@ class GroupFirebaseServices {
       mediaUrls: mediaUrls,
       sender: sender,
       senderId: currentUserUid,
-      sentAt: DateTime.now(),
+      sentAt: now,
       messageType: type,
       isAction: isAction,
     );
-    await groupMessageDocRef.set(
-      groupMessage.toJson(),
-    );
+
+    await groupMessageDocRef.set(groupMessage.toJson());
 
     await _groupsCollection.doc(group.groupId).update({
       'recentMessage': message,
-      'recentMessageSentAt': Timestamp.fromDate(DateTime.now()),
+      'recentMessageSentAt': Timestamp.fromDate(now),
       'recentMessageSender': sender.userName,
       'recentMessageSenderId': sender.id,
     });
@@ -377,7 +378,8 @@ class GroupFirebaseServices {
         _groupsCollection.doc(groupId).update({
           'recentMessage': lastMessage,
           'recentMessageSender': lastMessageSender,
-          'recentMessageSentAt': lastMessageSentAt,
+          'recentMessageSentAt':
+              Timestamp.fromDate(lastMessageSentAt!.toLocal()),
           'recentMessageSenderId': lastMessageSenderId,
         });
       }

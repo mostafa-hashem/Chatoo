@@ -19,10 +19,10 @@ class FriendChatMessages extends StatefulWidget {
 class _FriendChatMessagesState extends State<FriendChatMessages> {
   @override
   Widget build(BuildContext context) {
-    final groupMessages = FriendCubit.get(context).filteredMessages.reversed.toList();
+    final friendMessages = FriendCubit.get(context).filteredMessages.reversed.toList();
 
     final Map<String, List<FriendMessage>> messagesByDate = {};
-    for (final message in groupMessages) {
+    for (final message in friendMessages) {
       final String date = getFormattedDateHeader(message.sentAt!.millisecondsSinceEpoch);
       if (messagesByDate.containsKey(date)) {
         messagesByDate[date]!.add(message);
@@ -39,11 +39,10 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
         reverse: true,
         controller: FriendCubit.get(context).scrollController,
         itemCount: dateEntries.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (_, index) {
           final dateEntry = dateEntries[index];
           final date = dateEntry.key;
           final messages = dateEntry.value;
-
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

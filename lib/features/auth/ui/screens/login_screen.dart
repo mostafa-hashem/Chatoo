@@ -149,9 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   duration: Duration(seconds: 3),
                                 ),
                               );
-                              FriendCubit.get(context).getCombinedFriends(
-                                ProfileCubit.get(context).user.userName!,
-                              );
+                              FriendCubit.get(context).getCombinedFriends();
                               Navigator.pushReplacementNamed(
                                 context,
                                 Routes.layout,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -7,9 +9,8 @@ import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 class RecordTile extends StatefulWidget {
   final String recordPath;
@@ -99,7 +100,7 @@ class _RecordTileState extends State<RecordTile> {
         await localFile.writeAsBytes(response.bodyBytes);
       }
     } catch (e) {
-      print('Error loading file: $e');
+      debugPrint('Error loading file: $e');
     }
 
     setState(() {
@@ -122,7 +123,12 @@ class _RecordTileState extends State<RecordTile> {
 
     return Container(
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width * 0.6,
+        maxWidth: MediaQuery.sizeOf(context).width * 0.7,
+      ),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: AppColors.mainColor,
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Column(
         crossAxisAlignment: sender.id == widget.senderId
@@ -138,66 +144,53 @@ class _RecordTileState extends State<RecordTile> {
                 color: Colors.white,
               ),
             ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.01,
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width * 0.7,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.mainColor,
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () async {
-                    if (_isPlaying) {
-                      widget.audioManager.stop(_audioPlayer);
-                      setState(() {
-                        _isPlaying = false;
-                        _currentPosition = Duration.zero;
-                      });
-                    } else {
-                      await _loadFile();
-                      await widget.audioManager.play(_audioPlayer, localFilePath);
-                      setState(() {
-                        _isPlaying = true;
-                      });
-                    }
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  if (_isPlaying) {
+                    widget.audioManager.stop(_audioPlayer);
+                    setState(() {
+                      _isPlaying = false;
+                      _currentPosition = Duration.zero;
+                    });
+                  } else {
+                    await _loadFile();
+                    await widget.audioManager
+                        .play(_audioPlayer, localFilePath);
+                    setState(() {
+                      _isPlaying = true;
+                    });
+                  }
+                },
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (_isLoading) const LoadingIndicator(),
+                    Icon(
+                      _isPlaying ? Icons.stop : Icons.play_arrow,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Slider(
+                  value: _currentPosition.inSeconds.toDouble(),
+                  max: durationInSeconds.toDouble(),
+                  onChanged: (value) {
+                    _audioPlayer.seek(Duration(seconds: value.toInt()));
                   },
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (_isLoading) const LoadingIndicator(),
-                      Icon(
-                        _isPlaying ? Icons.stop : Icons.play_arrow,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
+                  activeColor: Colors.white,
+                  inactiveColor: Colors.grey,
                 ),
-                Expanded(
-                  child: Slider(
-                    value: _currentPosition.inSeconds.toDouble(),
-                    max: durationInSeconds.toDouble(),
-                    onChanged: (value) {
-                      _audioPlayer.seek(Duration(seconds: value.toInt()));
-                    },
-                    activeColor: Colors.white,
-                    inactiveColor: Colors.grey,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  _isPlaying ? currentPositionText : durationText,
-                  style: const TextStyle(fontSize: 12, color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.01,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                _isPlaying ? currentPositionText : durationText,
+                style: const TextStyle(fontSize: 12, color: Colors.white),
+              ),
+            ],
           ),
           Text(
             getFormattedTime(widget.sentAt),

@@ -370,7 +370,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 12.h, bottom: 12.h),
+            padding: EdgeInsets.only(top: 12.h, bottom: 10.h),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -497,12 +497,6 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                               fillColor: provider.themeMode == ThemeMode.light
                                   ? Colors.white
                                   : AppColors.dark,
-                              contentPadding: const EdgeInsets.only(
-                                left: 16.0,
-                                bottom: 8.0,
-                                top: 8.0,
-                                right: 16.0,
-                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.r),
                               ),
@@ -594,7 +588,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                             _record();
                           },
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.all(4.0),
                             child: CircleAvatar(
                               backgroundColor: AppColors.primary,
                               radius: 20.r,
@@ -602,6 +596,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                 child: Icon(
                                   Icons.mic,
                                   size: 24,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),

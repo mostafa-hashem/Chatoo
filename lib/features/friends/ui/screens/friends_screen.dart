@@ -15,7 +15,6 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
-
   @override
   Widget build(BuildContext context) {
     final friendsCubit = FriendCubit.get(context);
@@ -43,6 +42,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
             return ListView.builder(
               itemCount: friendsCubit.combinedFriends.length,
               itemBuilder: (_, index) {
+
                 final friendData = friendsCubit.combinedFriends[index];
                 if (friendData.user != null) {
                   return FriendTile(

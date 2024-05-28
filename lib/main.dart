@@ -86,7 +86,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     await FirebaseFirestore.instance
         .collection(FirebasePath.users)
         .doc(currentUserId)
-        .update({"onLine": status, "lastSeen": Timestamp.now()});
+        .update(
+            {"onLine": status, "lastSeen": Timestamp.now().toDate().toLocal()});
   }
 
   @override
