@@ -20,6 +20,7 @@ class FriendCubit extends Cubit<FriendStates> {
   final _friendFirebaseServices = FriendFirebaseServices();
   List<User> allUserRequests = [];
   List<CombinedFriend> combinedFriends = [];
+  List<String> mutedFriends = [];
   List<User> searchedFriends = [];
   User? friendData;
   List<FriendMessage> filteredMessages = [];
@@ -258,6 +259,19 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(UnMuteFriendSuccess());
     } catch (e) {
       emit(UnMuteFriendError(Failure.fromException(e).message));
+    }
+  }
+
+  void getMutedFriends() {
+    emit(GetMutedFriendsLoading());
+    try {
+      _friendFirebaseServices.getAllMutedFriends().listen((muted) {
+        mutedFriends = muted;
+
+        emit(GetMutedFriendsSuccess());
+      });
+    } catch (e) {
+      emit(GetMutedFriendsError(Failure.fromException(e).message));
     }
   }
 

@@ -19,6 +19,7 @@ class GroupCubit extends Cubit<GroupStates> {
   String groupIcon = "";
   User? userData;
   List<Group?> allUserGroups = [];
+  List<String> mutedGroups = [];
   List<User?> allGroupMembers = [];
   List<User> allGroupRequests = [];
   List<Group> searchedGroups = [];
@@ -385,6 +386,19 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(UnMuteGroupSuccess());
     } catch (e) {
       emit(UnMuteGroupError(Failure.fromException(e).message));
+    }
+  }
+
+  void getMutedGroups() {
+    emit(GetMutedGroupsLoading());
+    try {
+      _groupFirebaseServices.getAllMutedGroups().listen((muted) {
+        mutedGroups = muted;
+
+        emit(GetMutedGroupsSuccess());
+      });
+    } catch (e) {
+      emit(GetMutedGroupsError(Failure.fromException(e).message));
     }
   }
 

@@ -1,5 +1,4 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
-import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
@@ -32,22 +31,16 @@ class _FriendTileState extends State<FriendTile> {
 
   @override
   Widget build(BuildContext context) {
-    final profileCubit = ProfileCubit.get(context);
     final friendCubit = FriendCubit.get(context);
 
-    bool isMuted() {
-      if (profileCubit.user.mutedGroups != null) {
-        return profileCubit.user.mutedFriends!
-            .any((friendId) => friendId == widget.friendData.user?.id);
-      }
-      return false;
-    }
+    final bool isMuted = friendCubit.mutedFriends
+        .any((friendId) => friendId == widget.friendData.user?.id);
 
     return BlocBuilder<ProfileCubit, ProfileState>(
       buildWhen: (_, current) =>
           current is GetUserSuccess ||
-          current is GetUserError ||
-          current is ProfileLoading,
+          current is ProfileLoading ||
+          current is GetUserError,
       builder: (_, state) {
         return Container(
           padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -71,7 +64,7 @@ class _FriendTileState extends State<FriendTile> {
               isTyping: widget.friendData.recentMessageData.typing ?? false,
               unreadCount: widget.friendData.recentMessageData.unreadCount,
             ),
-            trailing: isMuted()
+            trailing: isMuted
                 ? Icon(
                     Icons.notifications_off,
                     color: AppColors.primary,
@@ -85,7 +78,7 @@ class _FriendTileState extends State<FriendTile> {
                 friendCubit.getAllFriendMessages(widget.friendData.user!.id!),
               ]);
 
-              Future.delayed(Duration.zero, () {
+              Future.delayed(const Duration(milliseconds: 50), () {
                 Navigator.pushNamed(
                   context,
                   Routes.friendChatScreen,
@@ -102,29 +95,20 @@ class _FriendTileState extends State<FriendTile> {
                 ),
                 items: [
                   PopupMenuItem(
-                    child: BlocListener<FriendCubit, FriendStates>(
-                      listener: (_, state) {
-                        if (state is MuteFriendSuccess ||
-                            state is UnMuteFriendSuccess) {
-                          profileCubit.getUser();
+                    child: TextButton(
+                      onPressed: () {
+                        isMuted
+                            ? friendCubit.unMuteFriend(
+                                widget.friendData.user!.id ?? '',
+                              )
+                            : friendCubit
+                                .muteFriend(widget.friendData.user!.id ?? '');
+                        if (context.mounted) {
+                          Navigator.pop(context);
                         }
                       },
-                      child: TextButton(
-                        onPressed: () {
-                          isMuted()
-                              ? friendCubit.unMuteFriend(
-                                  widget.friendData.user!.id ?? '',
-                                )
-                              : friendCubit
-                                  .muteFriend(widget.friendData.user!.id ?? '');
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: isMuted()
-                            ? const Text('Un Mute')
-                            : const Text('Mute'),
-                      ),
+                      child:
+                          isMuted ? const Text('Un Mute') : const Text('Mute'),
                     ),
                   ),
                   PopupMenuItem(

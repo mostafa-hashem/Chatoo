@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/combined_friend.dart';
@@ -25,6 +26,7 @@ class FriendChatScreen extends StatefulWidget {
 class _FriendChatScreenState extends State<FriendChatScreen> {
   late FriendCubit friendCubit;
   late CombinedFriend friendData;
+  final audioPlayer = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -181,6 +183,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
             BlocConsumer<FriendCubit, FriendStates>(
               listener: (_, state) {
                 if (state is GetAllFriendMessagesSuccess) {
+                  // audioPlayer.play(AssetSource("audios/message_received.wav"));
                   Future.delayed(
                     const Duration(milliseconds: 500),
                     () => friendCubit.markMessagesAsRead(friendData.user!.id!),

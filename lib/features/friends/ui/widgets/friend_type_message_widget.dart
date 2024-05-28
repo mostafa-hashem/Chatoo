@@ -138,7 +138,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
   }
 
   bool isMuted() {
-    if (widget.friendData.mutedGroups != null) {
+    if (widget.friendData.mutedFriends != null) {
       return widget.friendData.mutedFriends!
           .any((userId) => userId == sender.id);
     }
@@ -344,6 +344,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
         BlocListener<FriendCubit, FriendStates>(
           listener: (_, state) {
             if (state is SendMessageToFriendSuccess) {
+              audioPlayer.play(AssetSource("audios/message_received.wav"));
               scrollToBottom();
               if (!isMuted()) {
                 NotificationsCubit.get(context).sendNotification(

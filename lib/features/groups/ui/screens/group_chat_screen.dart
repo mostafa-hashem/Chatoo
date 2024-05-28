@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
@@ -22,6 +23,7 @@ class GroupChatScreen extends StatefulWidget {
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
   late GroupCubit groupCubit;
+  final audioPlayer = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -132,7 +134,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         ),
         body: Column(
           children: [
-            BlocBuilder<GroupCubit, GroupStates>(
+            BlocConsumer<GroupCubit, GroupStates>(
+              listener: (context, state) {
+                if (state is GetAllGroupMembersSuccess) {
+                  // audioPlayer.play(AssetSource("audios/message_received.wav"));
+                }
+              },
               buildWhen: (_, currentState) =>
                   currentState is GetAllGroupMessagesSuccess ||
                   currentState is GetAllGroupMessagesError ||

@@ -1,4 +1,6 @@
 import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
+import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
@@ -26,6 +28,8 @@ class _SplashScreenState extends State<SplashScreen> {
         ProfileCubit.get(context).getUser(),
         NotificationsCubit.get(context).initNotifications(),
       ]);
+      FriendCubit.get(context).getMutedFriends();
+      GroupCubit.get(context).getMutedGroups();
     } else {
       Future.delayed(const Duration(seconds: 3), () {
         Navigator.pushReplacementNamed(context, Routes.login);

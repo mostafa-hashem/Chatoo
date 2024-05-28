@@ -72,16 +72,6 @@ class GetAllGroupsError extends GroupStates {
   GetAllGroupsError(this.message);
 }
 
-class GetAdminNameLoading extends GroupStates {}
-
-class GetAdminNameSuccess extends GroupStates {}
-
-class GetAdminNameError extends GroupStates {
-  final String message;
-
-  GetAdminNameError(this.message);
-}
-
 class GetAllGroupMessagesLoading extends GroupStates {}
 
 class GetAllGroupMessagesSuccess extends GroupStates {}
@@ -90,16 +80,6 @@ class GetAllGroupMessagesError extends GroupStates {
   final String message;
 
   GetAllGroupMessagesError(this.message);
-}
-
-class GetGroupsRecentMessageDataLoading extends GroupStates {}
-
-class GetGroupsRecentMessageDataSuccess extends GroupStates {}
-
-class GetGroupsRecentMessageDataError extends GroupStates {
-  final String message;
-
-  GetGroupsRecentMessageDataError(this.message);
 }
 
 class GetAllGroupMembersLoading extends GroupStates {}
@@ -280,6 +260,16 @@ class UnMuteGroupError extends GroupStates {
   final String message;
 
   UnMuteGroupError(this.message);
+}
+
+class GetMutedGroupsLoading extends GroupStates {}
+
+class GetMutedGroupsSuccess extends GroupStates {}
+
+class GetMutedGroupsError extends GroupStates {
+  final String message;
+
+  GetMutedGroupsError(this.message);
 }
 
 class DeleteMessageForAllLoading extends GroupStates {}

@@ -355,6 +355,22 @@ class GroupFirebaseServices {
       "mutedGroups": FieldValue.arrayRemove([groupId]),
     });
   }
+  Stream<List<String>> getAllMutedGroups() {
+    return _usersCollection
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots()
+        .map((documentSnapshot) {
+      if (documentSnapshot.exists) {
+        final data = documentSnapshot.data()!;
+        if (data.containsKey('mutedGroups')) {
+          final mutedGroups =
+          List<String>.from(data['mutedGroups'] as List<dynamic>);
+          return mutedGroups;
+        }
+      }
+      return [];
+    });
+  }
 
   Future<void> deleteMessageForeAll(
     String groupId,

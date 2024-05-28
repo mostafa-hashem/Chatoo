@@ -347,9 +347,11 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
     return MultiBlocListener(
       listeners: [
         BlocListener<GroupCubit, GroupStates>(
-          listener: (_, state) {
+          listener: (_, state)  {
             if (state is SendMessageToGroupSuccess) {
               scrollToBottom();
+               audioPlayer
+                  .play(AssetSource("audios/message_received.wav"));
               final List<dynamic> memberIds =
                   widget.groupData.members!.toList();
               for (final memberId in memberIds) {

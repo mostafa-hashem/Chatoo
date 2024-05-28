@@ -340,6 +340,23 @@ class FriendFirebaseServices {
     });
   }
 
+  Stream<List<String>> getAllMutedFriends() {
+    return _usersCollection
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots()
+        .map((documentSnapshot) {
+      if (documentSnapshot.exists) {
+        final data = documentSnapshot.data()!;
+        if (data.containsKey('mutedFriends')) {
+          final mutedFriends =
+              List<String>.from(data['mutedFriends'] as List<dynamic>);
+          return mutedFriends;
+        }
+      }
+      return [];
+    });
+  }
+
   Future<void> removeFriend(String friendId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final friendID = friendId;

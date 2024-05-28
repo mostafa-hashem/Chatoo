@@ -111,6 +111,7 @@ class GetCombinedFriendsError extends FriendStates {
 
   GetCombinedFriendsError(this.message);
 }
+
 class MarkMessagesAsReadLoading extends FriendStates {}
 
 class MarkMessagesAsReadSuccess extends FriendStates {}
@@ -123,8 +124,10 @@ class MarkMessagesAsReadError extends FriendStates {
 
 class UpdateTypingStatus extends FriendStates {
   bool isTyping;
+
   UpdateTypingStatus(this.isTyping);
 }
+
 class UpdateTypingStatusLoading extends FriendStates {}
 
 class UpdateTypingStatusSuccess extends FriendStates {}
@@ -153,6 +156,16 @@ class UnMuteFriendError extends FriendStates {
   final String message;
 
   UnMuteFriendError(this.message);
+}
+
+class GetMutedFriendsLoading extends FriendStates {}
+
+class GetMutedFriendsSuccess extends FriendStates {}
+
+class GetMutedFriendsError extends FriendStates {
+  final String message;
+
+  GetMutedFriendsError(this.message);
 }
 
 class RemoveFriendRequestLoading extends FriendStates {}

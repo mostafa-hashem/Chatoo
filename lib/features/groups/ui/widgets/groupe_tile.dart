@@ -33,25 +33,20 @@ class GroupTile extends StatefulWidget {
 
 class _GroupTileState extends State<GroupTile> {
   late ProfileCubit profileCubit;
+  late GroupCubit groupCubit;
   final GlobalKey listTileKey = GlobalKey();
-
-  bool isMuted() {
-    if (profileCubit.user.mutedGroups != null) {
-      return profileCubit.user.mutedGroups!
-          .any((groupId) => groupId == widget.groupData.groupId);
-    }
-    return false;
-  }
 
   @override
   void didChangeDependencies() {
     profileCubit = ProfileCubit.get(context);
+    groupCubit = GroupCubit.get(context);
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    final groupCubit = GroupCubit.get(context);
+    final bool isMuted = groupCubit.mutedGroups
+        .any((groupId) => groupId == widget.groupData.groupId);
     return BlocBuilder<ProfileCubit, ProfileState>(
       buildWhen: (_, current) =>
           current is GetUserSuccess ||
@@ -138,7 +133,7 @@ class _GroupTileState extends State<GroupTile> {
               ),
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: isMuted()
+            trailing: isMuted
                 ? Icon(
                     Icons.notifications_off,
                     color: AppColors.primary,
@@ -175,32 +170,19 @@ class _GroupTileState extends State<GroupTile> {
                 ),
                 items: [
                   PopupMenuItem(
-                    child: MultiBlocListener(
-                      listeners: [
-                        BlocListener<GroupCubit, GroupStates>(
-                          listener: (_, state) {
-                            if (state is MuteGroupSuccess ||
-                                state is UnMuteGroupSuccess) {
-                              profileCubit.getUser();
-                            }
-                          },
-                        ),
-                      ],
-                      child: TextButton(
-                        onPressed: () {
-                          isMuted()
-                              ? groupCubit
-                                  .unMuteGroup(widget.groupData.groupId ?? '')
-                              : groupCubit
-                                  .muteGroup(widget.groupData.groupId ?? '');
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: isMuted()
-                            ? const Text('Un Mute')
-                            : const Text('Mute'),
-                      ),
+                    child: TextButton(
+                      onPressed: () {
+                        isMuted
+                            ? groupCubit
+                                .unMuteGroup(widget.groupData.groupId ?? '')
+                            : groupCubit
+                                .muteGroup(widget.groupData.groupId ?? '');
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child:
+                          isMuted ? const Text('Un Mute') : const Text('Mute'),
                     ),
                   ),
                   PopupMenuItem(
