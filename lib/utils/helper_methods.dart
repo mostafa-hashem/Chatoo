@@ -180,3 +180,11 @@ Future<String> getAudioFileName(File audioFile) async {
   final String fileName = '${durationInSeconds}s.$fileExtension';
   return fileName;
 }
+
+bool containsLink(String message) {
+  final RegExp urlPattern = RegExp(
+    r'^(https?:\/\/)?www.',
+    caseSensitive: false,
+  );
+  return urlPattern.hasMatch(message);
+}

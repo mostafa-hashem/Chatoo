@@ -8,6 +8,7 @@ import 'package:chat_app/utils/data/models/audio_manager.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FriendMessagesTile extends StatefulWidget {
   final bool sentByMe;
@@ -27,6 +28,7 @@ class FriendMessagesTile extends StatefulWidget {
 
 class _FriendMessagesTileState extends State<FriendMessagesTile> {
   AudioManager audioManager = AudioManager();
+
   @override
   void didChangeDependencies() {
     widget.friendMessage.messageType ??= MessageType.text;
@@ -97,25 +99,31 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         );
       },
       child: Container(
-        padding: widget.friendMessage.messageType == MessageType.record ? null :  messagePadding,
+        padding: widget.friendMessage.messageType == MessageType.record
+            ? null
+            : messagePadding,
         alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: messageMargin,
           padding: containerPadding,
-          decoration: widget.friendMessage.messageType == MessageType.record ? null : BoxDecoration(
-            borderRadius: isSender
-                ? BorderRadius.only(
-                    topLeft: Radius.circular(20.r),
-                    topRight: Radius.circular(20.r),
-                    bottomLeft: Radius.circular(20.r),
-                  )
-                : BorderRadius.only(
-                    topLeft: Radius.circular(20.r),
-                    topRight: Radius.circular(20.r),
-                    bottomRight: Radius.circular(20.r),
-                  ),
-            color: isSender ? const Color(0xffecae7d) : const Color(0xff8db4ad),
-          ),
+          decoration: widget.friendMessage.messageType == MessageType.record
+              ? null
+              : BoxDecoration(
+                  borderRadius: isSender
+                      ? BorderRadius.only(
+                          topLeft: Radius.circular(20.r),
+                          topRight: Radius.circular(20.r),
+                          bottomLeft: Radius.circular(20.r),
+                        )
+                      : BorderRadius.only(
+                          topLeft: Radius.circular(20.r),
+                          topRight: Radius.circular(20.r),
+                          bottomRight: Radius.circular(20.r),
+                        ),
+                  color: isSender
+                      ? const Color(0xffecae7d)
+                      : const Color(0xff8db4ad),
+                ),
           child: _buildMessageContent(context, isSender),
         ),
       ),
@@ -125,13 +133,34 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
   Widget _buildMessageContent(BuildContext context, bool isSender) {
     switch (widget.friendMessage.messageType!) {
       case MessageType.text:
+        final bool isLink = containsLink(widget.friendMessage.message);
         return Column(
           crossAxisAlignment:
               isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.friendMessage.message,
-              style: TextStyle(fontSize: 15.sp, color: Colors.white),
+            GestureDetector(
+              onTap: isLink
+                  ? () async {
+                      if (await canLaunchUrl(
+                        Uri.parse(widget.friendMessage.message),
+                      )) {
+                        await launchUrl(
+                          Uri.parse(widget.friendMessage.message),
+                        );
+                      } else {
+                        throw 'Could not launch ${widget.friendMessage.message}';
+                      }
+                    }
+                  : null,
+              child: Text(
+                widget.friendMessage.message,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  color: isLink ? Colors.blue : Colors.white,
+                  decoration:
+                      isLink ? TextDecoration.underline : TextDecoration.none,
+                ),
+              ),
             ),
             SizedBox(height: 5.h),
             Text(

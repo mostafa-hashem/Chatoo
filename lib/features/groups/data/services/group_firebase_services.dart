@@ -278,12 +278,44 @@ class GroupFirebaseServices {
 
     await groupMessageDocRef.set(groupMessage.toJson());
 
+    final Map<String, dynamic> updatedUnreadCounts = {
+      ...?group.unreadMessageCounts,
+    };
+
+    for (final dynamic memberId in group.members!) {
+      if (memberId != currentUserUid) {
+        updatedUnreadCounts[memberId as String] =
+            (updatedUnreadCounts[memberId] ?? 0) + 1;
+      }
+    }
+
     await _groupsCollection.doc(group.groupId).update({
       'recentMessage': message,
       'recentMessageSentAt': Timestamp.fromDate(now),
       'recentMessageSender': sender.userName,
       'recentMessageSenderId': sender.id,
+      'unreadMessageCounts': updatedUnreadCounts,
     });
+  }
+
+  Future<void> markMessagesAsRead(
+    String groupId,
+  ) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final DocumentReference groupDocRef = _groupsCollection.doc(groupId);
+
+    final DocumentSnapshot groupSnapshot = await groupDocRef.get();
+    final groupData = groupSnapshot.data()! as Map<String, dynamic>;
+    if (groupData['unreadMessageCounts'] != null) {
+      final int unreadMessages =
+          groupData['unreadMessageCounts'][currentUserId] as int;
+
+      if (unreadMessages != 0) {
+        await groupDocRef.update({
+          'unreadMessageCounts.$currentUserId': 0,
+        });
+      }
+    }
   }
 
   Future<String> uploadMediaToGroup(
@@ -355,6 +387,7 @@ class GroupFirebaseServices {
       "mutedGroups": FieldValue.arrayRemove([groupId]),
     });
   }
+
   Stream<List<String>> getAllMutedGroups() {
     return _usersCollection
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -364,7 +397,7 @@ class GroupFirebaseServices {
         final data = documentSnapshot.data()!;
         if (data.containsKey('mutedGroups')) {
           final mutedGroups =
-          List<String>.from(data['mutedGroups'] as List<dynamic>);
+              List<String>.from(data['mutedGroups'] as List<dynamic>);
           return mutedGroups;
         }
       }

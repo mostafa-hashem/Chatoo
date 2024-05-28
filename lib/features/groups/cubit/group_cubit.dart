@@ -208,6 +208,20 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
+  Future<void> markMessagesAsRead({
+    required String groupId,
+  }) async {
+    emit(MakeGroupMessageAsReadLoading());
+    try {
+      await _groupFirebaseServices.markMessagesAsRead(
+        groupId,
+      );
+      emit(MakeGroupMessageAsReadSuccess());
+    } catch (e) {
+      emit(MakeGroupMessageAsReadError(Failure.fromException(e).message));
+    }
+  }
+
   Future<void> uploadMediaToGroup(
     String mediaPath,
     File mediaFile,

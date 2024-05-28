@@ -184,10 +184,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
               listener: (_, state) {
                 if (state is GetAllFriendMessagesSuccess) {
                   // audioPlayer.play(AssetSource("audios/message_received.wav"));
-                  Future.delayed(
-                    const Duration(milliseconds: 500),
-                    () => friendCubit.markMessagesAsRead(friendData.user!.id!),
-                  );
+                }
+                if (state is GetCombinedFriendsSuccess) {
+                  // audioPlayer.play(AssetSource("audios/message_received.wav"));
+                  friendCubit.markMessagesAsRead(friendData.user!.id!);
                 }
               },
               buildWhen: (_, currentState) =>

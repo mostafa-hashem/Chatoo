@@ -274,13 +274,15 @@ class RecentMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          isTyping ? 'Typing...' : recentMessage ?? '',
-          style: GoogleFonts.novaSquare(
-            fontWeight: FontWeight.w700,
-            fontSize: 12.sp,
+        Flexible(
+          child: Text(
+            isTyping ? 'Typing...' : recentMessage ?? '',
+            style: GoogleFonts.novaSquare(
+              fontWeight: FontWeight.w700,
+              fontSize: 12.sp,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
-          overflow: TextOverflow.ellipsis,
         ),
         const Spacer(),
         if (unreadCount != null && unreadCount! > 0)

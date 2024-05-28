@@ -24,11 +24,14 @@ class GroupChatScreen extends StatefulWidget {
 class _GroupChatScreenState extends State<GroupChatScreen> {
   late GroupCubit groupCubit;
   final audioPlayer = AudioPlayer();
+  late Group groupData;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
     groupCubit = GroupCubit.get(context);
+    groupData = ModalRoute.of(context)!.settings.arguments! as Group;
+    groupCubit.markMessagesAsRead(groupId: groupData.groupId!);
     super.didChangeDependencies();
   }
 
@@ -42,7 +45,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
     final profileCubit = ProfileCubit.get(context);
     return GestureDetector(
       onTap: () {
@@ -138,6 +140,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               listener: (context, state) {
                 if (state is GetAllGroupMembersSuccess) {
                   // audioPlayer.play(AssetSource("audios/message_received.wav"));
+                  groupCubit.markMessagesAsRead(
+                    groupId: groupData.groupId!,
+                  );
                 }
               },
               buildWhen: (_, currentState) =>

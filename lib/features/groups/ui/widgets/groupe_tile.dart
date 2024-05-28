@@ -123,15 +123,41 @@ class _GroupTileState extends State<GroupTile> {
                 ),
               ],
             ),
-            subtitle: Text(
-              widget.groupData.recentMessage!.isNotEmpty
-                  ? "${widget.groupData.recentMessageSenderId == profileCubit.user.id ? 'You' : widget.groupData.recentMessageSender}: ${widget.groupData.recentMessage ?? ''}"
-                  : '',
-              style: GoogleFonts.ubuntu(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
+            subtitle: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.groupData.recentMessage!.isNotEmpty
+                        ? "${widget.groupData.recentMessageSenderId == profileCubit.user.id ? 'You' : widget.groupData.recentMessageSender}: ${widget.groupData.recentMessage ?? ''}"
+                        : '',
+                    style: GoogleFonts.ubuntu(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Spacer(),
+                if (widget.groupData.unreadMessageCounts != null &&
+                    widget.groupData.unreadMessageCounts![profileCubit.user.id] != null &&
+                    widget.groupData.unreadMessageCounts![profileCubit.user.id] as int > 0)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Text(
+                      "${widget.groupData.unreadMessageCounts![profileCubit.user.id]}",
+                      style: GoogleFonts.novaSquare(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12.sp,
+                        color: Colors.white,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
             ),
             trailing: isMuted
                 ? Icon(
@@ -141,25 +167,28 @@ class _GroupTileState extends State<GroupTile> {
                   )
                 : const SizedBox.shrink(),
             onTap: () {
-              groupCubit.getAllGroupMembers(
-                widget.groupData.groupId!,
+              Future.wait([
+                groupCubit.getAllGroupMembers(
+                  widget.groupData.groupId!,
+                ),
+                groupCubit.markMessagesAsRead(
+                  groupId: widget.groupData.groupId!,
+                ),
+                groupCubit.getAllGroupMessages(
+                  widget.groupData.groupId!,
+                ),
+              ]);
+
+              Future.delayed(
+                const Duration(
+                  milliseconds: 50,
+                ),
+                () => Navigator.pushNamed(
+                  context,
+                  Routes.groupChatScreen,
+                  arguments: widget.groupData,
+                ),
               );
-              groupCubit
-                  .getAllGroupMessages(
-                    widget.groupData.groupId!,
-                  )
-                  .whenComplete(
-                    () => Future.delayed(
-                      const Duration(
-                        milliseconds: 50,
-                      ),
-                      () => Navigator.pushNamed(
-                        context,
-                        Routes.groupChatScreen,
-                        arguments: widget.groupData,
-                      ),
-                    ),
-                  );
             },
             onLongPress: () {
               showMenu(

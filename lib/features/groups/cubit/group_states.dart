@@ -122,6 +122,16 @@ class SendMessageToGroupError extends GroupStates {
   SendMessageToGroupError(this.message);
 }
 
+class MakeGroupMessageAsReadLoading extends GroupStates {}
+
+class MakeGroupMessageAsReadSuccess extends GroupStates {}
+
+class MakeGroupMessageAsReadError extends GroupStates {
+  final String message;
+
+  MakeGroupMessageAsReadError(this.message);
+}
+
 class UploadImageToGroupLoading extends GroupStates {}
 
 class UploadImageToGroupSuccess extends GroupStates {}

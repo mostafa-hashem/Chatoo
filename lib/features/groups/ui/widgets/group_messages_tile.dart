@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GroupMessagesTile extends StatefulWidget {
   final GroupMessage groupMessage;
@@ -27,6 +28,7 @@ class GroupMessagesTile extends StatefulWidget {
 
 class _GroupMessagesTileState extends State<GroupMessagesTile> {
   AudioManager audioManager = AudioManager();
+
   @override
   void didChangeDependencies() {
     widget.groupMessage.messageType ??= MessageType.text;
@@ -121,28 +123,33 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
               ),
             )
           : Container(
-              padding:  widget.groupMessage.messageType == MessageType.record ? null :  messagePadding,
+              padding: widget.groupMessage.messageType == MessageType.record
+                  ? null
+                  : messagePadding,
               alignment:
                   isSender ? Alignment.centerRight : Alignment.centerLeft,
               child: Container(
                 margin: messageMargin,
                 padding: containerPadding,
-                decoration: widget.groupMessage.messageType == MessageType.record ? null : BoxDecoration(
-                  borderRadius: isSender
-                      ? const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                          bottomLeft: Radius.circular(20),
-                        )
-                      : const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                          bottomRight: Radius.circular(20),
-                        ),
-                  color: isSender
-                      ? const Color(0xffecae7d)
-                      : const Color(0xff8db4ad),
-                ),
+                decoration:
+                    widget.groupMessage.messageType == MessageType.record
+                        ? null
+                        : BoxDecoration(
+                            borderRadius: isSender
+                                ? const BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20),
+                                    bottomLeft: Radius.circular(20),
+                                  )
+                                : const BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20),
+                                    bottomRight: Radius.circular(20),
+                                  ),
+                            color: isSender
+                                ? const Color(0xffecae7d)
+                                : const Color(0xff8db4ad),
+                          ),
                 child: _buildMessageContent(context, isSender),
               ),
             ),
@@ -152,22 +159,34 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
   Widget _buildMessageContent(BuildContext context, bool isSender) {
     switch (widget.groupMessage.messageType!) {
       case MessageType.text:
+        final bool isLink = containsLink(widget.groupMessage.message!);
         return Column(
           crossAxisAlignment:
               isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.groupMessage.sender!.userName!,
-              style: TextStyle(
-                fontSize: 10.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            GestureDetector(
+              onTap: isLink
+                  ? () async {
+                      if (await canLaunchUrl(
+                        Uri.parse(widget.groupMessage.message!),
+                      )) {
+                        await launchUrl(
+                          Uri.parse(widget.groupMessage.message!),
+                        );
+                      } else {
+                        throw 'Could not launch ${widget.groupMessage.message}';
+                      }
+                    }
+                  : null,
+              child: Text(
+                widget.groupMessage.message!,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  color: isLink ? Colors.blue : Colors.white,
+                  decoration:
+                      isLink ? TextDecoration.underline : TextDecoration.none,
+                ),
               ),
-            ),
-            SizedBox(height: 5.h),
-            Text(
-              widget.groupMessage.message!,
-              style: TextStyle(fontSize: 15.sp, color: Colors.white),
             ),
             SizedBox(height: 5.h),
             Text(

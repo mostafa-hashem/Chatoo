@@ -13,6 +13,7 @@ class Group {
   String? recentMessageSender;
   String? recentMessageSenderId;
   DateTime? createdAt;
+  Map<String, dynamic>? unreadMessageCounts;
 
   Group({
     this.groupId = '',
@@ -27,6 +28,7 @@ class Group {
     this.recentMessageSenderId = "",
     this.recentMessageSentAt,
     required this.createdAt,
+    this.unreadMessageCounts,
   });
 
   Group.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,9 @@ class Group {
     recentMessageSender = json['recentMessageSender'] as String?;
     recentMessageSenderId = json['recentMessageSenderId'] as String?;
     createdAt = (json['createdAt'] as Timestamp).toDate().toLocal();
+    if (json['unreadMessageCounts'] != null) {
+      unreadMessageCounts = json['unreadMessageCounts'] as Map<String, dynamic>?;
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -53,11 +58,14 @@ class Group {
         'groupIcon': groupIcon,
         'groupAdmins': groupAdmins,
         'members': members,
-        'requests': requests?.isNotEmpty == true ? requests : [],
+        'requests': requests!.isNotEmpty ? requests : [],
         'recentMessage': recentMessage,
-        'recentMessageSentAt': recentMessageSentAt?.toLocal() ?? DateTime.now().toLocal(),
+        'recentMessageSentAt':
+            recentMessageSentAt?.toLocal() ?? DateTime.now().toLocal(),
         'recentMessageSender': recentMessageSender,
         'recentMessageSenderId': recentMessageSenderId,
         'createdAt': createdAt!.toLocal(),
+        if (unreadMessageCounts != null)
+          'unreadMessageCounts': unreadMessageCounts,
       };
 }
