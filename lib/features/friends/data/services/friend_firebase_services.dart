@@ -85,7 +85,7 @@ class FriendFirebaseServices {
         .where(
           'uploadedAt',
           isGreaterThanOrEqualTo:
-              DateTime.now().subtract(const Duration(hours: 24)),
+              DateTime.now().toLocal().subtract(const Duration(hours: 24)),
         )
         .orderBy('uploadedAt', descending: true)
         .snapshots()
@@ -150,6 +150,20 @@ class FriendFirebaseServices {
         .collection(FirebasePath.friends)
         .doc(currentUserId)
         .update({'typing': isTyping});
+  }
+
+  Future<void> updateRecordingStatus({
+    required bool isRecording,
+    required String friendId,
+  }) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await _usersCollection
+        .doc(friendId)
+        .collection(FirebasePath.friends)
+        .doc(currentUserId)
+        .update(
+      {"recording": isRecording},
+    );
   }
 
   Stream<List<FriendMessage>> getAllUserMessages(String friendId) {

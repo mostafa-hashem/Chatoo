@@ -11,6 +11,7 @@ import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/screens/about_us.dart';
 import 'package:chat_app/ui/screens/suggestions_screens.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
@@ -186,9 +187,7 @@ class DrawerTile extends StatelessWidget {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const LoadingIndicator();
             },
           );
         } else {
@@ -247,9 +246,10 @@ class DrawerTile extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
+                    onPressed: () async {
                       groupCubit.allUserGroups.clear();
                       friendCubit.combinedFriends.clear();
+                      await updateStatus(false);
                       authCubit.logout();
                     },
                     icon: const Icon(

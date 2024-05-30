@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/route_manager.dart';
+import 'package:chat_app/utils/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
@@ -193,3 +196,13 @@ bool containsLink(String message) {
 bool isArabic(String text) {
   return RegExp(r'^[\u0600-\u06FF]+').hasMatch(text);
 }
+Future<void> updateStatus(bool status) async {
+  final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  await FirebaseFirestore.instance
+      .collection(FirebasePath.users)
+      .doc(currentUserId)
+      .update(
+    {"onLine": status, "lastSeen": Timestamp.now().toDate().toLocal()},
+  );
+}
+

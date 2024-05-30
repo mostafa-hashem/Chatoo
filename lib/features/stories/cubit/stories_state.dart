@@ -1,6 +1,12 @@
-part of 'stories_cubit.dart';
+import 'package:equatable/equatable.dart';
 
-abstract class StoriesState {}
+abstract class StoriesState extends Equatable {
+  const StoriesState();
+
+  @override
+  List<Object?> get props => [];
+}
+
 
 class StoriesInitial extends StoriesState {}
 
@@ -9,7 +15,10 @@ class UploadStoryLoading extends StoriesState {}
 class UploadStorySuccess extends StoriesState {}
 
 class UploadStoryError extends StoriesState {
-  String message;
+  final String message;
 
-  UploadStoryError(this.message);
+  const UploadStoryError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }

@@ -28,11 +28,27 @@ class GroupMessagesTile extends StatefulWidget {
 
 class _GroupMessagesTileState extends State<GroupMessagesTile> {
   AudioManager audioManager = AudioManager();
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
 
   @override
   void didChangeDependencies() {
     widget.groupMessage.messageType ??= MessageType.text;
     super.didChangeDependencies();
+  }
+
+  void _checkTextDirection(String text) {
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _textAlign = TextAlign.right;
+        _textDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _textAlign = TextAlign.left;
+        _textDirection = TextDirection.ltr;
+      });
+    }
   }
 
   @override
@@ -46,6 +62,8 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
         isSender ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w);
     final EdgeInsetsGeometry containerPadding =
         EdgeInsets.symmetric(vertical: 6.h, horizontal: 10.w);
+    final messageText = widget.groupMessage.message;
+    _checkTextDirection(messageText!);
 
     return InkWell(
       onLongPress: () {
@@ -181,6 +199,8 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                   : null,
               child: Text(
                 widget.groupMessage.message!,
+                textAlign: _textAlign,
+                textDirection: _textDirection,
                 style: TextStyle(
                   fontSize: 15.sp,
                   color: isLink ? Colors.blue : Colors.white,

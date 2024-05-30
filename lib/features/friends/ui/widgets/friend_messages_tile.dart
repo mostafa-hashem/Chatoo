@@ -5,6 +5,7 @@ import 'package:chat_app/ui/widgets/image_widget.dart';
 import 'package:chat_app/ui/widgets/record_tile.dart';
 import 'package:chat_app/ui/widgets/video_widget.dart';
 import 'package:chat_app/utils/data/models/audio_manager.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -28,25 +29,46 @@ class FriendMessagesTile extends StatefulWidget {
 
 class _FriendMessagesTileState extends State<FriendMessagesTile> {
   AudioManager audioManager = AudioManager();
+  late User profileCubit;
+  late FriendCubit friendCubit;
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
 
   @override
   void didChangeDependencies() {
-    widget.friendMessage.messageType ??= MessageType.text;
     super.didChangeDependencies();
+    profileCubit = ProfileCubit.get(context).user;
+    friendCubit = FriendCubit.get(context);
+    widget.friendMessage.messageType ??= MessageType.text;
+  }
+
+  void _checkTextDirection(String text) {
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _textAlign = TextAlign.right;
+        _textDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _textAlign = TextAlign.left;
+        _textDirection = TextDirection.ltr;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final profileCubit = ProfileCubit.get(context).user;
-    final friendCubit = FriendCubit.get(context);
     final bool isSender = widget.sentByMe;
     final EdgeInsetsGeometry messagePadding = isSender
         ? EdgeInsets.only(top: 4.h, bottom: 4.h, left: 0.w, right: 15.w)
         : EdgeInsets.only(top: 4.h, bottom: 4.h, left: 15.w, right: 0.w);
     final EdgeInsetsGeometry messageMargin =
-        isSender ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w);
+    isSender ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w);
     final EdgeInsetsGeometry containerPadding =
-        EdgeInsets.symmetric(vertical: 8.h, horizontal: 15.w);
+    EdgeInsets.symmetric(vertical: 8.h, horizontal: 15.w);
+
+    final messageText = widget.friendMessage.message;
+    _checkTextDirection(messageText);
 
     return InkWell(
       onLongPress: () {
@@ -56,7 +78,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
             return AlertDialog(
               title: const Text('Delete Message'),
               content:
-                  const Text('Are you sure you want to delete this message?'),
+              const Text('Are you sure you want to delete this message?'),
               actions: [
                 TextButton(
                   child: const Text('Cancel'),
@@ -69,12 +91,12 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                   onPressed: () {
                     friendCubit
                         .deleteMessageForMe(
-                          widget.friendMessage.friendId,
-                          widget.friendMessage.messageId,
-                          profileCubit.id!,
-                          profileCubit.userName!,
-                          widget.friendName,
-                        )
+                      widget.friendMessage.friendId,
+                      widget.friendMessage.messageId,
+                      profileCubit.id!,
+                      profileCubit.userName!,
+                      widget.friendName,
+                    )
                         .whenComplete(() => Navigator.pop(context));
                   },
                 ),
@@ -84,12 +106,12 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                     onPressed: () {
                       friendCubit
                           .deleteMessageForAll(
-                            widget.friendMessage.friendId,
-                            widget.friendMessage.messageId,
-                            profileCubit.id!,
-                            profileCubit.userName!,
-                            widget.friendName,
-                          )
+                        widget.friendMessage.friendId,
+                        widget.friendMessage.messageId,
+                        profileCubit.id!,
+                        profileCubit.userName!,
+                        widget.friendName,
+                      )
                           .whenComplete(() => Navigator.pop(context));
                     },
                   ),
@@ -109,21 +131,21 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
           decoration: widget.friendMessage.messageType == MessageType.record
               ? null
               : BoxDecoration(
-                  borderRadius: isSender
-                      ? BorderRadius.only(
-                          topLeft: Radius.circular(20.r),
-                          topRight: Radius.circular(20.r),
-                          bottomLeft: Radius.circular(20.r),
-                        )
-                      : BorderRadius.only(
-                          topLeft: Radius.circular(20.r),
-                          topRight: Radius.circular(20.r),
-                          bottomRight: Radius.circular(20.r),
-                        ),
-                  color: isSender
-                      ? const Color(0xffecae7d)
-                      : const Color(0xff8db4ad),
-                ),
+            borderRadius: isSender
+                ? BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
+              bottomLeft: Radius.circular(20.r),
+            )
+                : BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
+              bottomRight: Radius.circular(20.r),
+            ),
+            color: isSender
+                ? const Color(0xffecae7d)
+                : const Color(0xff8db4ad),
+          ),
           child: _buildMessageContent(context, isSender),
         ),
       ),
@@ -136,30 +158,32 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         final bool isLink = containsLink(widget.friendMessage.message);
         return Column(
           crossAxisAlignment:
-              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             GestureDetector(
               onTap: isLink
                   ? () async {
-                      if (await canLaunchUrl(
-                        Uri.parse(widget.friendMessage.message),
-                      )) {
-                        await launchUrl(
-                          Uri.parse(widget.friendMessage.message),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      } else {
-                        throw 'Could not launch ${widget.friendMessage.message}';
-                      }
-                    }
+                if (await canLaunchUrl(
+                  Uri.parse(widget.friendMessage.message),
+                )) {
+                  await launchUrl(
+                    Uri.parse(widget.friendMessage.message),
+                    mode: LaunchMode.externalApplication,
+                  );
+                } else {
+                  throw 'Could not launch ${widget.friendMessage.message}';
+                }
+              }
                   : null,
               child: Text(
                 widget.friendMessage.message,
+                textDirection: _textDirection,
+                textAlign: _textAlign,
                 style: TextStyle(
                   fontSize: 15.sp,
                   color: isLink ? Colors.blue : Colors.white,
                   decoration:
-                      isLink ? TextDecoration.underline : TextDecoration.none,
+                  isLink ? TextDecoration.underline : TextDecoration.none,
                 ),
               ),
             ),

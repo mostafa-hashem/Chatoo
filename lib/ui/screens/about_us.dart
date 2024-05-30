@@ -1,8 +1,5 @@
 import 'package:chat_app/provider/app_provider.dart';
-import 'package:chat_app/ui/widgets/language_bootom_sheet.dart';
-import 'package:chat_app/ui/widgets/theme_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 class AboutUs extends StatefulWidget {
@@ -67,30 +64,6 @@ class _AboutUsState extends State<AboutUs> {
             ],
           ),
         ),
-    );
-  }
-
-  void showLanguageSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return LanguageBottomSheet();
-      },
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-    );
-  }
-
-  void showThemeSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return ThemeBottomSheet();
-      },
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0.r),
-      ),
     );
   }
 }

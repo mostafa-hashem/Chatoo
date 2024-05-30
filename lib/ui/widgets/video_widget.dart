@@ -60,6 +60,22 @@ class _VideoWidgetState extends State<VideoWidget> {
     super.didChangeDependencies();
   }
 
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
+  void _checkTextDirection(String text) {
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _textAlign = TextAlign.right;
+        _textDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _textAlign = TextAlign.left;
+        _textDirection = TextDirection.ltr;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final fileName = widget.videoPath.split('/').last;
@@ -78,7 +94,6 @@ class _VideoWidgetState extends State<VideoWidget> {
 
     final adjustedWidth = width > maxWidth ? maxWidth : width;
     final adjustedHeight = height > maxHeight ? maxHeight : height;
-
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(

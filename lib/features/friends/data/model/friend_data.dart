@@ -7,6 +7,7 @@ class FriendRecentMessage {
   DateTime? sentAt;
   DateTime? addedAt;
   bool? typing;
+  bool? recording;
   int? unreadCount;
 
   FriendRecentMessage({
@@ -16,6 +17,7 @@ class FriendRecentMessage {
     required this.addedAt,
     this.unreadCount = 0,
     this.typing = false,
+    this.recording = false,
   });
 
   FriendRecentMessage.empty()
@@ -24,7 +26,8 @@ class FriendRecentMessage {
         unreadCount = 0,
         sentAt = null,
         addedAt = null,
-        typing = false;
+        typing = false,
+        recording = false;
 
   FriendRecentMessage.fromJson(Map<String, dynamic> json) {
     if (json['friendId'] != null) {
@@ -45,6 +48,9 @@ class FriendRecentMessage {
     if (json['typing'] != null) {
       typing = json['typing'] as bool?;
     }
+    if (json['recording'] != null) {
+      recording = json['recording'] as bool?;
+    }
     if (json['unreadCount'] != null) {
       unreadCount = json['unreadCount'] as int?;
     }
@@ -58,6 +64,7 @@ class FriendRecentMessage {
         if (sentAt != null) 'sentAt': Timestamp.fromDate(sentAt!.toLocal()),
         if (addedAt != null) 'addedAt': Timestamp.fromDate(addedAt!.toLocal()),
         if (typing != null) 'typing': typing,
+        if (recording != null) 'recording': typing,
         if (unreadCount != null) 'unreadCount': unreadCount,
       };
 }

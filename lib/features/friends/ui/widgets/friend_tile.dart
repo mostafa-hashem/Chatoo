@@ -15,7 +15,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FriendTile extends StatefulWidget {
-  FriendTile({
+  const FriendTile({
     super.key,
     required this.friendData,
   });
@@ -38,7 +38,7 @@ class _FriendTileState extends State<FriendTile> {
 
     return BlocBuilder<ProfileCubit, ProfileState>(
       buildWhen: (_, current) =>
-          current is GetUserSuccess ||
+      current is GetUserSuccess ||
           current is ProfileLoading ||
           current is GetUserError,
       builder: (_, state) {
@@ -55,21 +55,22 @@ class _FriendTileState extends State<FriendTile> {
               userName: widget.friendData.user!.userName,
               sentAt: widget.friendData.recentMessageData.sentAt != null
                   ? Timestamp.fromDate(
-                      widget.friendData.recentMessageData.sentAt!,
-                    )
+                widget.friendData.recentMessageData.sentAt!,
+              )
                   : null,
             ),
             subtitle: RecentMessage(
               recentMessage: widget.friendData.recentMessageData.recentMessage,
               isTyping: widget.friendData.recentMessageData.typing ?? false,
+              isRecording: widget.friendData.recentMessageData.recording ?? false,
               unreadCount: widget.friendData.recentMessageData.unreadCount,
             ),
             trailing: isMuted
                 ? Icon(
-                    Icons.notifications_off,
-                    color: AppColors.primary,
-                    size: 20.sp,
-                  )
+              Icons.notifications_off,
+              color: AppColors.primary,
+              size: 20.sp,
+            )
                 : const SizedBox.shrink(),
             onTap: () {
               friendCubit.getFriendData(widget.friendData.user!.id!);
@@ -99,16 +100,16 @@ class _FriendTileState extends State<FriendTile> {
                       onPressed: () {
                         isMuted
                             ? friendCubit.unMuteFriend(
-                                widget.friendData.user!.id ?? '',
-                              )
+                          widget.friendData.user!.id ?? '',
+                        )
                             : friendCubit
-                                .muteFriend(widget.friendData.user!.id ?? '');
+                            .muteFriend(widget.friendData.user!.id ?? '');
                         if (context.mounted) {
                           Navigator.pop(context);
                         }
                       },
                       child:
-                          isMuted ? const Text('Un Mute') : const Text('Mute'),
+                      isMuted ? const Text('Un Mute') : const Text('Mute'),
                     ),
                   ),
                   PopupMenuItem(
@@ -174,7 +175,7 @@ class ProfileImage extends StatelessWidget {
               style: GoogleFonts.ubuntu(
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
-                fontSize: 18.sp,
+                fontSize: 14.sp,
               ),
             ),
           )
@@ -184,15 +185,14 @@ class ProfileImage extends StatelessWidget {
               showImageDialog(context, imageUrl);
             },
             child: ClipOval(
-              child: FancyShimmerImage(
-                imageUrl: imageUrl,
-                width: 50.w,
-                height: 50.w,
-                errorWidget: ClipOval(
-                  child: FancyShimmerImage(
-                    imageUrl: FirebasePath.defaultImage,
-                    width: 50.w,
-                    height: 50.w,
+              child: CircleAvatar(
+                radius: 26.r,
+                child: FancyShimmerImage(
+                  imageUrl: imageUrl,
+                  errorWidget: ClipOval(
+                    child: FancyShimmerImage(
+                      imageUrl: FirebasePath.defaultImage,
+                    ),
                   ),
                 ),
               ),
@@ -244,8 +244,10 @@ class FriendTitle extends StatelessWidget {
         ),
         const Spacer(),
         Text(
-          sentAt?.toDate().toLocal() != null
-              ? getFormattedTime(sentAt!.toDate().toLocal().millisecondsSinceEpoch)
+          sentAt != null
+              ? getFormattedTime(
+            sentAt!.millisecondsSinceEpoch,
+          )
               : '',
           style: GoogleFonts.novaSquare(
             fontWeight: FontWeight.w700,
@@ -258,26 +260,55 @@ class FriendTitle extends StatelessWidget {
   }
 }
 
-class RecentMessage extends StatelessWidget {
+class RecentMessage extends StatefulWidget {
   const RecentMessage({
     super.key,
     required this.recentMessage,
     required this.unreadCount,
     this.isTyping = false,
+    this.isRecording = false,
   });
 
   final String? recentMessage;
   final int? unreadCount;
   final bool isTyping;
+  final bool isRecording;
+
+  @override
+  State<RecentMessage> createState() => _RecentMessageState();
+}
+
+class _RecentMessageState extends State<RecentMessage> {
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
+
+  void _checkTextDirection(String text) {
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _textAlign = TextAlign.right;
+        _textDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _textAlign = TextAlign.left;
+        _textDirection = TextDirection.ltr;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final messageText = widget.recentMessage;
+    _checkTextDirection(messageText!);
     return Row(
       children: [
         Flexible(
           child: Text(
-            isTyping ? 'Typing...' : recentMessage ?? '',
+            widget.isTyping ? 'Typing...' : widget.isRecording ? 'Recording...' : widget.recentMessage ?? '',
+            textAlign: _textAlign,
+            textDirection: _textDirection,
             style: GoogleFonts.novaSquare(
+              color: widget.isTyping || widget.isRecording ? Colors.greenAccent : null,
               fontWeight: FontWeight.w700,
               fontSize: 10.sp,
             ),
@@ -285,7 +316,7 @@ class RecentMessage extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        if (unreadCount != null && unreadCount! > 0)
+        if (widget.unreadCount != null && widget.unreadCount! > 0)
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
@@ -293,7 +324,7 @@ class RecentMessage extends StatelessWidget {
               borderRadius: BorderRadius.circular(14.r),
             ),
             child: Text(
-              "$unreadCount",
+              "${widget.unreadCount}",
               style: GoogleFonts.novaSquare(
                 fontWeight: FontWeight.w400,
                 fontSize: 10.sp,

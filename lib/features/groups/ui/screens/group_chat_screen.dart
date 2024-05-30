@@ -90,7 +90,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               Flexible(
                 child: Text(
                   groupData.groupName!,
-                  style: GoogleFonts.ubuntu(fontWeight: FontWeight.w400),
+                  style: GoogleFonts.ubuntu(fontWeight: FontWeight.w500, fontSize: 14.sp),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

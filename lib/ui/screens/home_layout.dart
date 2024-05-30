@@ -5,6 +5,7 @@ import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/widgets/creat_group_widget.dart';
+import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/stories/ui/screens/stories_screen.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
@@ -12,7 +13,6 @@ import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/drawer_tile.dart';
 import 'package:chat_app/ui/widgets/error_indicator.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
-import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +35,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
     Future.wait([
       GroupCubit.get(context).getAllUserGroups(),
       FriendCubit.get(context).getAllUserRequests(),
+      ProfileCubit.get(context).fetchStories(),
     ]);
     FriendCubit.get(context).getCombinedFriends();
   }
@@ -60,7 +61,9 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
             // ),
             IconButton(
               onPressed: () {
-                showThemeSheet(context);
+                provider.themeMode == ThemeMode.light
+                    ? provider.changeTheme(ThemeMode.dark)
+                    : provider.changeTheme(ThemeMode.light);
               },
               icon: Icon(
                 provider.themeMode == ThemeMode.light
@@ -68,17 +71,17 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                     : Icons.dark_mode,
               ),
             ),
-            if(tabController.index != 2)
-            IconButton(
-              onPressed: () {
-                tabController.index == 0
-                    ? Navigator.pushNamed(context, Routes.friendSearchScreen)
-                    : Navigator.pushNamed(context, Routes.groupSearchScreen);
-              },
-              icon: const Icon(
-                Icons.search,
+            if (tabController.index != 2)
+              IconButton(
+                onPressed: () {
+                  tabController.index == 0
+                      ? Navigator.pushNamed(context, Routes.friendSearchScreen)
+                      : Navigator.pushNamed(context, Routes.groupSearchScreen);
+                },
+                icon: const Icon(
+                  Icons.search,
+                ),
               ),
-            ),
           ],
           bottom: TabBar(
             controller: tabController,
@@ -189,7 +192,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                   size: 30,
                 ),
               )
-            : const SizedBox.shrink(),
+            : null,
       ),
     );
   }

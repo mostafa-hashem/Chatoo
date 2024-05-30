@@ -148,11 +148,14 @@ class FriendCubit extends Cubit<FriendStates> {
     emit(GetAllFriendMessagesLoading());
     try {
       _friendFirebaseServices.getAllUserMessages(friendId).listen((messages) {
-        filteredMessages =
-            messages.where((message) => message.sentAt != null).toList();
+        filteredMessages = messages
+            .where((message) => message.sentAt?.toLocal() != null)
+            .toList();
 
         if (filteredMessages.isNotEmpty) {
-          filteredMessages.sort((a, b) => b.sentAt!.compareTo(a.sentAt!));
+          filteredMessages.sort(
+            (a, b) => b.sentAt!.toLocal().compareTo(a.sentAt!.toLocal()),
+          );
         }
         emit(GetAllFriendMessagesSuccess());
       });
@@ -172,9 +175,9 @@ class FriendCubit extends Cubit<FriendStates> {
 
         // Sort the combinedFriends list
         combinedFriends.sort((a, b) {
-          final aTime = a.recentMessageData.sentAt ??
+          final aTime = a.recentMessageData.sentAt?.toLocal() ??
               DateTime.fromMillisecondsSinceEpoch(0);
-          final bTime = b.recentMessageData.sentAt ??
+          final bTime = b.recentMessageData.sentAt?.toLocal() ??
               DateTime.fromMillisecondsSinceEpoch(0);
           return bTime.compareTo(aTime);
         });
@@ -228,6 +231,40 @@ class FriendCubit extends Cubit<FriendStates> {
       if (snapshot.exists && snapshot.data() != null) {
         isTyping = (snapshot.data()!['typing'] as bool?)!;
         emit(UpdateTypingStatus(isTyping));
+      }
+    });
+  }
+
+  Future<void> updateRecordingStatus({
+    required String friendId,
+    required bool isRecording,
+  }) async {
+    emit(UpdateRecordingStatusLoading());
+    try {
+      await _friendFirebaseServices.updateRecordingStatus(
+        friendId: friendId,
+        isRecording: isRecording,
+      );
+      emit(UpdateRecordingStatusSuccess());
+    } catch (e) {
+      emit(UpdateRecordingStatusError(Failure.fromException(e).message));
+    }
+  }
+
+  bool isRecording = false;
+
+  void listenToRecordingStatus(String friendId) {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance
+        .collection(FirebasePath.users)
+        .doc(currentUserId)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists && snapshot.data() != null) {
+        isRecording = (snapshot.data()!['recording'] as bool?)!;
+        emit(UpdateRecordingStatus(isRecording));
       }
     });
   }

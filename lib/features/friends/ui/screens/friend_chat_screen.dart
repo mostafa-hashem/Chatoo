@@ -35,6 +35,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
     friendCubit = FriendCubit.get(context);
     friendData = ModalRoute.of(context)!.settings.arguments! as CombinedFriend;
     friendCubit.listenToTypingStatus(friendData.user!.id!);
+    friendCubit.listenToRecordingStatus(friendData.user!.id!);
   }
 
   @override
@@ -99,11 +100,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   children: [
                     Text(
                       friendCubit.friendData?.userName ?? '',
-                      style: GoogleFonts.ubuntu(fontWeight: FontWeight.w500),
+                      style: GoogleFonts.ubuntu(fontWeight: FontWeight.w500, fontSize: 14.sp),
                       overflow: TextOverflow.ellipsis,
                     ),
                     BlocBuilder<FriendCubit, FriendStates>(
                       buildWhen: (_, current) =>
+                          current is UpdateTypingStatus ||
                           current is UpdateTypingStatus ||
                           current is UpdateTypingStatusSuccess ||
                           current is UpdateTypingStatusError ||
@@ -136,7 +138,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                 child: Text(
                                   friendCubit.isTyping
                                       ? 'Typing...'
-                                      : friendCubit.friendData!.onLine!
+                                      : friendCubit.isRecording ? 'Recording...' : friendCubit.friendData!.onLine!
                                           ? 'Online'
                                           : friendCubit.friendData?.lastSeen !=
                                                   null
@@ -148,6 +150,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                                 )}"
                                               : 'Offline',
                                   style: GoogleFonts.ubuntu(
+                                    color: friendCubit.isTyping || friendCubit.isRecording ? Colors.greenAccent : null,
                                     fontWeight: FontWeight.w400,
                                     fontSize: 9.sp,
                                   ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat_app/features/stories/data/models/story.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,8 +34,11 @@ class ProfileFirebaseService {
   }
 
   Future<void> uploadProfileImage(String filePath, File imageFile) async {
-    final Reference storageRef =
-        _storage.ref().child(FirebasePath.users).child('profilePictures').child(filePath);
+    final Reference storageRef = _storage
+        .ref()
+        .child(FirebasePath.users)
+        .child('profilePictures')
+        .child(filePath);
     final UploadTask uploadTask =
         storageRef.child('${imageFile.hashCode}').putFile(imageFile);
     final TaskSnapshot snapshot = await uploadTask;
@@ -64,4 +68,23 @@ class ProfileFirebaseService {
       }
     }
   }
+
+  Future<List<Story>> fetchStories() async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('stories')
+        .where(
+      'uploadedAt',
+      isGreaterThanOrEqualTo:
+      DateTime.now().subtract(const Duration(hours: 24)),
+    )
+        .orderBy('uploadedAt', descending: true)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => Story.fromJson(doc.data()))
+        .where((story) => story.userId == currentUserId)
+        .toList();
+  }
+
 }

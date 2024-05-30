@@ -9,10 +9,8 @@ import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/my_theme.dart';
 import 'package:chat_app/utils/bloc_observer.dart';
-import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/cubit/suggestion_cubit.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:chat_app/utils/helper_methods.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,15 +80,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   //   });
   // }
 
-  Future<void> updateStatus(bool status) async {
-    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    await FirebaseFirestore.instance
-        .collection(FirebasePath.users)
-        .doc(currentUserId)
-        .update(
-            {"onLine": status, "lastSeen": Timestamp.now().toDate().toLocal()});
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -100,7 +89,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  final String requiredVersion = '1.0.1';
+  final String requiredVersion = '1.0.0';
   String? appVersion;
   String routeName = Routes.splash;
 

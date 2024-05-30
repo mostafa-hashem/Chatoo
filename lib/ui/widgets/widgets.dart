@@ -1,19 +1,18 @@
 import 'package:chat_app/features/groups/ui/widgets/change_group_name_sheet.dart';
 import 'package:chat_app/features/profile/ui/widgets/bio_edit_bottom_sheet.dart';
 import 'package:chat_app/ui/widgets/language_bootom_sheet.dart';
-import 'package:chat_app/ui/widgets/theme_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-InputDecoration textInoutDecoration = const InputDecoration(
+InputDecoration textInoutDecoration =  InputDecoration(
   focusedBorder: OutlineInputBorder(
-    borderSide: BorderSide(color: Color(0xFFee7b64), width: 2),
+    borderSide: BorderSide(color: const Color(0xFFee7b64), width: 2.w),
   ),
   enabledBorder: OutlineInputBorder(
-    borderSide: BorderSide(color: Color(0xFFee7b64), width: 2),
+    borderSide: BorderSide(color: const Color(0xFFee7b64), width: 2.w),
   ),
   errorBorder: OutlineInputBorder(
-    borderSide: BorderSide(color: Color(0xFFee7b64), width: 2),
+    borderSide: BorderSide(color: const Color(0xFFee7b64), width: 2.w),
   ),
 );
 
@@ -41,13 +40,6 @@ void nextScreenReplace(BuildContext context, Widget page) {
   );
 }
 
-String getId(String res) {
-  return res.substring(0, res.indexOf("_"));
-}
-
-String getName(String res) {
-  return res.substring(res.indexOf("_") + 1);
-}
 
 void showLanguageSheet(BuildContext context) {
   showModalBottomSheet(
@@ -87,18 +79,6 @@ void showChangeGroupNameSheet(
     },
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(16.r),
-    ),
-  );
-}
-
-void showThemeSheet(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    builder: (context) {
-      return ThemeBottomSheet();
-    },
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16.0.r),
     ),
   );
 }

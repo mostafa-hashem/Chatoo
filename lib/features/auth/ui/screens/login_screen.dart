@@ -139,6 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         BlocListener<ProfileCubit, ProfileState>(
                           listener: (_, state) {
                             if (state is GetUserSuccess) {
+                              updateStatus(true);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
+import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -216,8 +217,26 @@ class _MediaViewState extends State<MediaView> {
     super.dispose();
   }
 
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
+
+  void _checkTextDirection(String text) {
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _textAlign = TextAlign.right;
+        _textDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _textAlign = TextAlign.left;
+        _textDirection = TextDirection.ltr;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _checkTextDirection(mediaTitle);
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -368,8 +387,9 @@ class _MediaViewState extends State<MediaView> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 14.h),
                     child: Text(
+                      textAlign: _textAlign,
+                      textDirection: _textDirection,
                       mediaTitle,
-                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
               ],
