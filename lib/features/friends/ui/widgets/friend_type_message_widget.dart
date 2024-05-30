@@ -19,6 +19,7 @@ import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -46,12 +47,15 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
   String? _audioPath;
   File? mediaFile;
   String? notificationBody;
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     sender = ProfileCubit.get(context).user;
     friendCubit = FriendCubit.get(context);
+    friendCubit.messageController.addListener(_checkTextDirection);
   }
 
   @override
@@ -137,6 +141,14 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
     );
   }
 
+  void _onBackspacePressed() {
+    friendCubit.messageController
+      ..text = friendCubit.messageController.text.characters.toString()
+      ..selection = TextSelection.fromPosition(
+        TextPosition(offset: friendCubit.messageController.text.length),
+      );
+  }
+
   bool isMuted() {
     if (widget.friendData.mutedFriends != null) {
       return widget.friendData.mutedFriends!
@@ -187,6 +199,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
         mediaFile = File(croppedImage.path);
       });
       if (context.mounted) {
+        Fluttertoast.showToast(msg: 'Sending...');
         notificationBody = 'sent photo';
         friendCubit
             .sendMediaToFriend(
@@ -226,6 +239,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
               child: const Text('Send'),
               onPressed: () {
                 debugPrint('Sending video file...');
+                Fluttertoast.showToast(msg: 'Sending...');
                 friendCubit
                     .sendMediaToFriend(
                   FirebasePath.videos,
@@ -243,6 +257,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                     type: MessageType.video,
                   );
                 }).catchError((error) {
+                  Fluttertoast.showToast(msg: 'Error: $error');
                   debugPrint('Error sending video file: $error');
                 });
                 if (context.mounted) {
@@ -306,6 +321,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
               child: const Text('Send'),
               onPressed: () {
                 debugPrint('Sending audio file...');
+                Fluttertoast.showToast(msg: 'Sending...');
                 friendCubit
                     .sendMediaToFriend(
                   FirebasePath.audios,
@@ -323,6 +339,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                     type: MessageType.audio,
                   );
                 }).catchError((error) {
+                  Fluttertoast.showToast(msg: 'Error: $error');
                   debugPrint('Error sending audio file: $error');
                 });
                 if (context.mounted) {
@@ -334,6 +351,21 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
         );
       },
     );
+  }
+
+  void _checkTextDirection() {
+    final text = friendCubit.messageController.text;
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _textAlign = TextAlign.right;
+        _textDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _textAlign = TextAlign.left;
+        _textDirection = TextDirection.ltr;
+      });
+    }
   }
 
   @override
@@ -440,7 +472,9 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                       },
                       textInputAction: TextInputAction.newline,
                       minLines: 1,
-                      maxLines: null,
+                      maxLines: 8,
+                      textAlign: _textAlign,
+                      textDirection: _textDirection,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: provider.themeMode == ThemeMode.light
@@ -547,6 +581,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                           onPressed: () async {
                             await _record();
                             final File recordFile = File(_audioPath!);
+                            await Fluttertoast.showToast(msg: 'Sending...');
                             await friendCubit
                                 .sendMediaToFriend(
                               FirebasePath.records,
@@ -605,26 +640,23 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
           ),
           Offstage(
             offstage: !emojiShowing,
-            child: SizedBox(
-              height: 220.h,
-              child: EmojiPicker(
-                textEditingController: friendCubit.messageController,
-                config: Config(
+            child: EmojiPicker(
+              textEditingController: friendCubit.messageController,
+              onBackspacePressed: _onBackspacePressed,
+              config: Config(
+                height: 220.h,
+                emojiViewConfig: EmojiViewConfig(
                   emojiSizeMax: 30 *
                       (foundation.defaultTargetPlatform == TargetPlatform.iOS
-                          ? 1.30
+                          ? 1.2
                           : 1.0),
-                  bgColor: provider.themeMode == ThemeMode.light
-                      ? const Color(0xFFF2F2F2)
-                      : AppColors.dark,
-                  indicatorColor: AppColors.primary,
-                  iconColorSelected: AppColors.primary,
-                  backspaceColor: AppColors.primary,
-                  noRecents: Text(
+                  noRecents: const Text(
                     'No Recents',
-                    style: TextStyle(fontSize: 16.sp, color: Colors.black26),
                     textAlign: TextAlign.center,
                   ),
+                  backgroundColor: provider.themeMode == ThemeMode.light
+                      ? const Color(0xFFF2F2F2)
+                      : AppColors.dark,
                 ),
               ),
             ),

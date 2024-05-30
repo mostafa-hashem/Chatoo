@@ -20,6 +20,7 @@ import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -47,11 +48,14 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   final audioPlayer = AudioPlayer();
   File? mediaFile;
   String? notificationBody;
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
 
   @override
   void didChangeDependencies() {
     groupCubit = GroupCubit.get(context);
     sender = ProfileCubit.get(context).user;
+    groupCubit.messageController.addListener(_checkTextDirection);
     super.didChangeDependencies();
   }
 
@@ -184,6 +188,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
       ],
     );
     if (croppedImage != null) {
+      Fluttertoast.showToast(msg: 'Sending...');
       setState(() {
         mediaFile = File(croppedImage.path);
       });
@@ -239,6 +244,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                 'Send',
               ),
               onPressed: () {
+                Fluttertoast.showToast(msg: 'Sending...');
                 groupCubit
                     .uploadMediaToGroup(
                   FirebasePath.audios,
@@ -310,6 +316,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                 'Send',
               ),
               onPressed: () {
+                Fluttertoast.showToast(msg: 'Sending...');
                 groupCubit
                     .uploadMediaToGroup(
                   FirebasePath.videos,
@@ -339,6 +346,21 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
         );
       },
     );
+  }
+
+  void _checkTextDirection() {
+    final text = groupCubit.messageController.text;
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _textAlign = TextAlign.right;
+        _textDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _textAlign = TextAlign.left;
+        _textDirection = TextDirection.ltr;
+      });
+    }
   }
 
   @override
@@ -439,13 +461,15 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                       },
                       textInputAction: TextInputAction.newline,
                       minLines: 1,
-                      maxLines: null,
+                      maxLines: 8,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: provider.themeMode == ThemeMode.light
                             ? Colors.black87
                             : AppColors.light,
                       ),
+                      textDirection: _textDirection,
+                      textAlign: _textAlign,
                       decoration: InputDecoration(
                         hintText: 'Type a message',
                         hintStyle: Theme.of(context).textTheme.bodySmall,
@@ -552,6 +576,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                           onPressed: () async {
                             await _record();
                             final File recordFile = File(_audioPath!);
+                            await Fluttertoast.showToast(msg: 'Sending...');
                             await groupCubit
                                 .uploadMediaToGroup(
                               FirebasePath.records,
@@ -609,27 +634,23 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
           ),
           Offstage(
             offstage: !emojiShowing,
-            child: SizedBox(
-              height: 220.h,
-              child: EmojiPicker(
-                textEditingController: groupCubit.messageController,
-                onBackspacePressed: _onBackspacePressed,
-                config: Config(
+            child: EmojiPicker(
+              textEditingController: groupCubit.messageController,
+              onBackspacePressed: _onBackspacePressed,
+              config: Config(
+                height: 220.h,
+                emojiViewConfig: EmojiViewConfig(
                   emojiSizeMax: 30 *
                       (foundation.defaultTargetPlatform == TargetPlatform.iOS
-                          ? 1.30
+                          ? 1.2
                           : 1.0),
-                  bgColor: provider.themeMode == ThemeMode.light
-                      ? const Color(0xFFF2F2F2)
-                      : AppColors.dark,
-                  indicatorColor: AppColors.primary,
-                  iconColorSelected: AppColors.primary,
-                  backspaceColor: AppColors.primary,
-                  noRecents: Text(
-                    'No Resents',
-                    style: TextStyle(fontSize: 16.sp, color: Colors.black26),
+                  noRecents: const Text(
+                    'No Recents',
                     textAlign: TextAlign.center,
                   ),
+                  backgroundColor: provider.themeMode == ThemeMode.light
+                      ? const Color(0xFFF2F2F2)
+                      : AppColors.dark,
                 ),
               ),
             ),

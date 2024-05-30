@@ -3,6 +3,7 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
+import 'package:chat_app/features/stories/cubit/stories_cubit.dart';
 import 'package:chat_app/firebase_options.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
@@ -99,7 +100,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  final String requiredVersion = '1.0.0';
+  final String requiredVersion = '1.0.1';
   String? appVersion;
   String routeName = Routes.splash;
 
@@ -135,6 +136,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               ),
             BlocProvider(
               create: (_) => ProfileCubit(),
+            ),
+            BlocProvider(
+              create: (_) => StoriesCubit(),
             ),
             BlocProvider(
               create: (_) => GroupCubit(),

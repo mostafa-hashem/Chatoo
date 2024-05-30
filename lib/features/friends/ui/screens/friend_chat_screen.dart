@@ -122,7 +122,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                   size: 10.r,
                                 )
                               else
-                                friendCubit.friendData?.lastSeen != null
+                                friendCubit.friendData?.lastSeen?.toLocal() != null
                                     ? const SizedBox.shrink()
                                     : Icon(
                                         Icons.circle,
@@ -132,25 +132,27 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                               SizedBox(
                                 width: MediaQuery.sizeOf(context).width * 0.01,
                               ),
-                              Text(
-                                friendCubit.isTyping
-                                    ? 'Typing...'
-                                    : friendCubit.friendData!.onLine!
-                                        ? 'Online'
-                                        : friendCubit.friendData?.lastSeen !=
-                                                null
-                                            ? "Last seen: ${getFormattedTime(
-                                                friendCubit
-                                                    .friendData!
-                                                    .lastSeen!
-                                                    .millisecondsSinceEpoch,
-                                              )}"
-                                            : 'Offline',
-                                style: GoogleFonts.ubuntu(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 12.sp,
+                              Flexible(
+                                child: Text(
+                                  friendCubit.isTyping
+                                      ? 'Typing...'
+                                      : friendCubit.friendData!.onLine!
+                                          ? 'Online'
+                                          : friendCubit.friendData?.lastSeen !=
+                                                  null
+                                              ? "Last seen: ${getFormattedTime(
+                                                  friendCubit
+                                                      .friendData!
+                                                      .lastSeen!.toLocal()
+                                                      .millisecondsSinceEpoch,
+                                                )}"
+                                              : 'Offline',
+                                  style: GoogleFonts.ubuntu(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 9.sp,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           );
@@ -195,7 +197,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   currentState is GetAllFriendMessagesLoading,
               builder: (_, state) {
                 return FriendChatMessages(
-                  friendName: friendCubit.friendData!.userName!,
+                  friendName: friendCubit.friendData?.userName ?? '',
                 );
               },
             ),

@@ -1,5 +1,6 @@
 class FirebasePath {
   //Collection
+  static const String stories = 'stories';
   static const String users = 'users';
   static const String friends = 'friends';
   static const String groups = 'groups';

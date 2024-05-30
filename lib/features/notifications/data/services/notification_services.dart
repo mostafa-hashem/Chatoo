@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';

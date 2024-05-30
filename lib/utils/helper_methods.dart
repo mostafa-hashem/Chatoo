@@ -55,8 +55,9 @@ String? validateGeneral(String? value, String label) {
 }
 
 String getFormattedTime(int timestamp) {
-  final DateTime lastSeen = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  final DateTime now = DateTime.now();
+  final DateTime lastSeen =
+      DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal();
+  final DateTime now = DateTime.now().toLocal();
 
   if (lastSeen.year == now.year &&
       lastSeen.month == now.month &&
@@ -68,19 +69,19 @@ String getFormattedTime(int timestamp) {
   if (lastSeen.year == yesterday.year &&
       lastSeen.month == yesterday.month &&
       lastSeen.day == yesterday.day) {
-    return 'Yesterday';
+    return 'Yesterday at ${DateFormat('hh:mm a').format(lastSeen)}';
   }
 
   if (lastSeen.year == now.year) {
-    return DateFormat('MMM d').format(lastSeen);
+    return '${DateFormat('d/M').format(lastSeen)} at ${DateFormat('hh:mm a').format(lastSeen)}';
   }
 
-  return DateFormat('MMM d, yyyy').format(lastSeen);
+  return '${DateFormat('d MMM, yyyy').format(lastSeen)} at ${DateFormat('hh:mm a').format(lastSeen)}';
 }
 
 String getFormattedDateHeader(int timestamp) {
-  final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  final DateTime now = DateTime.now();
+  final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal();
+  final DateTime now = DateTime.now().toLocal();
 
   if (now.year == date.year && now.month == date.month && now.day == date.day) {
     return 'Today';
@@ -183,8 +184,12 @@ Future<String> getAudioFileName(File audioFile) async {
 
 bool containsLink(String message) {
   final RegExp urlPattern = RegExp(
-    r'^(https?:\/\/)?www.',
+    '^(https?://)?www.',
     caseSensitive: false,
   );
   return urlPattern.hasMatch(message);
+}
+
+bool isArabic(String text) {
+  return RegExp(r'^[\u0600-\u06FF]+').hasMatch(text);
 }

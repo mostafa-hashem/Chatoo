@@ -103,21 +103,21 @@ class _GroupTileState extends State<GroupTile> {
                   widget.groupData.groupName!,
                   style: GoogleFonts.novaSquare(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16.sp,
+                    fontSize: 12.sp,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const Spacer(),
                 Text(
-                  widget.groupData.recentMessageSentAt != null
+                  widget.groupData.recentMessageSentAt?.toLocal() != null
                       ? getFormattedTime(
-                          widget.groupData.recentMessageSentAt!
+                          widget.groupData.recentMessageSentAt!.toLocal()
                               .millisecondsSinceEpoch,
                         )
                       : '',
                   style: GoogleFonts.novaSquare(
                     fontWeight: FontWeight.bold,
-                    fontSize: 10.sp,
+                    fontSize: 9.sp,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -131,7 +131,7 @@ class _GroupTileState extends State<GroupTile> {
                         ? "${widget.groupData.recentMessageSenderId == profileCubit.user.id ? 'You' : widget.groupData.recentMessageSender}: ${widget.groupData.recentMessage ?? ''}"
                         : '',
                     style: GoogleFonts.ubuntu(
-                      fontSize: 12.sp,
+                      fontSize: 10.sp,
                       fontWeight: FontWeight.w500,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -151,7 +151,7 @@ class _GroupTileState extends State<GroupTile> {
                       "${widget.groupData.unreadMessageCounts![profileCubit.user.id]}",
                       style: GoogleFonts.novaSquare(
                         fontWeight: FontWeight.w400,
-                        fontSize: 12.sp,
+                        fontSize: 10.sp,
                         color: Colors.white,
                       ),
                       overflow: TextOverflow.ellipsis,

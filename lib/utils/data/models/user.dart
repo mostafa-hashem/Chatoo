@@ -12,6 +12,7 @@ class User {
   List<dynamic>? mutedGroups;
   List<dynamic>? mutedFriends;
   List<dynamic>? requests;
+  List<dynamic>? stories;
   String? city;
   String? fCMToken;
   bool? onLine;
@@ -27,11 +28,13 @@ class User {
     this.fCMToken,
     this.groups,
     this.friends,
+    this.stories,
     this.requests,
     this.lastSeen,
     this.city = '',
     this.onLine = true,
   });
+
   User.empty()
       : id = '',
         email = '',
@@ -42,10 +45,12 @@ class User {
         fCMToken = '',
         groups = [],
         friends = [],
+        stories = [],
         requests = [],
         lastSeen = DateTime.now().toLocal(),
         city = '',
         onLine = false;
+
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'] as String?;
     email = json['email'] as String?;
@@ -58,6 +63,9 @@ class User {
     }
     if (json['city'] != null) {
       city = json['city'] as String?;
+    }
+    if (json['stories'] != null && json['stories'] is List<dynamic>) {
+      stories = json['stories'] as List<dynamic>;
     }
     if (json['groups'] != null && json['groups'] is List<dynamic>) {
       groups = json['groups'] as List<dynamic>;
@@ -92,6 +100,7 @@ class User {
       'profileImage': profileImage,
       if (fCMToken != null) 'fCMToken': fCMToken,
       if (city != null) 'city': city,
+      if (stories != null) 'stories': stories,
       if (groups != null) 'groups': groups,
       if (friends != null) 'friends': friends,
       if (mutedGroups != null) 'mutedGroups': mutedGroups,

@@ -54,7 +54,12 @@ class _ImageWidgetState extends State<ImageWidget> {
         Navigator.pushNamed(
           context,
           Routes.mediaView,
-          arguments: {'path': widget.imagePath, 'isVideo': false},
+          arguments: {
+            'path': widget.imagePath,
+            'isVideo': false,
+            'isStory': false,
+            'mediaTitle': ''
+          },
         );
       },
       child: Column(
@@ -72,9 +77,9 @@ class _ImageWidgetState extends State<ImageWidget> {
               ),
             ),
           if (widget.isInGroup)
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.01,
-          ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.01,
+            ),
           FancyShimmerImage(
             height: adjustedHeight,
             width: adjustedWidth,

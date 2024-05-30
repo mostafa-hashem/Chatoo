@@ -11,6 +11,7 @@ import 'package:chat_app/features/groups/ui/screens/group_info_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/join_group_request_screen.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
+import 'package:chat_app/features/stories/ui/screens/stories_screen.dart';
 import 'package:chat_app/ui/screens/home_layout.dart';
 import 'package:chat_app/ui/screens/media_view.dart';
 import 'package:chat_app/ui/screens/splash_screen.dart';
@@ -25,6 +26,7 @@ class Routes {
   static const String login = "/login";
   static const String resetPassword = "/resetPassword";
   static const String register = "/register";
+  static const String storiesScreen = "/storiesScreen";
   static const String groupsScreen = "/groupsScreen";
   static const String groupChatScreen = "/groupChatScreen";
   static const String groupInfo = "/groupInfo";
@@ -67,6 +69,11 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
     case Routes.register:
       return MaterialPageRoute(
         builder: (_) => const RegisterScreen(),
+      );
+    case Routes.storiesScreen:
+      return MaterialPageRoute(
+        builder: (_) => StoriesScreen(),
+        settings: routeSettings,
       );
     case Routes.groupsScreen:
       return MaterialPageRoute(

@@ -5,6 +5,7 @@ import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/widgets/creat_group_widget.dart';
+import 'package:chat_app/features/stories/ui/screens/stories_screen.dart';
 import 'package:chat_app/provider/app_provider.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -29,7 +30,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 2, vsync: this);
+    tabController = TabController(length: 3, vsync: this);
     tabController.addListener(_handleTabChange);
     Future.wait([
       GroupCubit.get(context).getAllUserGroups(),
@@ -67,6 +68,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                     : Icons.dark_mode,
               ),
             ),
+            if(tabController.index != 2)
             IconButton(
               onPressed: () {
                 tabController.index == 0
@@ -88,6 +90,12 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
               Tab(
                 child: Text(
                   "Groups",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              Tab(
+                child: Text(
+                  "Stories",
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -157,6 +165,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                   },
                   child: GroupsScreen(),
                 ),
+                StoriesScreen(),
               ],
             ),
           ],

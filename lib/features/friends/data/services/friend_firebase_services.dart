@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
+import 'package:chat_app/features/stories/data/models/story.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -79,20 +80,40 @@ class FriendFirebaseServices {
                   .toList(),
             );
 
-    return Rx.combineLatest2<List<User?>, List<FriendRecentMessage>,
-        List<CombinedFriend>>(
+    final Stream<List<Story>> storiesStream = FirebaseFirestore.instance
+        .collection('stories')
+        .where(
+          'uploadedAt',
+          isGreaterThanOrEqualTo:
+              DateTime.now().subtract(const Duration(hours: 24)),
+        )
+        .orderBy('uploadedAt', descending: true)
+        .snapshots()
+        .map(
+          (querySnapshot) => querySnapshot.docs
+              .map((doc) => Story.fromJson(doc.data()))
+              .toList(),
+        );
+
+    return Rx.combineLatest3<List<User?>, List<FriendRecentMessage>,
+        List<Story>, List<CombinedFriend>>(
       allUserFriendsStream,
       recentMessageDataStream,
-      (users, messages) {
+      storiesStream,
+      (users, messages, stories) {
         final combinedFriends = users.map((user) {
           final recentMessage = messages.firstWhere(
             (message) => message.friendId == user?.id,
             orElse: () => FriendRecentMessage.empty(),
           );
 
+          final List<Story> userStories =
+              stories.where((story) => story.userId == user?.id).toList();
+
           return CombinedFriend(
             user: user,
             recentMessageData: recentMessage,
+            stories: userStories,
           );
         }).toList();
 

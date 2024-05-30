@@ -146,6 +146,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                       )) {
                         await launchUrl(
                           Uri.parse(widget.friendMessage.message),
+                          mode: LaunchMode.externalApplication,
                         );
                       } else {
                         throw 'Could not launch ${widget.friendMessage.message}';
@@ -165,7 +166,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
             SizedBox(height: 5.h),
             Text(
               getFormattedTime(
-                widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+                widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
               ),
               style: TextStyle(
                 fontSize: 9.sp,
@@ -178,7 +179,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
       case MessageType.image:
         return ImageWidget(
           imagePath: widget.friendMessage.mediaUrls?.first ?? '',
-          sentAt: widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+          sentAt: widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
           senderName: '',
           senderId: widget.friendMessage.sender,
           isInGroup: false,
@@ -186,7 +187,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
       case MessageType.video:
         return VideoWidget(
           videoPath: widget.friendMessage.mediaUrls?.first ?? '',
-          sentAt: widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+          sentAt: widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
           senderName: '',
           senderId: widget.friendMessage.sender,
           isInGroup: false,
@@ -194,7 +195,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
       case MessageType.record:
         return RecordTile(
           recordPath: widget.friendMessage.mediaUrls?.first ?? '',
-          sentAt: widget.friendMessage.sentAt!.millisecondsSinceEpoch,
+          sentAt: widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
           senderName: '',
           senderId: widget.friendMessage.sender,
           isInGroup: false,

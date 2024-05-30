@@ -1,3 +1,4 @@
+
 import 'dart:typed_data';
 
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
@@ -41,14 +42,14 @@ class _VideoWidgetState extends State<VideoWidget> {
   }
 
   Future<void> _generateThumbnail() async {
-    final uint8List = await VideoThumbnail.thumbnailData(
+    final unit8List = await VideoThumbnail.thumbnailData(
       video: widget.videoPath,
       imageFormat: ImageFormat.JPEG,
       quality: 100,
     );
     if (mounted) {
       setState(() {
-        _thumbnail = uint8List;
+        _thumbnail = unit8List;
       });
     }
   }
@@ -69,7 +70,8 @@ class _VideoWidgetState extends State<VideoWidget> {
     final width = double.tryParse(dimensions[0].split('%2F').last) ?? 100.0.w;
     final height = double.tryParse(dimensions[1]) ?? 100.0.h;
     final duration = int.tryParse(durationStr) ?? 0;
-    final durationText = '${duration ~/ 60}:${(duration % 60).toString().padLeft(2, '0')}';
+    final durationText =
+        '${duration ~/ 60}:${(duration % 60).toString().padLeft(2, '0')}';
 
     final maxWidth = MediaQuery.of(context).size.width * 0.8;
     final maxHeight = MediaQuery.of(context).size.height * 0.4;
@@ -82,7 +84,12 @@ class _VideoWidgetState extends State<VideoWidget> {
         Navigator.pushNamed(
           context,
           Routes.mediaView,
-          arguments: {'path': widget.videoPath, 'isVideo': true},
+          arguments: {
+            'path': widget.videoPath,
+            'isVideo': true,
+            'isStory': false,
+            'mediaTitle': '',
+          },
         );
       },
       child: Column(

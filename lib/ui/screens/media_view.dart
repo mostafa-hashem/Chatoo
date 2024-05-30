@@ -21,14 +21,19 @@ class MediaView extends StatefulWidget {
 }
 
 class _MediaViewState extends State<MediaView> {
-  VideoPlayerController? _videoController;  // Make it nullable
+  VideoPlayerController? _videoController;
   bool isVideo = false;
+  bool isStory = false;
+  String mediaTitle = '';
   String mediaPath = '';
   bool isPlaying = false;
   bool _showPlayPauseButton = false;
   Timer? _hideButtonTimer;
+  Timer? _storyTimer;
   bool _isBuffering = false;
   File? _localFile;
+  double _progress = 0.0;
+  static const int defaultStoryDurationSeconds = 10;
 
   @override
   void didChangeDependencies() {
@@ -37,6 +42,8 @@ class _MediaViewState extends State<MediaView> {
     if (args != null) {
       mediaPath = args['path'] as String;
       isVideo = args['isVideo'] as bool;
+      isStory = args['isStory'] as bool;
+      mediaTitle = args['mediaTitle'] as String;
       _checkLocalFile();
     }
   }
@@ -51,6 +58,8 @@ class _MediaViewState extends State<MediaView> {
       _localFile = file;
       if (isVideo) {
         _initializeVideoController(file);
+      } else {
+        _startStoryTimer(const Duration(seconds: defaultStoryDurationSeconds));
       }
     } else {
       _fetchFromNetwork();
@@ -64,6 +73,7 @@ class _MediaViewState extends State<MediaView> {
         _videoController!.play();
         isPlaying = true;
         _videoController!.addListener(_updatePosition);
+        _startStoryTimer(_videoController!.value.duration);
       })
       ..addListener(() {
         final bool isBuffering = _videoController!.value.isBuffering;
@@ -83,6 +93,7 @@ class _MediaViewState extends State<MediaView> {
           _videoController!.play();
           isPlaying = true;
           _videoController!.addListener(_updatePosition);
+          _startStoryTimer(_videoController!.value.duration);
         })
         ..addListener(() {
           final bool isBuffering = _videoController!.value.isBuffering;
@@ -92,6 +103,26 @@ class _MediaViewState extends State<MediaView> {
             });
           }
         });
+    } else {
+      _startStoryTimer(const Duration(seconds: defaultStoryDurationSeconds));
+    }
+  }
+
+  void _startStoryTimer(Duration duration) {
+    if (isStory) {
+      _storyTimer?.cancel();
+      _progress = 0.0;
+      final int storyDurationSeconds =
+          isVideo ? duration.inSeconds : defaultStoryDurationSeconds;
+      _storyTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        setState(() {
+          _progress += 0.1 / storyDurationSeconds;
+          if (_progress >= 1.0) {
+            timer.cancel();
+            Navigator.of(context).pop();
+          }
+        });
+      });
     }
   }
 
@@ -131,23 +162,17 @@ class _MediaViewState extends State<MediaView> {
 
   Future<void> _downloadMedia() async {
     try {
-      if (await Permission.storage.request().isGranted) {
+      if (await Permission.mediaLibrary.request().isGranted) {
+        Fluttertoast.showToast(msg: 'Downloading...');
         final response = await http.get(Uri.parse(mediaPath));
-        final directory = await getExternalStorageDirectory();
-        final fileName = mediaPath.split('/').last;
-        final filePath = '${directory!.path}/$fileName';
-        final file = File(filePath);
-        await file.writeAsBytes(response.bodyBytes);
 
         if (isVideo) {
           await _saveVideoToGallery(response.bodyBytes);
         } else {
           await _saveImageToGallery(response.bodyBytes);
         }
-
-        Fluttertoast.showToast(msg: 'Downloaded to $filePath');
       } else {
-        Fluttertoast.showToast(msg: 'Storage permission denied');
+        Fluttertoast.showToast(msg: 'MediaLibrary permission denied');
       }
     } catch (e) {
       Fluttertoast.showToast(msg: 'Error downloading file: $e');
@@ -155,7 +180,10 @@ class _MediaViewState extends State<MediaView> {
   }
 
   Future<void> _saveImageToGallery(Uint8List bytes) async {
-    final result = await ImageGallerySaver.saveImage(bytes, name: "IMG_${DateTime.now().millisecondsSinceEpoch}");
+    final result = await ImageGallerySaver.saveImage(
+      bytes,
+      name: "IMG_${DateTime.now().toLocal().millisecondsSinceEpoch}",
+    );
     if (result["isSuccess"] as bool) {
       Fluttertoast.showToast(msg: 'Image saved to gallery');
     } else {
@@ -164,12 +192,13 @@ class _MediaViewState extends State<MediaView> {
   }
 
   Future<void> _saveVideoToGallery(Uint8List bytes) async {
-    final directory = await getExternalStorageDirectory();
-    final filePath = '${directory!.path}/VID_${DateTime.now().millisecondsSinceEpoch}.mp4';
-    final file = File(filePath);
-    await file.writeAsBytes(bytes);
+    final tempDir = await getTemporaryDirectory();
+    final tempFilePath =
+        '${tempDir.path}/VID_${DateTime.now().toLocal().millisecondsSinceEpoch}.mp4';
+    final tempFile = File(tempFilePath);
+    await tempFile.writeAsBytes(bytes);
 
-    final result = await ImageGallerySaver.saveFile(filePath);
+    final result = await ImageGallerySaver.saveFile(tempFilePath);
     if (result["isSuccess"] as bool) {
       Fluttertoast.showToast(msg: 'Video saved to gallery');
     } else {
@@ -183,6 +212,7 @@ class _MediaViewState extends State<MediaView> {
       _videoController!.dispose();
     }
     _hideButtonTimer?.cancel();
+    _storyTimer?.cancel();
     super.dispose();
   }
 
@@ -191,114 +221,173 @@ class _MediaViewState extends State<MediaView> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: _downloadMedia,
-          ),
+          if (!isStory)
+            IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: _downloadMedia,
+            ),
         ],
       ),
-      backgroundColor: Colors.black,
-      body: Center(
-        child: isVideo
-            ? (_videoController != null && _videoController!.value.isInitialized)
-            ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  AspectRatio(
-                    aspectRatio: _videoController!.value.aspectRatio,
-                    child: VideoPlayer(_videoController!),
-                  ),
-                  if (_isBuffering)
-                    const Center(
-                      child: LoadingIndicator(),
-                    ),
-                  AnimatedOpacity(
-                    opacity: _showPlayPauseButton ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: GestureDetector(
-                      onTap: _togglePlayPause,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.black45,
-                        radius: 30,
-                        child: Icon(
-                          isPlaying ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Row(
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w),
-                  child: Text(
-                    _formatDuration(
-                      _videoController!.value.position,
-                    ),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
+                if (isVideo)
+                  (_videoController != null &&
+                          _videoController!.value.isInitialized)
+                      ? Flexible(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _showPlayPauseButton = true;
+                                        });
+                                        _hideButtonTimer?.cancel();
+                                        _hideButtonTimer = Timer(
+                                            const Duration(milliseconds: 1000),
+                                            () {
+                                          setState(() {
+                                            _showPlayPauseButton = false;
+                                          });
+                                        });
+                                      },
+                                      child: AspectRatio(
+                                        aspectRatio:
+                                            _videoController!.value.aspectRatio,
+                                        child: VideoPlayer(_videoController!),
+                                      ),
+                                    ),
+                                    if (_isBuffering)
+                                      const Center(
+                                        child: LoadingIndicator(),
+                                      ),
+                                    AnimatedOpacity(
+                                      opacity: _showPlayPauseButton ? 1.0 : 0.0,
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      child: GestureDetector(
+                                        onTap: _togglePlayPause,
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.black45,
+                                          radius: 30.r,
+                                          child: Icon(
+                                            isPlaying
+                                                ? Icons.pause
+                                                : Icons.play_arrow,
+                                            color: Colors.white,
+                                            size: 30,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (!isStory)
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 8.w),
+                                      child: Text(
+                                        _formatDuration(
+                                          _videoController!.value.position,
+                                        ),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14.sp,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 8.w,
+                                        ),
+                                        child: VideoProgressIndicator(
+                                          _videoController!,
+                                          allowScrubbing: true,
+                                          colors: const VideoProgressColors(
+                                            playedColor: Colors.red,
+                                            bufferedColor: Colors.grey,
+                                            backgroundColor: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 8.w),
+                                      child: Text(
+                                        _formatDuration(
+                                          _videoController!.value.duration,
+                                        ),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14.sp,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        )
+                      : const LoadingIndicator()
+                else
+                  _localFile != null
+                      ? Flexible(
+                          child: PhotoView(
+                            minScale: PhotoViewComputedScale.contained,
+                            maxScale: 5.0,
+                            initialScale: PhotoViewComputedScale.contained,
+                            imageProvider: FileImage(_localFile!),
+                            backgroundDecoration:
+                                const BoxDecoration(color: Colors.black),
+                          ),
+                        )
+                      : Flexible(
+                          child: PhotoView(
+                            minScale: PhotoViewComputedScale.contained,
+                            maxScale: 5.0,
+                            initialScale: PhotoViewComputedScale.contained,
+                            imageProvider: NetworkImage(mediaPath),
+                            backgroundDecoration:
+                                const BoxDecoration(color: Colors.black),
+                          ),
+                        ),
+                if (isStory)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 14.h),
+                    child: Text(
+                      mediaTitle,
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w),
-                    child: VideoProgressIndicator(
-                      _videoController!,
-                      allowScrubbing: true,
-                      colors: const VideoProgressColors(
-                        playedColor: Colors.red,
-                        bufferedColor: Colors.grey,
-                        backgroundColor: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w),
-                  child: Text(
-                    _formatDuration(
-                      _videoController!.value.duration,
-                    ),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                ),
               ],
             ),
-          ],
-        )
-            : const LoadingIndicator()
-            : _localFile != null
-            ? PhotoView(
-          minScale: PhotoViewComputedScale.contained,
-          maxScale: 5.0,
-          initialScale: PhotoViewComputedScale.contained,
-          imageProvider: FileImage(_localFile!),
-          backgroundDecoration: const BoxDecoration(
-            color: Colors.black,
           ),
-        )
-            : PhotoView(
-          minScale: PhotoViewComputedScale.contained,
-          maxScale: 5.0,
-          initialScale: PhotoViewComputedScale.contained,
-          imageProvider: NetworkImage(mediaPath),
-          backgroundDecoration: const BoxDecoration(
-            color: Colors.black,
-          ),
-        ),
+          if (isStory)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(
+                value: _progress,
+                backgroundColor: Colors.black.withOpacity(0.5),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
+              ),
+            ),
+        ],
       ),
     );
   }

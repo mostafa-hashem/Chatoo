@@ -238,18 +238,18 @@ class FriendTitle extends StatelessWidget {
           userName ?? 'Unknown',
           style: GoogleFonts.novaSquare(
             fontWeight: FontWeight.bold,
-            fontSize: 14.sp,
+            fontSize: 12.sp,
           ),
           overflow: TextOverflow.ellipsis,
         ),
         const Spacer(),
         Text(
-          sentAt != null
-              ? getFormattedTime(sentAt!.millisecondsSinceEpoch)
+          sentAt?.toDate().toLocal() != null
+              ? getFormattedTime(sentAt!.toDate().toLocal().millisecondsSinceEpoch)
               : '',
           style: GoogleFonts.novaSquare(
             fontWeight: FontWeight.w700,
-            fontSize: 10.sp,
+            fontSize: 9.sp,
           ),
           overflow: TextOverflow.ellipsis,
         ),
@@ -279,7 +279,7 @@ class RecentMessage extends StatelessWidget {
             isTyping ? 'Typing...' : recentMessage ?? '',
             style: GoogleFonts.novaSquare(
               fontWeight: FontWeight.w700,
-              fontSize: 12.sp,
+              fontSize: 10.sp,
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -296,7 +296,7 @@ class RecentMessage extends StatelessWidget {
               "$unreadCount",
               style: GoogleFonts.novaSquare(
                 fontWeight: FontWeight.w400,
-                fontSize: 12.sp,
+                fontSize: 10.sp,
                 color: Colors.white,
               ),
               overflow: TextOverflow.ellipsis,

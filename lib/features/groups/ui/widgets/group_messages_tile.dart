@@ -172,6 +172,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                       )) {
                         await launchUrl(
                           Uri.parse(widget.groupMessage.message!),
+                          mode: LaunchMode.externalApplication,
                         );
                       } else {
                         throw 'Could not launch ${widget.groupMessage.message}';
@@ -191,7 +192,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
             SizedBox(height: 5.h),
             Text(
               getFormattedTime(
-                widget.groupMessage.sentAt!.millisecondsSinceEpoch,
+                widget.groupMessage.sentAt!.toLocal().millisecondsSinceEpoch,
               ),
               style: TextStyle(
                 fontSize: 9.sp,
@@ -204,7 +205,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
       case MessageType.image:
         return ImageWidget(
           imagePath: widget.groupMessage.mediaUrls?.first ?? '',
-          sentAt: widget.groupMessage.sentAt?.millisecondsSinceEpoch ??
+          sentAt: widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
               DateTime.now().millisecondsSinceEpoch,
           senderName: widget.groupMessage.sender?.userName ?? '',
           senderId: widget.groupMessage.sender?.id ?? '',
@@ -213,7 +214,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
       case MessageType.video:
         return VideoWidget(
           videoPath: widget.groupMessage.mediaUrls?.first ?? '',
-          sentAt: widget.groupMessage.sentAt?.millisecondsSinceEpoch ??
+          sentAt: widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
               DateTime.now().millisecondsSinceEpoch,
           senderName: widget.groupMessage.sender?.userName ?? '',
           senderId: widget.groupMessage.sender?.id ?? '',
@@ -222,7 +223,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
       case MessageType.record:
         return RecordTile(
           recordPath: widget.groupMessage.mediaUrls?.first ?? '',
-          sentAt: widget.groupMessage.sentAt?.millisecondsSinceEpoch ??
+          sentAt: widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
               DateTime.now().millisecondsSinceEpoch,
           senderName: widget.groupMessage.sender?.userName ?? '',
           senderId: widget.groupMessage.sender?.id ?? '',
