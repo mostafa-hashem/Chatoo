@@ -197,7 +197,7 @@ class _UserStoryState extends State<UserStory> {
                     context,
                     Routes.storyView,
                     arguments: {
-                      'stories': userStories.reversed.toList(),
+                      'stories': userStories,
                       'initialIndex': 0,
                       'myStory': true,
                     },

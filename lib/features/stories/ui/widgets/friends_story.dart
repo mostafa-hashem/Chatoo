@@ -48,7 +48,7 @@ class _FriendsStoryState extends State<FriendsStory> {
           itemCount: friendCubit.combinedFriends.length,
           itemBuilder: (context, index) {
             final combinedFriend = friendCubit.combinedFriends[index];
-            final stories = combinedFriend.stories ?? [];
+            final stories = combinedFriend.stories?.reversed.toList() ?? [];
 
             if (stories.isEmpty) {
               return const SizedBox.shrink();
@@ -106,7 +106,7 @@ class _FriendsStoryState extends State<FriendsStory> {
                   context,
                   Routes.storyView,
                   arguments: {
-                    'stories': stories.reversed.toList(),
+                    'stories': stories,
                     'initialIndex': 0,
                     'myStory' : false,
                   },
@@ -119,4 +119,3 @@ class _FriendsStoryState extends State<FriendsStory> {
     );
   }
 }
-

@@ -20,6 +20,7 @@ class StoryView extends StatefulWidget {
 class _StoryViewState extends State<StoryView> {
   VideoPlayerController? _videoController;
   bool isVideo = false;
+  bool isLoading = true;
   String mediaTitle = '';
   String fileName = '';
   List<Story> stories = [];
@@ -29,7 +30,9 @@ class _StoryViewState extends State<StoryView> {
   Timer? _storyTimer;
   double _progress = 0.0;
   static const int defaultStoryDurationSeconds = 10;
+  static const Duration storyTransitionDelay = Duration(milliseconds: 500); // مدة التأخير بين الاستوري
   File? _localFile;
+  final PageController _pageController = PageController();
 
   @override
   void didChangeDependencies() {
@@ -39,6 +42,12 @@ class _StoryViewState extends State<StoryView> {
       stories = args['stories'] as List<Story>;
       currentIndex = args['initialIndex'] as int;
       myStory = args['myStory'] as bool;
+      _pageController.addListener(() {
+        setState(() {
+          currentIndex = _pageController.page!.round();
+          _loadStory();
+        });
+      });
       _loadStory();
     }
   }
@@ -61,17 +70,26 @@ class _StoryViewState extends State<StoryView> {
     mediaTitle = story.storyTitle ?? '';
     fileName = extractFileName(story.mediaUrl!, isVideo);
 
+    _videoController?.dispose();
+    _videoController = null;
+    isLoading = true;
     if (isVideo) {
       _initializeVideoController(story.mediaUrl!);
     } else {
       _startStoryTimer(const Duration(seconds: defaultStoryDurationSeconds));
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   Future<void> _initializeVideoController(String videoUrl) async {
     _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
       ..initialize().then((_) {
-        setState(() {});
+        if (!mounted) return;
+        setState(() {
+          isLoading = false;
+        });
         _videoController!.play();
         isPlaying = true;
         _videoController!.addListener(_updatePosition);
@@ -83,8 +101,9 @@ class _StoryViewState extends State<StoryView> {
     _storyTimer?.cancel();
     _progress = 0.0;
     final int storyDurationSeconds =
-        isVideo ? duration.inSeconds : defaultStoryDurationSeconds;
+    isVideo ? duration.inSeconds : defaultStoryDurationSeconds;
     _storyTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (!mounted) return;
       setState(() {
         _progress += 0.1 / storyDurationSeconds;
         if (_progress >= 1.0) {
@@ -95,12 +114,13 @@ class _StoryViewState extends State<StoryView> {
     });
   }
 
-  void _goToNextStory() {
+  Future<void> _goToNextStory() async {
     if (currentIndex < stories.length - 1) {
-      setState(() {
-        currentIndex++;
-        _loadStory();
-      });
+      await Future.delayed(storyTransitionDelay);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.linear,
+      );
     } else {
       Navigator.of(context).pop();
     }
@@ -108,37 +128,36 @@ class _StoryViewState extends State<StoryView> {
 
   void _goToPreviousStory() {
     if (currentIndex > 0) {
-      setState(() {
-        currentIndex--;
-        _loadStory();
-      });
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.linear,
+      );
     } else {
       Navigator.of(context).pop();
     }
   }
 
   void _updatePosition() {
-    if (_videoController != null) {
-      setState(() {});
-    }
+    if (!mounted) return;
+    setState(() {});
   }
 
   String extractFileName(String url, bool isVideo) {
     String fileName = '';
-    if(isVideo){
-       fileName = url.split('/').last;
-       final dimensionsAndDuration = fileName.split('%5E');
-       final dimensions = dimensionsAndDuration[0].split('x');
-       final durationStr = dimensionsAndDuration[1].split('?').first;
+    if (isVideo) {
+      fileName = url.split('/').last;
+      final dimensionsAndDuration = fileName.split('%5E');
+      final dimensions = dimensionsAndDuration[0].split('x');
+      final durationStr = dimensionsAndDuration[1].split('?').first;
 
-       final width = double.tryParse(dimensions[0].split('%2F').last);
-       final height = double.tryParse(dimensions[1]);
+      final width = double.tryParse(dimensions[0].split('%2F').last);
+      final height = double.tryParse(dimensions[1]);
 
       return '${width}x$height^$durationStr';
-    }else{
-    final Uri uri = Uri.parse(url);
-    final String path = uri.path;
-     return path.split('%2F').last.split('?').last;
+    } else {
+      final Uri uri = Uri.parse(url);
+      final String path = uri.path;
+      return path.split('%2F').last.split('?').last;
     }
   }
 
@@ -161,10 +180,10 @@ class _StoryViewState extends State<StoryView> {
 
   @override
   void dispose() {
-    if (_videoController != null) {
-      _videoController!.dispose();
-    }
+    _videoController?.removeListener(_updatePosition);
+    _videoController?.dispose();
     _storyTimer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -172,7 +191,6 @@ class _StoryViewState extends State<StoryView> {
   Widget build(BuildContext context) {
     final storyCubit = StoriesCubit.get(context);
     _checkTextDirection(mediaTitle);
-    final story = stories[currentIndex];
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -180,10 +198,10 @@ class _StoryViewState extends State<StoryView> {
             IconButton(
               onPressed: () {
                 storyCubit
-                    .deleteStory(fileName: fileName, storyId: story.id!)
+                    .deleteStory(fileName: fileName, storyId: stories[currentIndex].id!)
                     .whenComplete(
                       () => _goToNextStory(),
-                    );
+                );
               },
               icon: const Icon(Icons.delete_forever_outlined),
             ),
@@ -191,75 +209,91 @@ class _StoryViewState extends State<StoryView> {
       ),
       body: Stack(
         children: [
-          GestureDetector(
-            onTapDown: (details) {
-              final screenWidth = MediaQuery.of(context).size.width;
-              final dx = details.globalPosition.dx;
-              if (dx < screenWidth / 3) {
-                _goToPreviousStory();
-              } else if (dx > 2 * screenWidth / 3) {
-                _goToNextStory();
-              }
+          PageView.builder(
+            controller: _pageController,
+            itemCount: stories.length,
+            itemBuilder: (context, index) {
+              final story = stories[index];
+              return GestureDetector(
+                onTapDown: (details) {
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  final dx = details.globalPosition.dx;
+                  if (dx < screenWidth / 3) {
+                    _goToPreviousStory();
+                  } else if (dx > 2 * screenWidth / 3) {
+                    _goToNextStory();
+                  }
+                },
+                child: Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isVideo)
+                            (_videoController != null &&
+                                _videoController!.value.isInitialized)
+                                ? Flexible(
+                              child: AspectRatio(
+                                aspectRatio:
+                                _videoController!.value.aspectRatio,
+                                child: VideoPlayer(_videoController!),
+                              ),
+                            )
+                                : const SizedBox.shrink()
+                          else
+                            _localFile != null
+                                ? Expanded(
+                              child: PhotoView(
+                                minScale: PhotoViewComputedScale.contained,
+                                maxScale: 5.0,
+                                initialScale:
+                                PhotoViewComputedScale.contained,
+                                imageProvider: FileImage(_localFile!),
+                                backgroundDecoration:
+                                const BoxDecoration(color: Colors.black),
+                              ),
+                            )
+                                : Expanded(
+                              child: PhotoView(
+                                minScale: PhotoViewComputedScale.contained,
+                                maxScale: 5.0,
+                                initialScale:
+                                PhotoViewComputedScale.contained,
+                                imageProvider:
+                                NetworkImage(story.mediaUrl!),
+                                backgroundDecoration:
+                                const BoxDecoration(color: Colors.black),
+                              ),
+                            ),
+                        ],
+                      ),
+                      if (isLoading) const Center(child: LoadingIndicator()),
+                    ],
+                  ),
+                ),
+              );
             },
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (isVideo)
-                    (_videoController != null &&
-                            _videoController!.value.isInitialized)
-                        ? Flexible(
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                AspectRatio(
-                                  aspectRatio:
-                                      _videoController!.value.aspectRatio,
-                                  child: VideoPlayer(_videoController!),
-                                ),
-                                if (!isPlaying)
-                                  const Center(
-                                    child: LoadingIndicator(),
-                                  ),
-                              ],
-                            ),
-                          )
-                        : const LoadingIndicator()
-                  else
-                    _localFile != null
-                        ? Expanded(
-                            child: PhotoView(
-                              minScale: PhotoViewComputedScale.contained,
-                              maxScale: 5.0,
-                              initialScale: PhotoViewComputedScale.contained,
-                              imageProvider: FileImage(_localFile!),
-                              backgroundDecoration:
-                                  const BoxDecoration(color: Colors.black),
-                            ),
-                          )
-                        : Expanded(
-                            child: PhotoView(
-                              minScale: PhotoViewComputedScale.contained,
-                              maxScale: 5.0,
-                              initialScale: PhotoViewComputedScale.contained,
-                              imageProvider: NetworkImage(story.mediaUrl!),
-                              backgroundDecoration:
-                                  const BoxDecoration(color: Colors.black),
-                            ),
-                          ),
-                ],
-              ),
-            ),
           ),
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: LinearProgressIndicator(
-              value: _progress,
-              backgroundColor: Colors.black.withOpacity(0.5),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
+            child: Row(
+              children: List.generate(stories.length, (index) {
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                    child: LinearProgressIndicator(
+                      value: currentIndex == index ? _progress : (currentIndex > index ? 1.0 : 0.0),
+                      backgroundColor: Colors.black.withOpacity(0.5),
+                      valueColor:
+                      const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
+                    ),
+                  ),
+                );
+              }),
             ),
           ),
           Positioned(
