@@ -69,22 +69,24 @@ class ProfileFirebaseService {
     }
   }
 
-  Future<List<Story>> fetchStories() async {
+  Stream<List<Story>> fetchStories() {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    final querySnapshot = await FirebaseFirestore.instance
+
+    return FirebaseFirestore.instance
         .collection('stories')
         .where(
       'uploadedAt',
-      isGreaterThanOrEqualTo:
-      DateTime.now().subtract(const Duration(hours: 24)),
+      isGreaterThanOrEqualTo: DateTime.now().subtract(const Duration(hours: 24)),
     )
         .orderBy('uploadedAt', descending: true)
-        .get();
-
-    return querySnapshot.docs
-        .map((doc) => Story.fromJson(doc.data()))
-        .where((story) => story.userId == currentUserId)
-        .toList();
+        .snapshots()
+        .map((querySnapshot) {
+      return querySnapshot.docs
+          .map((doc) => Story.fromJson(doc.data()))
+          .where((story) => story.userId == currentUserId)
+          .toList();
+    });
   }
+
 
 }

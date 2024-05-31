@@ -23,7 +23,7 @@ class GroupCubit extends Cubit<GroupStates> {
   List<User?> allGroupMembers = [];
   List<User> allGroupRequests = [];
   List<Group> searchedGroups = [];
-  List<GroupMessage> filteredMessages = [];
+  Map<String, List<GroupMessage>> filteredMessages = {};
   ScrollController scrollController = ScrollController();
   List<String> mediaUrls = [];
   TextEditingController messageController = TextEditingController();
@@ -147,11 +147,12 @@ class GroupCubit extends Cubit<GroupStates> {
     emit(GetAllGroupMessagesLoading());
     try {
       _groupFirebaseServices.getAllGroupMessages(groupId).listen((messages) {
-        filteredMessages =
+        filteredMessages[groupId] =
             messages.where((message) => message.sentAt != null).toList();
 
         if (filteredMessages.isNotEmpty) {
-          filteredMessages.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
+          filteredMessages[groupId]
+              ?.sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
         }
         emit(GetAllGroupMessagesSuccess());
       });
@@ -427,21 +428,25 @@ class GroupCubit extends Cubit<GroupStates> {
         groupId,
         messageId,
         senderName,
-        filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).message!
+        filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
+                .message!
             : '',
-        filteredMessages.length > 2
-            ? filteredMessages
-                .elementAt(filteredMessages.length - 2)
+        filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
                 .sender!
                 .userName!
             : '',
-        filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt!
+        filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
+                .sentAt!
             : null,
-        filteredMessages.length > 2
-            ? filteredMessages
-                .elementAt(filteredMessages.length - 2)
+        filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
                 .sender!
                 .id!
             : '',

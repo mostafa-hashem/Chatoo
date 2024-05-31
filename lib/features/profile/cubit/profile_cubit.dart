@@ -64,11 +64,13 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> fetchStories() async {
+  void fetchStories()  {
     emit(GetUserStoriesLoading());
     try {
-      stories = await profileFirebaseService.fetchStories();
-      emit(GetUserStoriesSuccess());
+      profileFirebaseService.fetchStories().listen((newStories) {
+        stories = newStories;
+        emit(GetUserStoriesSuccess());
+      });
     } catch (e) {
       emit(
         GetUserStoriesError(Failure.fromException(e).message),

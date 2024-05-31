@@ -205,4 +205,3 @@ Future<void> updateStatus(bool status) async {
     {"onLine": status, "lastSeen": Timestamp.now().toDate().toLocal()},
   );
 }
-

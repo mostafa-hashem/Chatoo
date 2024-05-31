@@ -12,6 +12,7 @@ import 'package:chat_app/features/groups/ui/screens/groups_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/join_group_request_screen.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
 import 'package:chat_app/features/stories/ui/screens/stories_screen.dart';
+import 'package:chat_app/features/stories/ui/screens/story_view.dart';
 import 'package:chat_app/ui/screens/home_layout.dart';
 import 'package:chat_app/ui/screens/media_view.dart';
 import 'package:chat_app/ui/screens/splash_screen.dart';
@@ -39,6 +40,7 @@ class Routes {
   static const String profile = "/profile";
   static const String suggestionsScreen = "/suggestionsScreen";
   static const String mediaView = "/mediaView";
+  static const String storyView = "/storyView";
 }
 
 Route? onGenerateRoute(RouteSettings routeSettings) {
@@ -131,6 +133,11 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
     case Routes.mediaView:
       return MaterialPageRoute(
         builder: (_) => const MediaView(),
+        settings: routeSettings,
+      );
+      case Routes.storyView:
+      return MaterialPageRoute(
+        builder: (_) => const StoryView(),
         settings: routeSettings,
       );
     default:

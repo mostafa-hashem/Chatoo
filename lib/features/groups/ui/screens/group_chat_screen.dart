@@ -6,6 +6,7 @@ import 'package:chat_app/features/groups/ui/widgets/group_chat_messages.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_type_message_widget.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -90,7 +91,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               Flexible(
                 child: Text(
                   groupData.groupName!,
-                  style: GoogleFonts.ubuntu(fontWeight: FontWeight.w500, fontSize: 14.sp),
+                  style: GoogleFonts.ubuntu(
+                      fontWeight: FontWeight.w500, fontSize: 14.sp),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -149,7 +151,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   currentState is GetAllGroupMessagesError ||
                   currentState is GetAllGroupMessagesLoading,
               builder: (_, state) {
-                return GroupChatMessages();
+                if (state is GetAllGroupMessagesLoading) {
+                  return const LoadingIndicator();
+                }
+                return GroupChatMessages(
+                  groupId: groupData.groupId ?? '',
+                );
               },
             ),
             SizedBox(

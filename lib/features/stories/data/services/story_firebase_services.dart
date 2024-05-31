@@ -15,7 +15,6 @@ class StoryFirebaseServices {
 
   Future<String> uploadStory(
     File mediaFile,
-    String mediaPath,
     String storyCaption,
     Future<String> Function(File imageFile) getFileName,
   ) async {
@@ -25,7 +24,7 @@ class StoryFirebaseServices {
     final Reference storageRef = _storage
         .ref()
         .child(FirebasePath.users)
-        .child('stories').child(mediaPath)
+        .child('stories')
         .child(currentUserId)
         .child(fileName);
 
@@ -48,8 +47,8 @@ class StoryFirebaseServices {
     await _storiesCollection.doc(storyId).update({"id": storyId});
 
     await _usersCollection.doc(currentUserId).update({
-      'stories': FieldValue.arrayUnion([storyId])
-    ,});
+      'stories': FieldValue.arrayUnion([storyId]),
+    });
 
     Future.delayed(const Duration(hours: 24), () {
       deleteStory(storyId, fileName);
@@ -58,32 +57,34 @@ class StoryFirebaseServices {
     return downloadUrl;
   }
 
-  Future<void> deleteStory(String storyId, String fileName) async {
+  Future<void> deleteStory(
+      String storyId, String fileName,) async {
     final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    try {
-      await _storiesCollection.doc(storyId).delete();
 
-      await _usersCollection.doc(currentUserId).update({
-        'stories': FieldValue.arrayRemove([storyId])
-      ,});
+    await _storiesCollection.doc(storyId).delete();
 
-      final Reference storageRef = _storage
-          .ref()
-          .child(FirebasePath.users)
-          .child('stories')
-          .child(currentUserId)
-          .child(fileName);
+    await _usersCollection.doc(currentUserId).update({
+      'stories': FieldValue.arrayRemove([storyId]),
+    });
 
-      await storageRef.delete();
-    } catch (e) {}
+    final Reference storageRef = _storage
+        .ref()
+        .child(FirebasePath.users)
+        .child('stories')
+        .child(currentUserId)
+        .child(fileName);
+
+    await storageRef.delete();
   }
 
   Stream<List<Story>> fetchStories() {
     return FirebaseFirestore.instance
         .collection('stories')
-        .where('uploadedAt',
-            isGreaterThanOrEqualTo:
-                DateTime.now().subtract(const Duration(hours: 24)),)
+        .where(
+          'uploadedAt',
+          isGreaterThanOrEqualTo:
+              DateTime.now().subtract(const Duration(hours: 24)),
+        )
         .orderBy('uploadedAt', descending: true)
         .snapshots()
         .map((querySnapshot) {

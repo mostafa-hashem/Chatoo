@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/stories/ui/screens/edit_story_screen.dart';
+import 'package:chat_app/features/stories/ui/screens/stories_screen.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
@@ -120,20 +121,16 @@ class _UserStoryState extends State<UserStory> {
   Widget build(BuildContext context) {
     final profileCubit = ProfileCubit.get(context);
     return BlocBuilder<ProfileCubit, ProfileState>(
-      buildWhen: (_, current) =>
-          current is GetUserStoriesLoading ||
-          current is GetUserStoriesSuccess ||
-          current is GetUserStoriesError,
       builder: (_, state) {
-        final userStories = profileCubit.stories;
-        final fileName = userStories[0]
+        final userStories = profileCubit.stories.reversed.toList();
+        final fileName = userStories.isNotEmpty ? userStories.first
             .mediaUrl
             ?.split('%')
             .last
             .split('.')
             .last
             .substring(0, 3)
-            .toLowerCase();
+            .toLowerCase() : '';
         final isVideo = ['mp4', 'mov', 'avi', 'mkv'].contains(fileName);
 
         if (isVideo && !_thumbnails.containsKey(userStories.first.mediaUrl)) {
@@ -143,40 +140,33 @@ class _UserStoryState extends State<UserStory> {
           children: [
             Stack(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    if (userStories.isNotEmpty) {
-                      Navigator.pushNamed(
-                        context,
-                        Routes.mediaView,
-                        arguments: {
-                          'path': userStories.first.mediaUrl,
-                          'isVideo': isVideo,
-                          'isStory': true,
-                          'mediaTitle': userStories.first.storyTitle,
-                        },
-                      );
-                    }
-                  },
-                  child: CircleAvatar(
-                    backgroundImage: userStories.isNotEmpty
-                        ? isVideo
-                            ? (_thumbnails[userStories.first.mediaUrl] != null
-                                ? MemoryImage(
-                                    _thumbnails[userStories.first.mediaUrl]!,
-                                  )
-                                : null)
-                            : NetworkImage(userStories.first.mediaUrl ?? '')
-                                as ImageProvider
-                        : NetworkImage(
-                            profileCubit.user.profileImage ??
-                                'https://via.placeholder.com/150',
-                          ),
-                    radius: 28.r,
-                    child: isVideo &&
-                            _thumbnails[userStories.first.mediaUrl] == null
-                        ? const LoadingIndicator()
-                        : null,
+                CircleAvatar(
+                  backgroundImage: userStories.isNotEmpty
+                      ? isVideo
+                          ? (_thumbnails[userStories.first.mediaUrl] != null
+                              ? MemoryImage(
+                                  _thumbnails[userStories.first.mediaUrl]!,
+                                )
+                              : null)
+                          : NetworkImage(userStories.first.mediaUrl ?? '')
+                              as ImageProvider
+                      : NetworkImage(
+                          profileCubit.user.profileImage ??
+                              'https://via.placeholder.com/150',
+                        ),
+                  radius: 28.r,
+                  child: state is GetUserStoriesLoading
+                      ? const LoadingIndicator()
+                      : isVideo &&
+                              _thumbnails[userStories.first.mediaUrl] == null
+                          ? const LoadingIndicator()
+                          : null,
+                ),
+                CustomPaint(
+                  painter: StoryCirclePainter(storyCount: userStories.length),
+                  child: SizedBox(
+                    width: 56.r,
+                    height: 56.r,
                   ),
                 ),
                 Positioned(
@@ -190,20 +180,36 @@ class _UserStoryState extends State<UserStory> {
                       shape: BoxShape.circle,
                     ),
                     child: GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           _pickImage();
                         },
-                        child: Icon(Icons.add, size: 16.r, color: Colors.white)),
+                        child:
+                            Icon(Icons.add, size: 16.r, color: Colors.white),),
                   ),
                 ),
               ],
             ),
             SizedBox(width: 12.w),
-            Text(
-              "My Status",
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () {
+                if (userStories.isNotEmpty) {
+                  Navigator.pushNamed(
+                    context,
+                    Routes.storyView,
+                    arguments: {
+                      'stories': userStories.reversed.toList(),
+                      'initialIndex': 0,
+                      'myStory': true,
+                    },
+                  );
+                }
+              },
+              child: Text(
+                "My Status",
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

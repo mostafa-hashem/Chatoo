@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:chat_app/features/stories/cubit/stories_cubit.dart';
 import 'package:chat_app/features/stories/cubit/stories_state.dart';
-import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -95,7 +94,6 @@ class _EditStoryScreenState extends State<EditStoryScreen> {
     Fluttertoast.showToast(msg: 'Uploading...');
     storyCubit.uploadStory(
       mediaFile: file,
-      mediaPath: widget.isVideo ? FirebasePath.videos : FirebasePath.images,
       getFileName: widget.isVideo ? getVideoFileName : getImageFileName,
       storyCaption: _textController.text,
     ).catchError((error) {
@@ -195,7 +193,7 @@ class _EditStoryScreenState extends State<EditStoryScreen> {
                             : const CircularProgressIndicator()
                       else
                         Expanded(
-                          child: Image.file(widget.mediaFile, fit: BoxFit.cover),
+                          child: Image.file(widget.mediaFile),
                         ),
                       if (false)
                         Padding(

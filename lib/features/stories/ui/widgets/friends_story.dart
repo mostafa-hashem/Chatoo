@@ -12,7 +12,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class FriendsStory extends StatefulWidget {
-   FriendsStory({super.key});
+  FriendsStory({super.key});
 
   @override
   State<FriendsStory> createState() => _FriendsStoryState();
@@ -39,7 +39,7 @@ class _FriendsStoryState extends State<FriendsStory> {
     final friendCubit = FriendCubit.get(context);
     return BlocBuilder<FriendCubit, FriendStates>(
       buildWhen: (_, current) =>
-          current is GetFriendDataLoading ||
+      current is GetFriendDataLoading ||
           current is GetFriendDataSuccess ||
           current is GetFriendDataSuccess,
       builder: (_, state) {
@@ -74,8 +74,8 @@ class _FriendsStoryState extends State<FriendsStory> {
                   CircleAvatar(
                     backgroundImage: isVideo
                         ? (_friendThumbnails[mediaUrl] != null
-                            ? MemoryImage(_friendThumbnails[mediaUrl]!)
-                            : null)
+                        ? MemoryImage(_friendThumbnails[mediaUrl]!)
+                        : null)
                         : NetworkImage(mediaUrl) as ImageProvider,
                     radius: 28.r,
                     child: isVideo && _friendThumbnails[mediaUrl] == null
@@ -104,12 +104,11 @@ class _FriendsStoryState extends State<FriendsStory> {
               onTap: () {
                 Navigator.pushNamed(
                   context,
-                  Routes.mediaView,
+                  Routes.storyView,
                   arguments: {
-                    'path': mediaUrl,
-                    'isVideo': isVideo,
-                    'isStory': true,
-                    'mediaTitle': stories.first.storyTitle ?? '',
+                    'stories': stories.reversed.toList(),
+                    'initialIndex': 0,
+                    'myStory' : false,
                   },
                 );
               },
@@ -120,3 +119,4 @@ class _FriendsStoryState extends State<FriendsStory> {
     );
   }
 }
+

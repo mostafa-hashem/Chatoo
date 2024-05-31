@@ -7,8 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GroupChatMessages extends StatefulWidget {
+  final String groupId;
+
   GroupChatMessages({
     super.key,
+    required this.groupId,
   });
 
   @override
@@ -18,19 +21,22 @@ class GroupChatMessages extends StatefulWidget {
 class _GroupChatMessagesState extends State<GroupChatMessages> {
   @override
   Widget build(BuildContext context) {
-    final groupMessages = GroupCubit.get(context).filteredMessages.toList();
+    final groupMessages =
+        GroupCubit.get(context).filteredMessages[widget.groupId]?.toList();
 
     final Map<String, List<GroupMessage>> messagesByDate = {};
-    for (final message in groupMessages) {
-      final String date = getFormattedDateHeader(message.sentAt!.millisecondsSinceEpoch);
+    for (final message in groupMessages ?? []) {
+      final String date =
+          getFormattedDateHeader(message.sentAt!.millisecondsSinceEpoch as int);
       if (messagesByDate.containsKey(date)) {
-        messagesByDate[date]!.add(message);
+        messagesByDate[date]!.add(message as GroupMessage);
       } else {
-        messagesByDate[date] = [message];
+        messagesByDate[date] = [message as GroupMessage];
       }
     }
 
-    final List<MapEntry<String, List<GroupMessage>>> dateEntries = messagesByDate.entries.toList().reversed.toList();
+    final List<MapEntry<String, List<GroupMessage>>> dateEntries =
+        messagesByDate.entries.toList().reversed.toList();
 
     return Expanded(
       child: ListView.builder(
@@ -50,7 +56,8 @@ class _GroupChatMessagesState extends State<GroupChatMessages> {
                 child: Center(
                   child: Text(
                     date,
-                    style: TextStyle(fontSize: 12.sp, color: AppColors.primary),
+                    style: TextStyle(
+                        fontSize: 12.sp, color: AppColors.primary),
                   ),
                 ),
               ),

@@ -26,27 +26,23 @@ class StoriesScreen extends StatelessWidget {
 
 class StoryCirclePainter extends CustomPainter {
   final int storyCount;
-  final double strokeWidth = 3.0;
 
   StoryCirclePainter({required this.storyCount});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
+    final paint = Paint()
       ..color = Colors.green
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
+      ..strokeWidth = 3.0
+      ..style = PaintingStyle.stroke;
 
-    final double radius = (size.width / 2) - strokeWidth / 2;
-
+    final angle = 360 / storyCount;
+    final radius = size.width / 2;
     for (int i = 0; i < storyCount; i++) {
-      final double startAngle = (2 * 3.14159 * i) / storyCount;
-      final double sweepAngle = (2 * 3.14159) / storyCount;
+      final startAngle = radians(i * angle);
+      final sweepAngle = radians(angle - 2); // to add space between segments
       canvas.drawArc(
-        Rect.fromCircle(
-          center: Offset(size.width / 2, size.height / 2),
-          radius: radius,
-        ),
+        Rect.fromCircle(center: Offset(size.width / 2, size.height / 2), radius: radius),
         startAngle,
         sweepAngle,
         false,
@@ -56,7 +52,11 @@ class StoryCirclePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+  bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
+  }
+
+  double radians(double degrees) {
+    return degrees * (3.1415926535897932 / 180);
   }
 }

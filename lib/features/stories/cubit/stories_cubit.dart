@@ -14,7 +14,6 @@ class StoriesCubit extends Cubit<StoriesState> {
 
   Future<void> uploadStory({
     required File mediaFile,
-    required String mediaPath,
     required String storyCaption,
     required Future<String> Function(File imageFile) getFileName,
   }) async {
@@ -22,12 +21,28 @@ class StoriesCubit extends Cubit<StoriesState> {
     try {
       await _storyFirebaseServices.uploadStory(
         mediaFile,
-        mediaPath,
         storyCaption,
         getFileName,
       );
+      emit(UploadStorySuccess());
     } catch (e) {
       emit(UploadStoryError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> deleteStory({
+    required String storyId,
+    required String fileName,
+  }) async {
+    emit(DeleteStoryLoading());
+    try {
+      await _storyFirebaseServices.deleteStory(
+        storyId,
+        fileName,
+      );
+      emit(DeleteStorySuccess());
+    } catch (e) {
+      emit(DeleteStoryError(Failure.fromException(e).message));
     }
   }
 }

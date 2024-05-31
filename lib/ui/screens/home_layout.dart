@@ -35,8 +35,8 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
     Future.wait([
       GroupCubit.get(context).getAllUserGroups(),
       FriendCubit.get(context).getAllUserRequests(),
-      ProfileCubit.get(context).fetchStories(),
     ]);
+    ProfileCubit.get(context).fetchStories();
     FriendCubit.get(context).getCombinedFriends();
   }
 

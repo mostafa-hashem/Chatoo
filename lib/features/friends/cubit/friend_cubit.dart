@@ -23,7 +23,7 @@ class FriendCubit extends Cubit<FriendStates> {
   List<String> mutedFriends = [];
   List<User> searchedFriends = [];
   User? friendData;
-  List<FriendMessage> filteredMessages = [];
+  Map<String, List<FriendMessage>> filteredMessages = {};
   ScrollController scrollController = ScrollController();
   List<String> mediaUrls = [];
   TextEditingController messageController = TextEditingController();
@@ -148,12 +148,12 @@ class FriendCubit extends Cubit<FriendStates> {
     emit(GetAllFriendMessagesLoading());
     try {
       _friendFirebaseServices.getAllUserMessages(friendId).listen((messages) {
-        filteredMessages = messages
+        filteredMessages[friendId] = messages
             .where((message) => message.sentAt?.toLocal() != null)
             .toList();
 
         if (filteredMessages.isNotEmpty) {
-          filteredMessages.sort(
+          filteredMessages[friendId]?.sort(
             (a, b) => b.sentAt!.toLocal().compareTo(a.sentAt!.toLocal()),
           );
         }
@@ -344,17 +344,17 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.deleteMessageForMe(
         friendId,
         messageId,
-        filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).message
+        filteredMessages[friendId]!.length > 2
+            ? filteredMessages[friendId]!.elementAt(filteredMessages[friendId]!.length - 2).message
             : '',
         filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).sender ==
+            ? filteredMessages[friendId]?.elementAt(filteredMessages.length - 2).sender ==
                     currentUserId
                 ? currentUserName
                 : friendName
             : '',
         filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt
+            ? filteredMessages[friendId]?.elementAt(filteredMessages.length - 2).sentAt
             : null,
       );
       emit(DeleteMessageForMeSuccess());
@@ -375,17 +375,17 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.deleteMessageForAll(
         friendId,
         messageId,
-        filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).message
+        filteredMessages[friendId]!.length > 2
+            ? filteredMessages[friendId]!.elementAt(filteredMessages[friendId]!.length - 2).message
             : '',
         filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).sender ==
+            ? filteredMessages[friendId]!.elementAt(filteredMessages.length - 2).sender ==
                     currentUserId
                 ? currentUserName
                 : friendName
             : '',
         filteredMessages.length > 2
-            ? filteredMessages.elementAt(filteredMessages.length - 2).sentAt!
+            ? filteredMessages[friendId]!.elementAt(filteredMessages.length - 2).sentAt!
             : null,
       );
       emit(DeleteMessageForMeAndFriendSuccess());
