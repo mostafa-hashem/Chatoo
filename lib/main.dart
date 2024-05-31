@@ -144,6 +144,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: darkTheme,
+            themeAnimationStyle: AnimationStyle(
+              curve: Curves.easeInOutCubicEmphasized,
+              duration: const Duration(milliseconds: 700),
+            ),
             themeMode: provider.themeMode,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

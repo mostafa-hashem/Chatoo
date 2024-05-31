@@ -37,7 +37,6 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
         child: Scaffold(
           appBar: AppBar(
             toolbarHeight: MediaQuery.sizeOf(context).height * 0.1,
-            backgroundColor: Colors.transparent,
             actions: [
               if (profileCubit.friends!.contains(friendData.id))
                 BlocListener<FriendCubit, FriendStates>(

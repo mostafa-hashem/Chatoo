@@ -23,7 +23,7 @@ class Story {
         userId = '',
         mediaUrl = '',
         fileName = '',
-        uploadedAt = DateTime.now().toLocal();
+        uploadedAt = Timestamp.now().toDate();
 
   Story.fromJson(Map<String, dynamic> json) {
     if (json['id'] != null) {
@@ -44,7 +44,7 @@ class Story {
       if (storyTitle != null) 'storyTitle': storyTitle,
       'userId': userId,
       'mediaUrl': mediaUrl,
-      'uploadedAt': Timestamp.fromDate(uploadedAt!).toDate().toLocal(),
+      'uploadedAt': Timestamp.now(),
     };
   }
 }

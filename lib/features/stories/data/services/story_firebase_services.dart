@@ -36,7 +36,6 @@ class StoryFirebaseServices {
       Story(
         userId: currentUserId,
         mediaUrl: downloadUrl,
-        uploadedAt: DateTime.now().toLocal(),
         fileName: fileName,
         storyTitle: storyCaption,
       ).toJson(),

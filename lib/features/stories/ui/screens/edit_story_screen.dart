@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:chat_app/features/stories/cubit/stories_cubit.dart';
 import 'package:chat_app/features/stories/cubit/stories_state.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -154,95 +155,88 @@ class _EditStoryScreenState extends State<EditStoryScreen> {
         body: Stack(
           children: [
             Center(
-              child: BlocListener<StoriesCubit, StoriesState>(
-                listener: (_, state) {
-                  if (state is UploadStorySuccess) {
-                    Fluttertoast.showToast(msg: 'Story uploaded');
-                  }
-                },
-                child: GestureDetector(
-                  onTap: _togglePlayPause,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (widget.isVideo)
-                        (_videoPlayerController.value.isInitialized)
-                            ? Flexible(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              AspectRatio(
-                                aspectRatio: _videoPlayerController.value.aspectRatio,
-                                child: VideoPlayer(_videoPlayerController),
-                              ),
-                              AnimatedOpacity(
-                                opacity: _showPlayPauseButton ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 300),
-                                child: IconButton(
-                                  icon: Icon(
-                                    isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: Colors.white,
-                                    size: 50,
-                                  ),
-                                  onPressed: _togglePlayPause,
+              child: GestureDetector(
+                onTap: _togglePlayPause,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (widget.isVideo)
+                      (_videoPlayerController.value.isInitialized)
+                          ? Flexible(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            AspectRatio(
+                              aspectRatio: _videoPlayerController.value.aspectRatio,
+                              child: VideoPlayer(_videoPlayerController),
+                            ),
+                            AnimatedOpacity(
+                              opacity: _showPlayPauseButton ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: IconButton(
+                                icon: Icon(
+                                  isPlaying ? Icons.pause : Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 50,
                                 ),
+                                onPressed: _togglePlayPause,
                               ),
-                            ],
-                          ),
-                        )
-                            : const CircularProgressIndicator()
-                      else
-                        Expanded(
-                          child: Image.file(widget.mediaFile),
+                            ),
+                          ],
                         ),
-                      if (false)
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Text('Start: ${_startTrim.inSeconds} s'),
-                                  Expanded(
-                                    child: Slider(
-                                      value: _startTrim.inSeconds.toDouble(),
-                                      max: _videoPlayerController
-                                          .value.duration.inSeconds
-                                          .toDouble(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _startTrim =
-                                              Duration(seconds: value.toInt());
-                                        });
-                                      },
-                                    ),
+                      )
+                          : const LoadingIndicator()
+                    else
+                      Expanded(
+                        child: Image.file(widget.mediaFile, fit: BoxFit.contain,),
+                      ),
+                    if (false)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text('Start: ${_startTrim.inSeconds} s'),
+                                Expanded(
+                                  child: Slider(
+                                    value: _startTrim.inSeconds.toDouble(),
+                                    max: _videoPlayerController
+                                        .value.duration.inSeconds
+                                        .toDouble(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _startTrim =
+                                            Duration(seconds: value.toInt());
+                                      });
+                                    },
                                   ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text('End: ${_endTrim.inSeconds} s'),
-                                  Expanded(
-                                    child: Slider(
-                                      value: _endTrim.inSeconds.toDouble(),
-                                      max: _videoPlayerController
-                                          .value.duration.inSeconds
-                                          .toDouble(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _endTrim =
-                                              Duration(seconds: value.toInt());
-                                        });
-                                      },
-                                    ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text('End: ${_endTrim.inSeconds} s'),
+                                Expanded(
+                                  child: Slider(
+                                    value: _endTrim.inSeconds.toDouble(),
+                                    max: _videoPlayerController
+                                        .value.duration.inSeconds
+                                        .toDouble(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _endTrim =
+                                            Duration(seconds: value.toInt());
+                                      });
+                                    },
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               ),
             ),

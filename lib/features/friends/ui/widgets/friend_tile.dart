@@ -130,6 +130,21 @@ class _FriendTileState extends State<FriendTile> {
                   PopupMenuItem(
                     child: TextButton(
                       onPressed: () {
+                        friendCubit.deleteChatForAll(
+                          widget.friendData.user?.id ?? '',
+                          widget.friendData.recentMessageData.addedAt ??
+                              DateTime.now().toLocal(),
+                        );
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text('Delete chat for all'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    child: TextButton(
+                      onPressed: () {
                         friendCubit
                             .removeFriend(widget.friendData.user!.id ?? '');
                         if (context.mounted) {

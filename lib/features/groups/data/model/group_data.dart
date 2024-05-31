@@ -27,7 +27,7 @@ class Group {
     this.recentMessageSender = "",
     this.recentMessageSenderId = "",
     this.recentMessageSentAt,
-    required this.createdAt,
+     this.createdAt,
     this.unreadMessageCounts,
   });
 
@@ -39,7 +39,7 @@ class Group {
     groupAdmins = json['groupAdmins'] as List<dynamic>?;
     members = json['members'] as List<dynamic>?;
     requests =
-        json['requests'] != null ? json['requests'] as List<dynamic>? : [];
+    json['requests'] != null ? json['requests'] as List<dynamic>? : [];
     recentMessage = json['recentMessage'] as String?;
     recentMessageSentAt =
         (json['recentMessageSentAt'] as Timestamp?)?.toDate().toLocal();
@@ -52,20 +52,19 @@ class Group {
   }
 
   Map<String, dynamic> toJson() => {
-        'groupId': groupId,
-        'groupName': groupName,
-        'mainAdminId': mainAdminId,
-        'groupIcon': groupIcon,
-        'groupAdmins': groupAdmins,
-        'members': members,
-        'requests': requests!.isNotEmpty ? requests : [],
-        'recentMessage': recentMessage,
-        'recentMessageSentAt':
-            recentMessageSentAt?.toLocal() ?? DateTime.now().toLocal(),
-        'recentMessageSender': recentMessageSender,
-        'recentMessageSenderId': recentMessageSenderId,
-        'createdAt': createdAt!.toLocal(),
-        if (unreadMessageCounts != null)
-          'unreadMessageCounts': unreadMessageCounts,
-      };
+    'groupId': groupId,
+    'groupName': groupName,
+    'mainAdminId': mainAdminId,
+    'groupIcon': groupIcon,
+    'groupAdmins': groupAdmins,
+    'members': members,
+    'requests': requests!.isNotEmpty ? requests : [],
+    'recentMessage': recentMessage,
+    'recentMessageSentAt': Timestamp.now(),
+    'recentMessageSender': recentMessageSender,
+    'recentMessageSenderId': recentMessageSenderId,
+    'createdAt': Timestamp.now(),
+    if (unreadMessageCounts != null)
+      'unreadMessageCounts': unreadMessageCounts,
+  };
 }

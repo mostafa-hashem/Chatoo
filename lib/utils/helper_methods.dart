@@ -83,7 +83,8 @@ String getFormattedTime(int timestamp) {
 }
 
 String getFormattedDateHeader(int timestamp) {
-  final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal();
+  final DateTime date =
+      DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal();
   final DateTime now = DateTime.now().toLocal();
 
   if (now.year == date.year && now.month == date.month && now.day == date.day) {
@@ -196,12 +197,15 @@ bool containsLink(String message) {
 bool isArabic(String text) {
   return RegExp(r'^[\u0600-\u06FF]+').hasMatch(text);
 }
+
 Future<void> updateStatus(bool status) async {
-  final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-  await FirebaseFirestore.instance
-      .collection(FirebasePath.users)
-      .doc(currentUserId)
-      .update(
-    {"onLine": status, "lastSeen": Timestamp.now().toDate().toLocal()},
-  );
+  if (FirebaseAuth.instance.currentUser != null) {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance
+        .collection(FirebasePath.users)
+        .doc(currentUserId)
+        .update(
+      {"onLine": status, "lastSeen": Timestamp.now().toDate().toLocal()},
+    );
+  }
 }

@@ -107,41 +107,48 @@ class GroupCubit extends Cubit<GroupStates> {
 
   Future<void> getAllUserGroups() async {
     emit(GetAllGroupsLoading());
+
     try {
-      _groupFirebaseServices.getAllUserGroups().listen((groups) {
-        allUserGroups = groups;
-        allUserGroups.sort((a, b) {
-          final recentMessageA = a?.recentMessageSentAt;
-          final recentMessageB = b?.recentMessageSentAt;
+      StreamSubscription<List<Group?>>? groupSubscription;
 
-          if (recentMessageA != null && recentMessageB != null) {
-            return recentMessageB.compareTo(recentMessageA);
-          } else {
-            final createdAtA = a?.createdAt;
-            final createdAtB = b?.createdAt;
+      groupSubscription = _groupFirebaseServices.getAllUserGroups().listen(
+            (groups) {
+          allUserGroups = groups;
+          allUserGroups.sort((a, b) {
+            final recentMessageA = a?.recentMessageSentAt;
+            final recentMessageB = b?.recentMessageSentAt;
 
-            if (createdAtA != null && createdAtB != null) {
-              return createdAtB.compareTo(createdAtA);
-            } else if (createdAtA == null && createdAtB == null) {
-              return 0;
-            } else if (createdAtA == null) {
-              return 1;
+            if (recentMessageA != null && recentMessageB != null) {
+              return recentMessageB.compareTo(recentMessageA);
             } else {
-              return -1;
-            }
-          }
-        });
+              final createdAtA = a?.createdAt;
+              final createdAtB = b?.createdAt;
 
-        emit(GetAllGroupsSuccess());
-      });
-    } catch (e) {
-      emit(
-        GetAllGroupsError(
-          Failure.fromException(e).message,
-        ),
+              if (createdAtA != null && createdAtB != null) {
+                return createdAtB.compareTo(createdAtA);
+              } else if (createdAtA == null && createdAtB == null) {
+                return 0;
+              } else if (createdAtA == null) {
+                return 1;
+              } else {
+                return -1;
+              }
+            }
+          });
+
+          emit(GetAllGroupsSuccess());
+        },
+        onError: (e) {
+          emit(GetAllGroupsError(Failure.fromException(e).message));
+        },
       );
+
+      // groupSubscription.cancel();
+    } catch (e) {
+      emit(GetAllGroupsError(Failure.fromException(e).message));
     }
   }
+
 
   Future<void> getAllGroupMessages(String groupId) async {
     emit(GetAllGroupMessagesLoading());

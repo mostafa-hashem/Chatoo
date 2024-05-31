@@ -153,10 +153,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               builder: (_, state) {
                 if (state is GetAllGroupMessagesLoading) {
                   return const LoadingIndicator();
+                } else if (state is GetAllGroupMessagesError) {
+                  return const LoadingIndicator();
+                } else {
+                  return GroupChatMessages(
+                    groupId: groupData.groupId ?? '',
+                  );
                 }
-                return GroupChatMessages(
-                  groupId: groupData.groupId ?? '',
-                );
               },
             ),
             SizedBox(

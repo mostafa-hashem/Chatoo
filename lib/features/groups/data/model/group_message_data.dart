@@ -67,7 +67,7 @@ class GroupMessage {
         if (message != null) 'message': message,
         if (senderId != null) 'senderId': senderId,
         if (sender != null) 'sender': sender!.toJson(),
-        if (sentAt != null) 'sentAt': Timestamp.fromDate(sentAt!.toLocal()),
+         'sentAt': Timestamp.now(),
         if (mediaUrls != null) 'mediaUrls': mediaUrls,
         if (messageType != null) 'messageType': messageType!.index,
         if (isAction != null) 'isAction': isAction,

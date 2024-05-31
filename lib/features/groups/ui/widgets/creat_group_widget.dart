@@ -6,7 +6,6 @@ import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
-import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +26,12 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
   String groupName = "";
   File? imageFile;
   final formKey = GlobalKey<FormState>();
+  late GroupCubit groupCubit;
+  @override
+  void didChangeDependencies() {
+    groupCubit = GroupCubit.get(context);
+    super.didChangeDependencies();
+  }
 
   Future<void> _pickAndCropImage() async {
     final ImagePicker picker = ImagePicker();
@@ -74,7 +79,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
           imageFile = File(croppedFile.path);
         });
         if(context.mounted){
-        GroupCubit.get(context).uploadGroupImageToFireStorage(imageFile!);
+        groupCubit.uploadGroupImageToFireStorage(imageFile!);
         }
       }
     }
@@ -145,9 +150,9 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                       child: Stack(
                         alignment: Alignment.topRight,
                         children: [
-                          if (GroupCubit.get(context).groupIcon.isNotEmpty)
+                          if (groupCubit.groupIcon.isNotEmpty)
                             FancyShimmerImage(
-                              imageUrl: GroupCubit.get(context).groupIcon,
+                              imageUrl: groupCubit.groupIcon,
                               height: 115.h,
                               width: 115.w,
                             )
@@ -213,23 +218,15 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
               ElevatedButton(
                 onPressed: () async {
                   final group = Group(
-                    groupIcon: GroupCubit.get(context).groupIcon,
+                    groupIcon: groupCubit.groupIcon,
                     groupName: groupName,
                     mainAdminId: userData.user.id,
-                    createdAt: DateTime.now().toLocal(),
                     requests: [],
                     groupAdmins: [],
                   );
-                  final user = User(
-                    id: userData.user.id,
-                    email: userData.user.email,
-                    userName: userData.user.userName,
-                    bio: userData.user.bio,
-                    profileImage: userData.user.profileImage,
-                    phoneNumber: userData.user.phoneNumber,
-                  );
+                  final user = userData.user;
                   if (formKey.currentState!.validate()) {
-                    GroupCubit.get(context)
+                    groupCubit
                         .createGroup(
                       group,
                       user,

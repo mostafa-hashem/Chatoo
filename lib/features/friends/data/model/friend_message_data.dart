@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 
 enum MessageType {
   text,
@@ -24,7 +25,7 @@ class FriendMessage {
     required this.sender,
     this.mediaUrls,
     this.messageType,
-    required this.sentAt,
+    this.sentAt,
   });
 
   FriendMessage.empty()
@@ -60,13 +61,16 @@ class FriendMessage {
     }
   }
 
-  Map<String, dynamic> toJson() => {
-        'friendId': friendId,
-        'messageId': messageId,
-        'message': message,
-        'sender': sender,
-        if (mediaUrls != null) 'mediaUrls': mediaUrls,
-        if (messageType != null) 'messageType': messageType!.index,
-        'sentAt':  Timestamp.fromDate(sentAt!.toLocal()),
-      };
+  Map<String, dynamic> toJson() {
+    debugPrint("Holla: ${Timestamp.now().toDate()}");
+    return {
+      'friendId': friendId,
+      'messageId': messageId,
+      'message': message,
+      'sender': sender,
+      if (mediaUrls != null) 'mediaUrls': mediaUrls,
+      if (messageType != null) 'messageType': messageType!.index,
+      'sentAt': Timestamp.now(),
+    };
+  }
 }

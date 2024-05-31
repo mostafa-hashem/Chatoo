@@ -118,8 +118,8 @@ class _StoryViewState extends State<StoryView> {
     if (currentIndex < stories.length - 1) {
       await Future.delayed(storyTransitionDelay);
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.linear,
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeInOutCubic,
       );
     } else {
       Navigator.of(context).pop();
@@ -129,8 +129,8 @@ class _StoryViewState extends State<StoryView> {
   void _goToPreviousStory() {
     if (currentIndex > 0) {
       _pageController.previousPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.linear,
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeInOutCubic,
       );
     } else {
       Navigator.of(context).pop();

@@ -175,10 +175,8 @@ class FriendCubit extends Cubit<FriendStates> {
 
         // Sort the combinedFriends list
         combinedFriends.sort((a, b) {
-          final aTime = a.recentMessageData.sentAt?.toLocal() ??
-              DateTime.fromMillisecondsSinceEpoch(0);
-          final bTime = b.recentMessageData.sentAt?.toLocal() ??
-              DateTime.fromMillisecondsSinceEpoch(0);
+          final aTime = a.recentMessageData.sentAt?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.recentMessageData.sentAt?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0);
           return bTime.compareTo(aTime);
         });
 
@@ -329,6 +327,15 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(DeleteChatSuccess());
     } catch (e) {
       emit(DeleteChatError(Failure.fromException(e).message));
+    }
+  }
+  Future<void> deleteChatForAll(String friendId, DateTime addedAt) async {
+    emit(DeleteChatForAllLoading());
+    try {
+      await _friendFirebaseServices.deleteChat(friendId, addedAt);
+      emit(DeleteChatForAllSuccess());
+    } catch (e) {
+      emit(DeleteChatForAllError(Failure.fromException(e).message));
     }
   }
 

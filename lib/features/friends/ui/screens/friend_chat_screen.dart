@@ -101,15 +101,17 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      friendCubit.friendData?.userName ?? '',
+                      friendCubit.friendData?.userName ?? friendData.user!.userName!,
                       style: GoogleFonts.ubuntu(
-                          fontWeight: FontWeight.w500, fontSize: 14.sp),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14.sp,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     BlocBuilder<FriendCubit, FriendStates>(
                       buildWhen: (_, current) =>
                           current is UpdateTypingStatus ||
-                          current is UpdateTypingStatus ||
+                          current is UpdateRecordingStatus ||
                           current is UpdateTypingStatusSuccess ||
                           current is UpdateTypingStatusError ||
                           current is UpdateTypingStatusLoading ||
@@ -127,8 +129,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                   size: 10.r,
                                 )
                               else
-                                friendCubit.friendData?.lastSeen?.toLocal() !=
-                                        null
+                                friendCubit.friendData?.lastSeen != null
                                     ? const SizedBox.shrink()
                                     : Icon(
                                         Icons.circle,
@@ -151,8 +152,8 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                                       null
                                                   ? "Last seen: ${getFormattedTime(
                                                       friendCubit
-                                                          .friendData!.lastSeen!
-                                                          .toLocal()
+                                                          .friendData!
+                                                          .lastSeen!
                                                           .millisecondsSinceEpoch,
                                                     )}"
                                                   : 'Offline',

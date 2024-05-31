@@ -61,8 +61,8 @@ class FriendRecentMessage {
         if (recentMessage != null) 'recentMessage': recentMessage,
         if (recentMessageSender != null)
           'recentMessageSender': recentMessageSender,
-        if (sentAt != null) 'sentAt': Timestamp.fromDate(sentAt!.toLocal()),
-        if (addedAt != null) 'addedAt': Timestamp.fromDate(addedAt!.toLocal()),
+       'sentAt': Timestamp.now(),
+        if (addedAt != null) 'addedAt': Timestamp.now(),
         if (typing != null) 'typing': typing,
         if (recording != null) 'recording': typing,
         if (unreadCount != null) 'unreadCount': unreadCount,

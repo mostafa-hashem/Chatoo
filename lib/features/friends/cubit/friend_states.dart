@@ -1,11 +1,5 @@
-import 'package:equatable/equatable.dart';
 
-abstract class FriendStates extends Equatable {
-  const FriendStates();
-
-  @override
-  List<Object?> get props => [];
-}
+abstract class FriendStates {}
 
 class FriendInit extends FriendStates {}
 
@@ -16,10 +10,7 @@ class RequestToAddFriendSuccess extends FriendStates {}
 class RequestToAddFriendError extends FriendStates {
   final String message;
 
-  const RequestToAddFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  RequestToAddFriendError(this.message);
 }
 
 class GetAllUserFriendsLoading extends FriendStates {}
@@ -29,10 +20,7 @@ class GetAllUserFriendsSuccess extends FriendStates {}
 class GetAllUserFriendsError extends FriendStates {
   final String message;
 
-  const GetAllUserFriendsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  GetAllUserFriendsError(this.message);
 }
 
 class GetAllUserRequestsLoading extends FriendStates {}
@@ -42,10 +30,7 @@ class GetAllUserRequestsSuccess extends FriendStates {}
 class GetAllUserRequestsError extends FriendStates {
   final String message;
 
-  const GetAllUserRequestsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  GetAllUserRequestsError(this.message);
 }
 
 class ApproveToAddFriendLoading extends FriendStates {}
@@ -55,10 +40,7 @@ class ApproveToAddFriendSuccess extends FriendStates {}
 class ApproveToAddFriendError extends FriendStates {
   final String message;
 
-  const ApproveToAddFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  ApproveToAddFriendError(this.message);
 }
 
 class DeclineToAddFriendLoading extends FriendStates {}
@@ -68,10 +50,7 @@ class DeclineToAddFriendSuccess extends FriendStates {}
 class DeclineToAddFriendError extends FriendStates {
   final String message;
 
-  const DeclineToAddFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  DeclineToAddFriendError(this.message);
 }
 
 class GetFriendDataLoading extends FriendStates {}
@@ -81,10 +60,7 @@ class GetFriendDataSuccess extends FriendStates {}
 class GetFriendDataError extends FriendStates {
   final String message;
 
-  const GetFriendDataError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  GetFriendDataError(this.message);
 }
 
 class SearchOnFriendLoading extends FriendStates {}
@@ -94,10 +70,7 @@ class SearchOnFriendSuccess extends FriendStates {}
 class SearchOnFriendError extends FriendStates {
   final String message;
 
-  const SearchOnFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  SearchOnFriendError(this.message);
 }
 
 class SendMediaToFriendLoading extends FriendStates {}
@@ -107,10 +80,7 @@ class SendMediaToFriendSuccess extends FriendStates {}
 class SendMediaToFriendError extends FriendStates {
   final String message;
 
-  const SendMediaToFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  SendMediaToFriendError(this.message);
 }
 
 class SendMessageToFriendLoading extends FriendStates {}
@@ -120,10 +90,7 @@ class SendMessageToFriendSuccess extends FriendStates {}
 class SendMessageToFriendError extends FriendStates {
   final String message;
 
-  const SendMessageToFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  SendMessageToFriendError(this.message);
 }
 
 class GetAllFriendMessagesLoading extends FriendStates {}
@@ -133,10 +100,7 @@ class GetAllFriendMessagesSuccess extends FriendStates {}
 class GetAllFriendMessagesError extends FriendStates {
   final String message;
 
-  const GetAllFriendMessagesError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  GetAllFriendMessagesError(this.message);
 }
 
 class GetCombinedFriendsLoading extends FriendStates {}
@@ -146,10 +110,7 @@ class GetCombinedFriendsSuccess extends FriendStates {}
 class GetCombinedFriendsError extends FriendStates {
   final String message;
 
-  const GetCombinedFriendsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  GetCombinedFriendsError(this.message);
 }
 
 class MarkMessagesAsReadLoading extends FriendStates {}
@@ -159,28 +120,19 @@ class MarkMessagesAsReadSuccess extends FriendStates {}
 class MarkMessagesAsReadError extends FriendStates {
   final String message;
 
-  const MarkMessagesAsReadError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  MarkMessagesAsReadError(this.message);
 }
 
 class UpdateTypingStatus extends FriendStates {
   final bool isTyping;
 
-  const UpdateTypingStatus(this.isTyping);
-
-  @override
-  List<Object?> get props => [isTyping];
+  UpdateTypingStatus(this.isTyping);
 }
 
 class UpdateRecordingStatus extends FriendStates {
   final bool isRecording;
 
-  const UpdateRecordingStatus(this.isRecording);
-
-  @override
-  List<Object?> get props => [isRecording];
+  UpdateRecordingStatus(this.isRecording);
 }
 
 class UpdateTypingStatusLoading extends FriendStates {}
@@ -190,10 +142,7 @@ class UpdateTypingStatusSuccess extends FriendStates {}
 class UpdateTypingStatusError extends FriendStates {
   final String message;
 
-  const UpdateTypingStatusError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  UpdateTypingStatusError(this.message);
 }
 
 class UpdateRecordingStatusLoading extends FriendStates {}
@@ -203,10 +152,7 @@ class UpdateRecordingStatusSuccess extends FriendStates {}
 class UpdateRecordingStatusError extends FriendStates {
   final String message;
 
-  const UpdateRecordingStatusError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  UpdateRecordingStatusError(this.message);
 }
 
 class MuteFriendLoading extends FriendStates {}
@@ -216,10 +162,7 @@ class MuteFriendSuccess extends FriendStates {}
 class MuteFriendError extends FriendStates {
   final String message;
 
-  const MuteFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  MuteFriendError(this.message);
 }
 
 class UnMuteFriendLoading extends FriendStates {}
@@ -229,10 +172,7 @@ class UnMuteFriendSuccess extends FriendStates {}
 class UnMuteFriendError extends FriendStates {
   final String message;
 
-  const UnMuteFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  UnMuteFriendError(this.message);
 }
 
 class GetMutedFriendsLoading extends FriendStates {}
@@ -242,10 +182,7 @@ class GetMutedFriendsSuccess extends FriendStates {}
 class GetMutedFriendsError extends FriendStates {
   final String message;
 
-  const GetMutedFriendsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  GetMutedFriendsError(this.message);
 }
 
 class RemoveFriendRequestLoading extends FriendStates {}
@@ -255,10 +192,7 @@ class RemoveFriendRequestSuccess extends FriendStates {}
 class RemoveFriendRequestError extends FriendStates {
   final String message;
 
-  const RemoveFriendRequestError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  RemoveFriendRequestError(this.message);
 }
 
 class RemoveFriendLoading extends FriendStates {}
@@ -268,10 +202,7 @@ class RemoveFriendSuccess extends FriendStates {}
 class RemoveFriendError extends FriendStates {
   final String message;
 
-  const RemoveFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  RemoveFriendError(this.message);
 }
 
 class DeleteChatLoading extends FriendStates {}
@@ -281,10 +212,16 @@ class DeleteChatSuccess extends FriendStates {}
 class DeleteChatError extends FriendStates {
   final String message;
 
-  const DeleteChatError(this.message);
+  DeleteChatError(this.message);
+}
+class DeleteChatForAllLoading extends FriendStates {}
 
-  @override
-  List<Object?> get props => [message];
+class DeleteChatForAllSuccess extends FriendStates {}
+
+class DeleteChatForAllError extends FriendStates {
+  final String message;
+
+  DeleteChatForAllError(this.message);
 }
 
 class DeleteMessageForMeLoading extends FriendStates {}
@@ -294,10 +231,7 @@ class DeleteMessageForMeSuccess extends FriendStates {}
 class DeleteMessageForMeError extends FriendStates {
   final String message;
 
-  const DeleteMessageForMeError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  DeleteMessageForMeError(this.message);
 }
 
 class DeleteMessageForMeAndFriendLoading extends FriendStates {}
@@ -307,8 +241,5 @@ class DeleteMessageForMeAndFriendSuccess extends FriendStates {}
 class DeleteMessageForMeAndFriendError extends FriendStates {
   final String message;
 
-  const DeleteMessageForMeAndFriendError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  DeleteMessageForMeAndFriendError(this.message);
 }
