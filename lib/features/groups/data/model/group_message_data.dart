@@ -18,6 +18,7 @@ class GroupMessage {
   List<String>? mediaUrls;
   MessageType? messageType;
   bool? isAction;
+  GroupMessage? repliedMessage; // إضافة خاصية الرسالة المردود عليها
 
   GroupMessage({
     this.groupId,
@@ -29,6 +30,7 @@ class GroupMessage {
     this.mediaUrls,
     this.messageType,
     this.isAction,
+    this.repliedMessage, // إضافة هنا
   });
 
   GroupMessage.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,10 @@ class GroupMessage {
     if (json['isAction'] != null) {
       isAction = json['isAction'] as bool;
     }
+    if (json['repliedMessage'] != null) {
+      repliedMessage =
+          GroupMessage.fromJson(json['repliedMessage'] as Map<String, dynamic>);
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -67,9 +73,10 @@ class GroupMessage {
         if (message != null) 'message': message,
         if (senderId != null) 'senderId': senderId,
         if (sender != null) 'sender': sender!.toJson(),
-         'sentAt': Timestamp.now(),
+        'sentAt': Timestamp.now(),
         if (mediaUrls != null) 'mediaUrls': mediaUrls,
         if (messageType != null) 'messageType': messageType!.index,
         if (isAction != null) 'isAction': isAction,
+        if (repliedMessage != null) 'repliedMessage': repliedMessage!.toJson(),
       };
 }

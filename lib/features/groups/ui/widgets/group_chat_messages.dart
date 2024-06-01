@@ -19,15 +19,29 @@ class GroupChatMessages extends StatefulWidget {
 }
 
 class _GroupChatMessagesState extends State<GroupChatMessages> {
+  final ScrollController _scrollController = ScrollController();
+
+  void _scrollToMessage(String messageId) {
+    final groupMessages = GroupCubit.get(context).filteredMessages[widget.groupId]?.toList();
+    final index = groupMessages?.indexWhere((message) => message.messageId == messageId);
+
+    if (index != null && index >= 0 && _scrollController.hasClients) {
+      final position = index * 20.0;
+      _scrollController.animateTo(
+        position,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final groupMessages =
-        GroupCubit.get(context).filteredMessages[widget.groupId]?.toList();
+    final groupMessages = GroupCubit.get(context).filteredMessages[widget.groupId]?.toList();
 
     final Map<String, List<GroupMessage>> messagesByDate = {};
     for (final message in groupMessages ?? []) {
-      final String date =
-          getFormattedDateHeader(message.sentAt!.millisecondsSinceEpoch as int);
+      final String date = getFormattedDateHeader(message.sentAt!.millisecondsSinceEpoch as int);
       if (messagesByDate.containsKey(date)) {
         messagesByDate[date]!.add(message as GroupMessage);
       } else {
@@ -35,13 +49,12 @@ class _GroupChatMessagesState extends State<GroupChatMessages> {
       }
     }
 
-    final List<MapEntry<String, List<GroupMessage>>> dateEntries =
-        messagesByDate.entries.toList().reversed.toList();
+    final List<MapEntry<String, List<GroupMessage>>> dateEntries = messagesByDate.entries.toList().reversed.toList();
 
     return Expanded(
       child: ListView.builder(
         reverse: true,
-        controller: GroupCubit.get(context).scrollController,
+        controller: _scrollController,
         itemCount: dateEntries.length,
         itemBuilder: (context, index) {
           final dateEntry = dateEntries[index];
@@ -57,13 +70,19 @@ class _GroupChatMessagesState extends State<GroupChatMessages> {
                   child: Text(
                     date,
                     style: TextStyle(
-                        fontSize: 12.sp, color: AppColors.primary),
+                      fontSize: 12.sp,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ),
               ...messages.map((message) {
                 return GroupMessagesTile(
+                  key: ValueKey(message.messageId),
                   groupMessage: message,
+                  onRepliedMessageTap: (messageId) {
+                    _scrollToMessage(messageId);
+                  },
                 );
               }),
             ],

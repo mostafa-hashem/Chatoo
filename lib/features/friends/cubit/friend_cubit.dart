@@ -27,6 +27,14 @@ class FriendCubit extends Cubit<FriendStates> {
   ScrollController scrollController = ScrollController();
   List<String> mediaUrls = [];
   TextEditingController messageController = TextEditingController();
+  FriendMessage? replayedMessage;
+
+  void setRepliedMessage(FriendMessage? newReplayedMessage) {
+    try {
+      replayedMessage = newReplayedMessage;
+      emit(SetRepliedMessageSuccess());
+    } catch (e) {}
+  }
 
   Future<void> requestToAddFriend(String friendId) async {
     emit(RequestToAddFriendLoading());
@@ -34,7 +42,9 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.requestToAddFriend(friendId);
       emit(RequestToAddFriendSuccess());
     } catch (e) {
-      emit(RequestToAddFriendError(Failure.fromException(e).message));
+      emit(RequestToAddFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -46,7 +56,9 @@ class FriendCubit extends Cubit<FriendStates> {
         emit(GetAllUserRequestsSuccess());
       });
     } catch (e) {
-      emit(GetAllUserRequestsError(Failure.fromException(e).message));
+      emit(GetAllUserRequestsError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -56,7 +68,9 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.approveFriendRequest(friendId);
       emit(ApproveToAddFriendSuccess());
     } catch (e) {
-      emit(ApproveToAddFriendError(Failure.fromException(e).message));
+      emit(ApproveToAddFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -66,7 +80,9 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.declineFriendRequest(friendId);
       emit(DeclineToAddFriendSuccess());
     } catch (e) {
-      emit(DeclineToAddFriendError(Failure.fromException(e).message));
+      emit(DeclineToAddFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -78,7 +94,9 @@ class FriendCubit extends Cubit<FriendStates> {
         emit(GetFriendDataSuccess());
       });
     } catch (e) {
-      emit(GetFriendDataError(Failure.fromException(e).message));
+      emit(GetFriendDataError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -89,14 +107,16 @@ class FriendCubit extends Cubit<FriendStates> {
         searchedFriends = search
             .where(
               (friend) =>
-                  friend.userName?.toLowerCase() == friendData.toLowerCase() ||
-                  friend.phoneNumber == friendData,
-            )
+          friend.userName?.toLowerCase() == friendData.toLowerCase() ||
+              friend.phoneNumber == friendData,
+        )
             .toList();
         emit(SearchOnFriendSuccess());
       });
     } catch (e) {
-      emit(SearchOnFriendError(Failure.fromException(e).message));
+      emit(SearchOnFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -105,33 +125,35 @@ class FriendCubit extends Cubit<FriendStates> {
     required String message,
     required User sender,
     required MessageType type,
+    FriendMessage? repliedMessage,
   }) async {
     emit(SendMessageToFriendLoading());
     try {
       await _friendFirebaseServices.sendMessageToFriend(
-        friend,
-        message,
-        sender,
-        mediaUrls,
-        type,
+          friend,
+          message,
+          sender,
+          mediaUrls,
+          type,
+          repliedMessage
       );
       emit(SendMessageToFriendSuccess());
     } catch (e) {
-      emit(SendMessageToFriendError(Failure.fromException(e).message));
+      emit(SendMessageToFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
-  Future<void> sendMediaToFriend(
-    String mediaPath,
-    File mediaFile,
-    String friendPathId,
-    Future<String> Function(File imageFile) getFileName,
-  ) async {
+  Future<void> sendMediaToFriend(String mediaPath,
+      File mediaFile,
+      String friendPathId,
+      Future<String> Function(File imageFile) getFileName,) async {
     emit(SendMediaToFriendLoading());
     try {
       mediaUrls.clear();
       final String downloadUrl =
-          await _friendFirebaseServices.sendMediaToFriend(
+      await _friendFirebaseServices.sendMediaToFriend(
         mediaPath,
         mediaFile,
         friendPathId,
@@ -140,7 +162,9 @@ class FriendCubit extends Cubit<FriendStates> {
       mediaUrls.add(downloadUrl);
       emit(SendMediaToFriendSuccess());
     } catch (e) {
-      emit(SendMediaToFriendError(Failure.fromException(e).message));
+      emit(SendMediaToFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -154,13 +178,15 @@ class FriendCubit extends Cubit<FriendStates> {
 
         if (filteredMessages.isNotEmpty) {
           filteredMessages[friendId]?.sort(
-            (a, b) => b.sentAt!.toLocal().compareTo(a.sentAt!.toLocal()),
+                (a, b) => b.sentAt!.toLocal().compareTo(a.sentAt!.toLocal()),
           );
         }
         emit(GetAllFriendMessagesSuccess());
       });
     } catch (e) {
-      emit(GetAllFriendMessagesError(Failure.fromException(e).message));
+      emit(GetAllFriendMessagesError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -175,15 +201,19 @@ class FriendCubit extends Cubit<FriendStates> {
 
         // Sort the combinedFriends list
         combinedFriends.sort((a, b) {
-          final aTime = a.recentMessageData.sentAt?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final bTime = b.recentMessageData.sentAt?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final aTime = a.recentMessageData.sentAt?.toLocal() ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.recentMessageData.sentAt?.toLocal() ??
+              DateTime.fromMillisecondsSinceEpoch(0);
           return bTime.compareTo(aTime);
         });
 
         emit(GetCombinedFriendsSuccess());
       });
     } catch (e) {
-      emit(GetCombinedFriendsError(Failure.fromException(e).message));
+      emit(GetCombinedFriendsError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -195,7 +225,9 @@ class FriendCubit extends Cubit<FriendStates> {
       );
       emit(MarkMessagesAsReadSuccess());
     } catch (e) {
-      emit(MarkMessagesAsReadError(Failure.fromException(e).message));
+      emit(MarkMessagesAsReadError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -211,7 +243,9 @@ class FriendCubit extends Cubit<FriendStates> {
       );
       emit(UpdateTypingStatusSuccess());
     } catch (e) {
-      emit(UpdateTypingStatusError(Failure.fromException(e).message));
+      emit(UpdateTypingStatusError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -245,7 +279,9 @@ class FriendCubit extends Cubit<FriendStates> {
       );
       emit(UpdateRecordingStatusSuccess());
     } catch (e) {
-      emit(UpdateRecordingStatusError(Failure.fromException(e).message));
+      emit(UpdateRecordingStatusError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -273,7 +309,9 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.requestFriendRequest(friendId);
       emit(RemoveFriendRequestSuccess());
     } catch (e) {
-      emit(RemoveFriendRequestError(Failure.fromException(e).message));
+      emit(RemoveFriendRequestError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -283,7 +321,9 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.muteFriend(friendId);
       emit(MuteFriendSuccess());
     } catch (e) {
-      emit(MuteFriendError(Failure.fromException(e).message));
+      emit(MuteFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -293,7 +333,9 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.unMuteFriend(friendId);
       emit(UnMuteFriendSuccess());
     } catch (e) {
-      emit(UnMuteFriendError(Failure.fromException(e).message));
+      emit(UnMuteFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -306,7 +348,9 @@ class FriendCubit extends Cubit<FriendStates> {
         emit(GetMutedFriendsSuccess());
       });
     } catch (e) {
-      emit(GetMutedFriendsError(Failure.fromException(e).message));
+      emit(GetMutedFriendsError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -316,7 +360,9 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.removeFriend(friendId);
       emit(RemoveFriendSuccess());
     } catch (e) {
-      emit(RemoveFriendError(Failure.fromException(e).message));
+      emit(RemoveFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
@@ -326,78 +372,91 @@ class FriendCubit extends Cubit<FriendStates> {
       await _friendFirebaseServices.deleteChat(friendId, addedAt);
       emit(DeleteChatSuccess());
     } catch (e) {
-      emit(DeleteChatError(Failure.fromException(e).message));
+      emit(DeleteChatError(Failure
+          .fromException(e)
+          .message));
     }
   }
+
   Future<void> deleteChatForAll(String friendId, DateTime addedAt) async {
     emit(DeleteChatForAllLoading());
     try {
       await _friendFirebaseServices.deleteChat(friendId, addedAt);
       emit(DeleteChatForAllSuccess());
     } catch (e) {
-      emit(DeleteChatForAllError(Failure.fromException(e).message));
+      emit(DeleteChatForAllError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
-  Future<void> deleteMessageForMe(
-    String friendId,
-    String messageId,
-    String currentUserId,
-    String currentUserName,
-    String friendName,
-  ) async {
+  Future<void> deleteMessageForMe(String friendId,
+      String messageId,
+      String currentUserId,
+      String currentUserName,
+      String friendName,) async {
     emit(DeleteMessageForMeLoading());
     try {
       await _friendFirebaseServices.deleteMessageForMe(
         friendId,
         messageId,
         filteredMessages[friendId]!.length > 2
-            ? filteredMessages[friendId]!.elementAt(filteredMessages[friendId]!.length - 2).message
+            ? filteredMessages[friendId]!.elementAt(
+            filteredMessages[friendId]!.length - 2).message
             : '',
         filteredMessages.length > 2
-            ? filteredMessages[friendId]?.elementAt(filteredMessages.length - 2).sender ==
-                    currentUserId
-                ? currentUserName
-                : friendName
+            ? filteredMessages[friendId]
+            ?.elementAt(filteredMessages.length - 2)
+            .sender ==
+            currentUserId
+            ? currentUserName
+            : friendName
             : '',
         filteredMessages.length > 2
-            ? filteredMessages[friendId]?.elementAt(filteredMessages.length - 2).sentAt
+            ? filteredMessages[friendId]
+            ?.elementAt(filteredMessages.length - 2)
+            .sentAt
             : null,
       );
       emit(DeleteMessageForMeSuccess());
     } catch (e) {
-      emit(DeleteMessageForMeError(Failure.fromException(e).message));
+      emit(DeleteMessageForMeError(Failure
+          .fromException(e)
+          .message));
     }
   }
 
-  Future<void> deleteMessageForAll(
-    String friendId,
-    String messageId,
-    String currentUserId,
-    String currentUserName,
-    String friendName,
-  ) async {
+  Future<void> deleteMessageForAll(String friendId,
+      String messageId,
+      String currentUserId,
+      String currentUserName,
+      String friendName,) async {
     emit(DeleteMessageForMeAndFriendLoading());
     try {
       await _friendFirebaseServices.deleteMessageForAll(
         friendId,
         messageId,
         filteredMessages[friendId]!.length > 2
-            ? filteredMessages[friendId]!.elementAt(filteredMessages[friendId]!.length - 2).message
+            ? filteredMessages[friendId]!.elementAt(
+            filteredMessages[friendId]!.length - 2).message
             : '',
         filteredMessages.length > 2
-            ? filteredMessages[friendId]!.elementAt(filteredMessages.length - 2).sender ==
-                    currentUserId
-                ? currentUserName
-                : friendName
+            ? filteredMessages[friendId]!.elementAt(filteredMessages.length - 2)
+            .sender ==
+            currentUserId
+            ? currentUserName
+            : friendName
             : '',
         filteredMessages.length > 2
-            ? filteredMessages[friendId]!.elementAt(filteredMessages.length - 2).sentAt!
+            ? filteredMessages[friendId]!.elementAt(filteredMessages.length - 2)
+            .sentAt!
             : null,
       );
       emit(DeleteMessageForMeAndFriendSuccess());
     } catch (e) {
-      emit(DeleteMessageForMeAndFriendError(Failure.fromException(e).message));
+      emit(DeleteMessageForMeAndFriendError(Failure
+          .fromException(e)
+          .message));
     }
   }
 }

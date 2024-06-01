@@ -482,98 +482,152 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                   )
                 else
                   Flexible(
-                    child: TextField(
-                      controller: friendCubit.messageController,
-                      onChanged: (value) {
-                        setState(() {
-                          final bool isTyping =
-                              friendCubit.messageController.text.isNotEmpty;
-                          if (isTyping) {
-                            friendCubit.updateTypingStatus(
-                              friendId: widget.friendData.id!,
-                              isTyping: true,
-                            );
-                          } else {
-                            friendCubit.updateTypingStatus(
-                              friendId: widget.friendData.id!,
-                              isTyping: false,
-                            );
-                          }
-                        });
-                      },
-                      textInputAction: TextInputAction.newline,
-                      minLines: 1,
-                      maxLines: 8,
-                      textAlign: _textAlign,
-                      textDirection: _textDirection,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: provider.themeMode == ThemeMode.light
-                            ? Colors.black87
-                            : AppColors.light,
-                      ),
-                      decoration: InputDecoration(
-                        suffixIcon: Row(
-                          mainAxisSize: MainAxisSize.min,
+                    child: BlocBuilder<FriendCubit, FriendStates>(
+                      buildWhen: (_, current) =>
+                          current is SetRepliedMessageSuccess,
+                      builder: (context, state) {
+                        return Column(
                           children: [
-                            if (friendCubit.messageController.text.isEmpty)
-                              IconButton(
-                                onPressed: () async {
-                                  final ImagePicker picker = ImagePicker();
-                                  final XFile? xFile = await picker.pickMedia();
-                                  if (xFile != null) {
-                                    File xFilePathToFile(XFile xFile) {
-                                      return File(xFile.path);
-                                    }
-
-                                    mediaFile = xFilePathToFile(xFile);
-                                    final String fileType = xFile.name
-                                        .split('.')
-                                        .last
-                                        .toLowerCase();
-                                    if (['jpg', 'jpeg', 'png', 'gif']
-                                        .contains(fileType)) {
-                                      await _cropImage(mediaFile!);
-                                    } else if ([
-                                      'mp4',
-                                      'mov',
-                                      'avi',
-                                      'mkv',
-                                    ].contains(fileType)) {
-                                      await _handleVideoFile(
-                                        mediaFile!,
-                                      );
-                                    }
+                            if (friendCubit.replayedMessage != null)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 8.0),
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            friendCubit.setRepliedMessage(null);
+                                            debugPrint(friendCubit
+                                                .replayedMessage?.message);
+                                          });
+                                        },
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 18,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 4.h),
+                                    Text(
+                                      friendCubit.replayedMessage!.message,
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            TextField(
+                              controller: friendCubit.messageController,
+                              onChanged: (value) {
+                                setState(() {
+                                  final bool isTyping = friendCubit
+                                      .messageController.text.isNotEmpty;
+                                  if (isTyping) {
+                                    friendCubit.updateTypingStatus(
+                                      friendId: widget.friendData.id!,
+                                      isTyping: true,
+                                    );
+                                  } else {
+                                    friendCubit.updateTypingStatus(
+                                      friendId: widget.friendData.id!,
+                                      isTyping: false,
+                                    );
                                   }
-                                },
-                                icon: const Icon(Icons.image),
+                                });
+                              },
+                              textInputAction: TextInputAction.newline,
+                              minLines: 1,
+                              maxLines: 8,
+                              textAlign: _textAlign,
+                              textDirection: _textDirection,
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: provider.themeMode == ThemeMode.light
+                                    ? Colors.black87
+                                    : AppColors.light,
                               ),
-                            if (false)
-                              IconButton(
-                                onPressed: _pickAudioFile,
-                                icon: const Icon(Icons.audiotrack),
+                              decoration: InputDecoration(
+                                suffixIcon: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (friendCubit
+                                        .messageController.text.isEmpty)
+                                      IconButton(
+                                        onPressed: () async {
+                                          final ImagePicker picker =
+                                              ImagePicker();
+                                          final XFile? xFile =
+                                              await picker.pickMedia();
+                                          if (xFile != null) {
+                                            File xFilePathToFile(XFile xFile) {
+                                              return File(xFile.path);
+                                            }
+
+                                            mediaFile = xFilePathToFile(xFile);
+                                            final String fileType = xFile.name
+                                                .split('.')
+                                                .last
+                                                .toLowerCase();
+                                            if (['jpg', 'jpeg', 'png', 'gif']
+                                                .contains(fileType)) {
+                                              await _cropImage(mediaFile!);
+                                            } else if ([
+                                              'mp4',
+                                              'mov',
+                                              'avi',
+                                              'mkv',
+                                            ].contains(fileType)) {
+                                              await _handleVideoFile(
+                                                mediaFile!,
+                                              );
+                                            }
+                                          }
+                                        },
+                                        icon: const Icon(Icons.image),
+                                      ),
+                                    if (false)
+                                      IconButton(
+                                        onPressed: _pickAudioFile,
+                                        icon: const Icon(Icons.audiotrack),
+                                      ),
+                                  ],
+                                ),
+                                hintText: 'Type a message',
+                                hintStyle:
+                                    Theme.of(context).textTheme.bodySmall,
+                                filled: true,
+                                fillColor: provider.themeMode == ThemeMode.light
+                                    ? Colors.white
+                                    : AppColors.dark,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: AppColors.primary,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
                               ),
+                            ),
                           ],
-                        ),
-                        hintText: 'Type a message',
-                        hintStyle: Theme.of(context).textTheme.bodySmall,
-                        filled: true,
-                        fillColor: provider.themeMode == ThemeMode.light
-                            ? Colors.white
-                            : AppColors.dark,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: AppColors.primary,
-                          ),
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 if (friendCubit.messageController.text.isNotEmpty)
@@ -589,18 +643,20 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                         );
                         await friendCubit
                             .sendMessageToFriend(
-                              friend: widget.friendData,
-                              message: notificationBody ?? '',
-                              sender: sender,
-                              type: MessageType.text,
-                            )
-                            .whenComplete(
-                              () => audioPlayer.play(
-                                AssetSource(
-                                  "audios/message_received.wav",
-                                ),
-                              ),
-                            );
+                          friend: widget.friendData,
+                          message: notificationBody ?? '',
+                          sender: sender,
+                          type: MessageType.text,
+                          repliedMessage: friendCubit.replayedMessage,
+                        )
+                            .whenComplete(() {
+                          friendCubit.setRepliedMessage(null);
+                          audioPlayer.play(
+                            AssetSource(
+                              "audios/message_received.wav",
+                            ),
+                          );
+                        });
                       }
                     },
                     icon: CircleAvatar(

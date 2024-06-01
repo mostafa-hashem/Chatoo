@@ -27,6 +27,14 @@ class GroupCubit extends Cubit<GroupStates> {
   ScrollController scrollController = ScrollController();
   List<String> mediaUrls = [];
   TextEditingController messageController = TextEditingController();
+  GroupMessage? replayedMessage;
+
+  void setRepliedMessage(GroupMessage? newReplayedMessage) {
+    try{
+      replayedMessage = newReplayedMessage;
+      emit(SetRepliedMessageSuccess());
+    }catch(e){}
+  }
 
   Future<void> createGroup(Group group, User user) async {
     emit(CreateGroupLoading());
@@ -112,7 +120,7 @@ class GroupCubit extends Cubit<GroupStates> {
       StreamSubscription<List<Group?>>? groupSubscription;
 
       groupSubscription = _groupFirebaseServices.getAllUserGroups().listen(
-            (groups) {
+        (groups) {
           allUserGroups = groups;
           allUserGroups.sort((a, b) {
             final recentMessageA = a?.recentMessageSentAt;
@@ -148,7 +156,6 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(GetAllGroupsError(Failure.fromException(e).message));
     }
   }
-
 
   Future<void> getAllGroupMessages(String groupId) async {
     emit(GetAllGroupMessagesLoading());
@@ -199,6 +206,7 @@ class GroupCubit extends Cubit<GroupStates> {
     List<String>? mediaUrls,
     required MessageType type,
     required bool isAction,
+    GroupMessage? repliedMessage,
   }) async {
     emit(SendMessageToGroupLoading());
     try {
@@ -209,6 +217,7 @@ class GroupCubit extends Cubit<GroupStates> {
         mediaUrls ?? [],
         type,
         isAction,
+        repliedMessage,
       );
       emit(SendMessageToGroupSuccess());
     } catch (e) {

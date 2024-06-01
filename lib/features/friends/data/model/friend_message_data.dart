@@ -17,6 +17,7 @@ class FriendMessage {
   List<String>? mediaUrls;
   MessageType? messageType;
   DateTime? sentAt;
+  FriendMessage? repliedMessage;
 
   FriendMessage({
     required this.friendId,
@@ -26,6 +27,7 @@ class FriendMessage {
     this.mediaUrls,
     this.messageType,
     this.sentAt,
+    this.repliedMessage,
   });
 
   FriendMessage.empty()
@@ -59,6 +61,10 @@ class FriendMessage {
     if (json['sentAt'] != null) {
       sentAt = (json['sentAt'] as Timestamp).toDate().toLocal();
     }
+    if (json['repliedMessage'] != null) {
+      repliedMessage =
+          FriendMessage.fromJson(json['repliedMessage'] as Map<String, dynamic>);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -71,6 +77,7 @@ class FriendMessage {
       if (mediaUrls != null) 'mediaUrls': mediaUrls,
       if (messageType != null) 'messageType': messageType!.index,
       'sentAt': Timestamp.now(),
+      if (repliedMessage != null) 'repliedMessage': repliedMessage!.toJson(),
     };
   }
 }

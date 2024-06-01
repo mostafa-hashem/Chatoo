@@ -43,7 +43,7 @@ class _FriendsStoryState extends State<FriendsStory> {
           current is GetFriendDataSuccess ||
           current is GetFriendDataSuccess,
       builder: (_, state) {
-        return ListView.builder(
+        return ListView.separated(
           padding: EdgeInsets.zero,
           itemCount: friendCubit.combinedFriends.length,
           itemBuilder: (context, index) {
@@ -114,6 +114,7 @@ class _FriendsStoryState extends State<FriendsStory> {
               },
             );
           },
+          separatorBuilder: (context, index) => SizedBox(height: 8.h,),
         );
       },
     );

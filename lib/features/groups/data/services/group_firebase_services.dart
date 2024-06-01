@@ -252,6 +252,7 @@ class GroupFirebaseServices {
       List<String> mediaUrls,
       MessageType type,
       bool isAction,
+      GroupMessage? repliedMessage,
       ) async {
     if (message.isEmpty && mediaUrls.isEmpty) {
       return;
@@ -273,6 +274,7 @@ class GroupFirebaseServices {
       senderId: currentUserUid,
       messageType: type,
       isAction: isAction,
+      repliedMessage: repliedMessage,
     );
 
     await groupMessageDocRef.set(groupMessage.toJson());

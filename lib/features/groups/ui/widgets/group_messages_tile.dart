@@ -16,10 +16,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 class GroupMessagesTile extends StatefulWidget {
   final GroupMessage groupMessage;
+  final Function(GroupMessage)? onSwipe;
+  final Function(String)? onRepliedMessageTap;
 
   const GroupMessagesTile({
     super.key,
     required this.groupMessage,
+    this.onSwipe,
+    this.onRepliedMessageTap,
   });
 
   @override
@@ -31,9 +35,12 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
   TextAlign _textAlign = TextAlign.left;
   TextDirection _textDirection = TextDirection.ltr;
 
+  late GroupCubit groupCubit;
+
   @override
   void didChangeDependencies() {
     widget.groupMessage.messageType ??= MessageType.text;
+    groupCubit = GroupCubit.get(context);
     super.didChangeDependencies();
   }
 
@@ -65,116 +72,146 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
     final messageText = widget.groupMessage.message;
     _checkTextDirection(messageText!);
 
-    return InkWell(
-      onLongPress: () {
-        widget.groupMessage.isAction!
-            ? const SizedBox.shrink()
-            : isSender
-                ? showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Delete Message'),
-                        content: const Text(
-                          'Are you sure you want to delete this message?',
-                        ),
-                        actionsOverflowDirection: VerticalDirection.down,
-                        actions: [
-                          TextButton(
-                            child: const Text('Cancel'),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
+    return BlocListener<GroupCubit, GroupStates>(
+      listener: (_, state) {
+        if (state is SetRepliedMessageSuccess) {}
+      },
+      child: InkWell(
+        onDoubleTap: () {
+          groupCubit.setRepliedMessage(widget.groupMessage);
+        },
+        onLongPress: () {
+          widget.groupMessage.isAction!
+              ? const SizedBox.shrink()
+              : isSender
+                  ? showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Delete Message'),
+                          content: const Text(
+                            'Are you sure you want to delete this message?',
                           ),
-                          BlocListener<GroupCubit, GroupStates>(
-                            listener: (_, state) {
-                              if (state is DeleteMessageForAllSuccess) {}
-                            },
-                            child: TextButton(
-                              child: const Text('Delete for everyone'),
+                          actionsOverflowDirection: VerticalDirection.down,
+                          actions: [
+                            TextButton(
+                              child: const Text('Cancel'),
                               onPressed: () {
-                                GroupCubit.get(context)
-                                    .deleteMessageForeAll(
-                                      widget.groupMessage.groupId!,
-                                      widget.groupMessage.messageId!,
-                                      ProfileCubit.get(context).user.userName!,
-                                    )
-                                    .whenComplete(() => Navigator.pop(context));
+                                Navigator.pop(context);
                               },
                             ),
+                            BlocListener<GroupCubit, GroupStates>(
+                              listener: (_, state) {
+                                if (state is DeleteMessageForAllSuccess) {}
+                              },
+                              child: TextButton(
+                                child: const Text('Delete for everyone'),
+                                onPressed: () {
+                                  GroupCubit.get(context)
+                                      .deleteMessageForeAll(
+                                        widget.groupMessage.groupId!,
+                                        widget.groupMessage.messageId!,
+                                        ProfileCubit.get(context)
+                                            .user
+                                            .userName!,
+                                      )
+                                      .whenComplete(
+                                          () => Navigator.pop(context),);
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    )
+                  : showDialog(
+                      context: context,
+                      builder: (_) {
+                        return AlertDialog(
+                          title: const Text('Delete Message'),
+                          content: const Text(
+                            "Sorry you cannot delete other people's messages till now",
                           ),
-                        ],
-                      );
-                    },
-                  )
-                : showDialog(
-                    context: context,
-                    builder: (_) {
-                      return AlertDialog(
-                        title: const Text('Delete Message'),
-                        content: const Text(
-                          "Sorry you cannot delete other people's messages till now",
-                        ),
-                        actions: [
-                          TextButton(
-                            child: const Text('Ok'),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-      },
-      child: widget.groupMessage.isAction!
-          ? Padding(
-              padding: const EdgeInsets.all(6.0),
-              child: Center(
-                child: Text(
-                  widget.groupMessage.message!,
-                  style: GoogleFonts.alexandria(
-                    fontSize: 12.sp,
-                    color: AppColors.primary,
+                          actions: [
+                            TextButton(
+                              child: const Text('Ok'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+        },
+        child: widget.groupMessage.isAction!
+            ? Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Center(
+                  child: Text(
+                    widget.groupMessage.message!,
+                    style: GoogleFonts.alexandria(
+                      fontSize: 12.sp,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
+              )
+            : Container(
+                padding: widget.groupMessage.messageType == MessageType.record
+                    ? null
+                    : messagePadding,
+                alignment:
+                    isSender ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  margin: messageMargin,
+                  padding: containerPadding,
+                  decoration:
+                      widget.groupMessage.messageType == MessageType.record
+                          ? null
+                          : BoxDecoration(
+                              borderRadius: isSender
+                                  ? const BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                      bottomLeft: Radius.circular(20),
+                                    )
+                                  : const BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                      bottomRight: Radius.circular(20),
+                                    ),
+                              color: isSender
+                                  ? const Color(0xffecae7d)
+                                  : const Color(0xff8db4ad),
+                            ),
+                  child: _buildMessageContent(context, isSender),
+                ),
               ),
-            )
-          : Container(
-              padding: widget.groupMessage.messageType == MessageType.record
-                  ? null
-                  : messagePadding,
-              alignment:
-                  isSender ? Alignment.centerRight : Alignment.centerLeft,
-              child: Container(
-                margin: messageMargin,
-                padding: containerPadding,
-                decoration:
-                    widget.groupMessage.messageType == MessageType.record
-                        ? null
-                        : BoxDecoration(
-                            borderRadius: isSender
-                                ? const BorderRadius.only(
-                                    topLeft: Radius.circular(20),
-                                    topRight: Radius.circular(20),
-                                    bottomLeft: Radius.circular(20),
-                                  )
-                                : const BorderRadius.only(
-                                    topLeft: Radius.circular(20),
-                                    topRight: Radius.circular(20),
-                                    bottomRight: Radius.circular(20),
-                                  ),
-                            color: isSender
-                                ? const Color(0xffecae7d)
-                                : const Color(0xff8db4ad),
-                          ),
-                child: _buildMessageContent(context, isSender),
-              ),
-            ),
+      ),
     );
   }
 
+  TextAlign _replayedTextAlign = TextAlign.left;
+  TextDirection _replayedTextDirection = TextDirection.ltr;
+
+  void _checkReplayedMessageDirection(String text) {
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _replayedTextAlign = TextAlign.right;
+        _replayedTextDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _replayedTextAlign = TextAlign.left;
+        _replayedTextDirection = TextDirection.ltr;
+      });
+    }
+  }
+
   Widget _buildMessageContent(BuildContext context, bool isSender) {
+    _checkReplayedMessageDirection(
+        widget.groupMessage.repliedMessage?.message ?? '',);
     switch (widget.groupMessage.messageType!) {
       case MessageType.text:
         final bool isLink = containsLink(widget.groupMessage.message!);
@@ -182,6 +219,39 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
           crossAxisAlignment:
               isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
+            if (widget.groupMessage.repliedMessage != null)
+              GestureDetector(
+                onTap: () {
+                  widget.onRepliedMessageTap
+                      ?.call(widget.groupMessage.repliedMessage!.messageId!);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.groupMessage.repliedMessage!.sender?.userName ??
+                            'UnKnown',
+                        style: TextStyle(
+                            fontStyle: FontStyle.italic, fontSize: 12.sp,),
+                      ),
+                      Text(
+                        '${widget.groupMessage.repliedMessage!.message}',
+                        textDirection: _replayedTextDirection,
+                        textAlign: _replayedTextAlign,
+                        style: TextStyle(
+                            fontStyle: FontStyle.italic, fontSize: 12.sp,),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             GestureDetector(
               onTap: isLink
                   ? () async {
@@ -212,7 +282,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
             SizedBox(height: 5.h),
             Text(
               getFormattedTime(
-                widget.groupMessage.sentAt!.toLocal().millisecondsSinceEpoch,
+                widget.groupMessage.sentAt!.millisecondsSinceEpoch,
               ),
               style: TextStyle(
                 fontSize: 9.sp,
@@ -225,8 +295,9 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
       case MessageType.image:
         return ImageWidget(
           imagePath: widget.groupMessage.mediaUrls?.first ?? '',
-          sentAt: widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
-              DateTime.now().millisecondsSinceEpoch,
+          sentAt:
+              widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
+                  DateTime.now().millisecondsSinceEpoch,
           senderName: widget.groupMessage.sender?.userName ?? '',
           senderId: widget.groupMessage.sender?.id ?? '',
           isInGroup: true,
@@ -234,8 +305,9 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
       case MessageType.video:
         return VideoWidget(
           videoPath: widget.groupMessage.mediaUrls?.first ?? '',
-          sentAt: widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
-              DateTime.now().millisecondsSinceEpoch,
+          sentAt:
+              widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
+                  DateTime.now().millisecondsSinceEpoch,
           senderName: widget.groupMessage.sender?.userName ?? '',
           senderId: widget.groupMessage.sender?.id ?? '',
           isInGroup: true,
@@ -243,8 +315,9 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
       case MessageType.record:
         return RecordTile(
           recordPath: widget.groupMessage.mediaUrls?.first ?? '',
-          sentAt: widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
-              DateTime.now().millisecondsSinceEpoch,
+          sentAt:
+              widget.groupMessage.sentAt?.toLocal().millisecondsSinceEpoch ??
+                  DateTime.now().millisecondsSinceEpoch,
           senderName: widget.groupMessage.sender?.userName ?? '',
           senderId: widget.groupMessage.sender?.id ?? '',
           isInGroup: true,

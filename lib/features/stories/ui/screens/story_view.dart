@@ -30,7 +30,7 @@ class _StoryViewState extends State<StoryView> {
   Timer? _storyTimer;
   double _progress = 0.0;
   static const int defaultStoryDurationSeconds = 10;
-  static const Duration storyTransitionDelay = Duration(milliseconds: 500); // مدة التأخير بين الاستوري
+  static const Duration storyTransitionDelay = Duration(milliseconds: 500);
   File? _localFile;
   final PageController _pageController = PageController();
 
@@ -112,6 +112,23 @@ class _StoryViewState extends State<StoryView> {
         }
       });
     });
+  }
+
+  void _pauseStory() {
+    _storyTimer?.cancel();
+    if (_videoController != null && _videoController!.value.isPlaying) {
+      _videoController!.pause();
+    }
+  }
+
+  void _resumeStory() {
+    final remainingDuration = isVideo
+        ? _videoController!.value.duration - _videoController!.value.position
+        : Duration(seconds: defaultStoryDurationSeconds) * (1.0 - _progress);
+    _startStoryTimer(remainingDuration);
+    if (_videoController != null && !_videoController!.value.isPlaying) {
+      _videoController!.play();
+    }
   }
 
   Future<void> _goToNextStory() async {
@@ -224,6 +241,8 @@ class _StoryViewState extends State<StoryView> {
                     _goToNextStory();
                   }
                 },
+                onLongPressStart: (_) => _pauseStory(),
+                onLongPressEnd: (_) => _resumeStory(),
                 child: Center(
                   child: Stack(
                     alignment: Alignment.center,

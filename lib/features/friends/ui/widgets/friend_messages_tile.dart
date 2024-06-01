@@ -63,14 +63,17 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         ? EdgeInsets.only(top: 4.h, bottom: 4.h, left: 0.w, right: 15.w)
         : EdgeInsets.only(top: 4.h, bottom: 4.h, left: 15.w, right: 0.w);
     final EdgeInsetsGeometry messageMargin =
-    isSender ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w);
+        isSender ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w);
     final EdgeInsetsGeometry containerPadding =
-    EdgeInsets.symmetric(vertical: 8.h, horizontal: 15.w);
+        EdgeInsets.symmetric(vertical: 8.h, horizontal: 15.w);
 
     final messageText = widget.friendMessage.message;
     _checkTextDirection(messageText);
 
     return InkWell(
+      onDoubleTap: () {
+        friendCubit.setRepliedMessage(widget.friendMessage);
+      },
       onLongPress: () {
         showDialog(
           context: context,
@@ -78,7 +81,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
             return AlertDialog(
               title: const Text('Delete Message'),
               content:
-              const Text('Are you sure you want to delete this message?'),
+                  const Text('Are you sure you want to delete this message?'),
               actions: [
                 TextButton(
                   child: const Text('Cancel'),
@@ -91,12 +94,12 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                   onPressed: () {
                     friendCubit
                         .deleteMessageForMe(
-                      widget.friendMessage.friendId,
-                      widget.friendMessage.messageId,
-                      profileCubit.id!,
-                      profileCubit.userName!,
-                      widget.friendName,
-                    )
+                          widget.friendMessage.friendId,
+                          widget.friendMessage.messageId,
+                          profileCubit.id!,
+                          profileCubit.userName!,
+                          widget.friendName,
+                        )
                         .whenComplete(() => Navigator.pop(context));
                   },
                 ),
@@ -106,12 +109,12 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                     onPressed: () {
                       friendCubit
                           .deleteMessageForAll(
-                        widget.friendMessage.friendId,
-                        widget.friendMessage.messageId,
-                        profileCubit.id!,
-                        profileCubit.userName!,
-                        widget.friendName,
-                      )
+                            widget.friendMessage.friendId,
+                            widget.friendMessage.messageId,
+                            profileCubit.id!,
+                            profileCubit.userName!,
+                            widget.friendName,
+                          )
                           .whenComplete(() => Navigator.pop(context));
                     },
                   ),
@@ -131,49 +134,95 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
           decoration: widget.friendMessage.messageType == MessageType.record
               ? null
               : BoxDecoration(
-            borderRadius: isSender
-                ? BorderRadius.only(
-              topLeft: Radius.circular(20.r),
-              topRight: Radius.circular(20.r),
-              bottomLeft: Radius.circular(20.r),
-            )
-                : BorderRadius.only(
-              topLeft: Radius.circular(20.r),
-              topRight: Radius.circular(20.r),
-              bottomRight: Radius.circular(20.r),
-            ),
-            color: isSender
-                ? const Color(0xffecae7d)
-                : const Color(0xff8db4ad),
-          ),
+                  borderRadius: isSender
+                      ? BorderRadius.only(
+                          topLeft: Radius.circular(20.r),
+                          topRight: Radius.circular(20.r),
+                          bottomLeft: Radius.circular(20.r),
+                        )
+                      : BorderRadius.only(
+                          topLeft: Radius.circular(20.r),
+                          topRight: Radius.circular(20.r),
+                          bottomRight: Radius.circular(20.r),
+                        ),
+                  color: isSender
+                      ? const Color(0xffecae7d)
+                      : const Color(0xff8db4ad),
+                ),
           child: _buildMessageContent(context, isSender),
         ),
       ),
     );
   }
 
+  TextAlign _replayedTextAlign = TextAlign.left;
+  TextDirection _replayedTextDirection = TextDirection.ltr;
+
+  void _checkReplayedMessageDirection(String text) {
+    if (text.isNotEmpty && isArabic(text)) {
+      setState(() {
+        _replayedTextAlign = TextAlign.right;
+        _replayedTextDirection = TextDirection.rtl;
+      });
+    } else {
+      setState(() {
+        _replayedTextAlign = TextAlign.left;
+        _replayedTextDirection = TextDirection.ltr;
+      });
+    }
+  }
+
   Widget _buildMessageContent(BuildContext context, bool isSender) {
+    _checkReplayedMessageDirection(
+      widget.friendMessage.repliedMessage?.message ?? '',
+    );
     switch (widget.friendMessage.messageType!) {
       case MessageType.text:
         final bool isLink = containsLink(widget.friendMessage.message);
         return Column(
           crossAxisAlignment:
-          isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
+            if (widget.friendMessage.repliedMessage != null)
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.friendMessage.repliedMessage!.message,
+                        textDirection: _replayedTextDirection,
+                        textAlign: _replayedTextAlign,
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             GestureDetector(
               onTap: isLink
                   ? () async {
-                if (await canLaunchUrl(
-                  Uri.parse(widget.friendMessage.message),
-                )) {
-                  await launchUrl(
-                    Uri.parse(widget.friendMessage.message),
-                    mode: LaunchMode.externalApplication,
-                  );
-                } else {
-                  throw 'Could not launch ${widget.friendMessage.message}';
-                }
-              }
+                      if (await canLaunchUrl(
+                        Uri.parse(widget.friendMessage.message),
+                      )) {
+                        await launchUrl(
+                          Uri.parse(widget.friendMessage.message),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      } else {
+                        throw 'Could not launch ${widget.friendMessage.message}';
+                      }
+                    }
                   : null,
               child: Text(
                 widget.friendMessage.message,
@@ -183,7 +232,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                   fontSize: 15.sp,
                   color: isLink ? Colors.blue : Colors.white,
                   decoration:
-                  isLink ? TextDecoration.underline : TextDecoration.none,
+                      isLink ? TextDecoration.underline : TextDecoration.none,
                 ),
               ),
             ),

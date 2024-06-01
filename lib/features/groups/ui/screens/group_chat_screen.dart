@@ -40,6 +40,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     groupCubit.filteredMessages.clear();
     groupCubit.allGroupMembers.clear();
     groupCubit.allGroupRequests.clear();
+    groupCubit.setRepliedMessage(null);
     super.dispose();
   }
 
@@ -92,7 +93,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 child: Text(
                   groupData.groupName!,
                   style: GoogleFonts.ubuntu(
-                      fontWeight: FontWeight.w500, fontSize: 14.sp),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14.sp,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

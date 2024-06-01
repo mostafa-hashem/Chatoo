@@ -42,20 +42,20 @@ class FriendFirebaseServices {
       return Stream.value([]);
     }
 
-    final Stream<List<String>> friendIdsStream = _usersCollection
-        .doc(currentUser.uid)
-        .snapshots()
-        .map((snapshot) {
+    final Stream<List<String>> friendIdsStream =
+        _usersCollection.doc(currentUser.uid).snapshots().map((snapshot) {
       final dynamic userData = snapshot.data();
       if (userData != null && userData is Map<String, dynamic>) {
-        final List<dynamic> friendIds = (userData['friends'] ?? []) as List<dynamic>;
+        final List<dynamic> friendIds =
+            (userData['friends'] ?? []) as List<dynamic>;
         return friendIds.map((id) => id.toString()).toList();
       } else {
         return [];
       }
     });
 
-    final Stream<List<User?>> allUserFriendsStream = friendIdsStream.switchMap((friendIds) {
+    final Stream<List<User?>> allUserFriendsStream =
+        friendIdsStream.switchMap((friendIds) {
       if (friendIds.isEmpty) {
         return Stream.value([]);
       }
@@ -71,35 +71,40 @@ class FriendFirebaseServices {
     });
 
     final Stream<List<FriendRecentMessage>> recentMessageDataStream =
-    _friendsCollection.orderBy('sentAt', descending: true).snapshots().map(
-          (querySnapshot) => querySnapshot.docs
-          .map((queryDocSnapshot) => FriendRecentMessage.fromJson(queryDocSnapshot.data()))
-          .toList(),
-    );
+        _friendsCollection.orderBy('sentAt', descending: true).snapshots().map(
+              (querySnapshot) => querySnapshot.docs
+                  .map((queryDocSnapshot) =>
+                      FriendRecentMessage.fromJson(queryDocSnapshot.data()))
+                  .toList(),
+            );
 
     final Stream<List<Story>> storiesStream = FirebaseFirestore.instance
         .collection('stories')
-        .where('uploadedAt', isGreaterThanOrEqualTo: DateTime.now().toLocal().subtract(const Duration(hours: 24)))
+        .where('uploadedAt',
+            isGreaterThanOrEqualTo:
+                DateTime.now().toLocal().subtract(const Duration(hours: 24)))
         .orderBy('uploadedAt', descending: true)
         .snapshots()
         .map(
           (querySnapshot) => querySnapshot.docs
-          .map((doc) => Story.fromJson(doc.data()))
-          .toList(),
-    );
+              .map((doc) => Story.fromJson(doc.data()))
+              .toList(),
+        );
 
-    return Rx.combineLatest3<List<User?>, List<FriendRecentMessage>, List<Story>, List<CombinedFriend>>(
+    return Rx.combineLatest3<List<User?>, List<FriendRecentMessage>,
+        List<Story>, List<CombinedFriend>>(
       allUserFriendsStream,
       recentMessageDataStream,
       storiesStream,
-          (users, messages, stories) {
+      (users, messages, stories) {
         final combinedFriends = users.map((user) {
           final recentMessage = messages.firstWhere(
-                (message) => message.friendId == user?.id,
+            (message) => message.friendId == user?.id,
             orElse: () => FriendRecentMessage.empty(),
           );
 
-          final List<Story> userStories = stories.where((story) => story.userId == user?.id).toList();
+          final List<Story> userStories =
+              stories.where((story) => story.userId == user?.id).toList();
 
           return CombinedFriend(
             user: user,
@@ -109,8 +114,10 @@ class FriendFirebaseServices {
         }).toList();
 
         combinedFriends.sort((a, b) {
-          final aTime = a.recentMessageData.sentAt?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final bTime = b.recentMessageData.sentAt?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final aTime = a.recentMessageData.sentAt?.toLocal() ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.recentMessageData.sentAt?.toLocal() ??
+              DateTime.fromMillisecondsSinceEpoch(0);
           return bTime.compareTo(aTime);
         });
 
@@ -290,6 +297,7 @@ class FriendFirebaseServices {
     User sender,
     List<String>? mediaUrls,
     MessageType type,
+    FriendMessage? repliedMessage,
   ) async {
     if (message!.isEmpty && (mediaUrls == null || mediaUrls.isEmpty)) {
       return;
@@ -317,6 +325,7 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: currentUserUid,
       messageType: type,
+      repliedMessage: repliedMessage,
     );
     final FriendMessage friendMessage = FriendMessage(
       messageId: messageId,
@@ -325,6 +334,7 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: friend.id!,
       messageType: type,
+      repliedMessage: repliedMessage,
     );
 
     await userMessageDocRef.set(currentUserMessage.toJson());

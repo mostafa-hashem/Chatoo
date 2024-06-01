@@ -43,6 +43,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
   @override
   void dispose() {
     friendCubit.filteredMessages.clear();
+    friendCubit.setRepliedMessage(null);
     super.dispose();
   }
 

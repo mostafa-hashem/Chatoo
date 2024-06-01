@@ -2,7 +2,7 @@
 abstract class FriendStates {}
 
 class FriendInit extends FriendStates {}
-
+class SetRepliedMessageSuccess extends FriendStates {}
 class RequestToAddFriendLoading extends FriendStates {}
 
 class RequestToAddFriendSuccess extends FriendStates {}
