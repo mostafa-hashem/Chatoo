@@ -1,7 +1,7 @@
 import 'package:chat_app/ui/resources/app_colors.dart';
-import 'package:chat_app/ui/resources/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
@@ -9,9 +9,9 @@ ThemeData lightTheme = ThemeData(
     size: 30,
     color: AppColors.primary,
   ),
-  scaffoldBackgroundColor: Colors.white,
+  scaffoldBackgroundColor: AppColors.background,
   primaryColor: AppColors.primary,
-  appBarTheme:  AppBarTheme(
+  appBarTheme: AppBarTheme(
     iconTheme: const IconThemeData(
       color: Colors.white,
       size: 25,
@@ -22,11 +22,24 @@ ThemeData lightTheme = ThemeData(
     centerTitle: true,
   ),
   textTheme: TextTheme(
-    bodySmall: novaFlat12BlackLight(),
-    bodyMedium: novaFlat18WhiteLight(),
-    bodyLarge: novaSquare22WhiteLight(),
+    bodySmall: GoogleFonts.novaFlat(
+      fontSize: 12.sp,
+      color: AppColors.textPrimary,
+      fontWeight: FontWeight.normal,
+    ),
+    bodyMedium: GoogleFonts.novaFlat(
+      fontSize: 18.sp,
+      color: AppColors.textPrimary,
+      fontWeight: FontWeight.bold,
+    ),
+    bodyLarge: GoogleFonts.novaSquare(
+      fontSize: 22.sp,
+      color: AppColors.primary,
+      fontWeight: FontWeight.bold,
+    ),
   ),
 );
+
 ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
   iconTheme: const IconThemeData(
@@ -46,8 +59,20 @@ ThemeData darkTheme = ThemeData(
     centerTitle: true,
   ),
   textTheme: TextTheme(
-    bodySmall: novaFlat12WhiteDark(),
-    bodyMedium: novaFlat18WhiteDark(),
-    bodyLarge: novaSquare22WhiteDark(),
+    bodySmall: GoogleFonts.novaFlat(
+      fontSize: 12.sp,
+      color: Colors.white,
+      fontWeight: FontWeight.normal,
+    ),
+    bodyMedium: GoogleFonts.novaFlat(
+      fontSize: 18.sp,
+      color: Colors.white,
+      fontWeight: FontWeight.bold,
+    ),
+    bodyLarge: GoogleFonts.novaSquare(
+      fontSize: 22.sp,
+      color: AppColors.primary,
+      fontWeight: FontWeight.bold,
+    ),
   ),
 );

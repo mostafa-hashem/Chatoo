@@ -107,6 +107,7 @@ class _FriendsStoryState extends State<FriendsStory> {
                   Routes.storyView,
                   arguments: {
                     'stories': stories,
+                    'userName':combinedFriend.user?.userName,
                     'initialIndex': 0,
                     'myStory' : false,
                   },
@@ -114,7 +115,7 @@ class _FriendsStoryState extends State<FriendsStory> {
               },
             );
           },
-          separatorBuilder: (context, index) => SizedBox(height: 8.h,),
+          separatorBuilder: (context, index) => SizedBox(height: MediaQuery.sizeOf(context).height * 0.01,),
         );
       },
     );

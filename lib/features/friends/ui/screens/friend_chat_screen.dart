@@ -82,8 +82,8 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   backgroundColor: AppColors.dark,
                   child: Text(
                     friendCubit.friendData?.userName
-                            ?.substring(0, 1)
-                            .toUpperCase() ??
+                        ?.substring(0, 1)
+                        .toUpperCase() ??
                         friendData.user!.userName!
                             .substring(0, 1)
                             .toUpperCase(),
@@ -111,7 +111,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                     ),
                     BlocBuilder<FriendCubit, FriendStates>(
                       buildWhen: (_, current) =>
-                          current is UpdateTypingStatus ||
+                      current is UpdateTypingStatus ||
                           current is UpdateRecordingStatus ||
                           current is UpdateTypingStatusSuccess ||
                           current is UpdateTypingStatusError ||
@@ -133,10 +133,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                 friendCubit.friendData?.lastSeen != null
                                     ? const SizedBox.shrink()
                                     : Icon(
-                                        Icons.circle,
-                                        color: Colors.grey,
-                                        size: 10.r,
-                                      ),
+                                  Icons.circle,
+                                  color: Colors.grey,
+                                  size: 10.r,
+                                ),
                               SizedBox(
                                 width: MediaQuery.sizeOf(context).width * 0.01,
                               ),
@@ -145,22 +145,22 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                   friendCubit.isTyping
                                       ? 'Typing...'
                                       : friendCubit.isRecording
-                                          ? 'Recording...'
-                                          : friendCubit.friendData!.onLine!
-                                              ? 'Online'
-                                              : friendCubit.friendData
-                                                          ?.lastSeen !=
-                                                      null
-                                                  ? "Last seen: ${getFormattedTime(
-                                                      friendCubit
-                                                          .friendData!
-                                                          .lastSeen!
-                                                          .millisecondsSinceEpoch,
-                                                    )}"
-                                                  : 'Offline',
+                                      ? 'Recording...'
+                                      : friendCubit.friendData!.onLine!
+                                      ? 'Online'
+                                      : friendCubit.friendData
+                                      ?.lastSeen !=
+                                      null
+                                      ? "Last seen: ${getFormattedTime(
+                                    friendCubit
+                                        .friendData!
+                                        .lastSeen!
+                                        .millisecondsSinceEpoch,
+                                  )}"
+                                      : 'Offline',
                                   style: GoogleFonts.ubuntu(
                                     color: friendCubit.isTyping ||
-                                            friendCubit.isRecording
+                                        friendCubit.isRecording
                                         ? Colors.greenAccent
                                         : null,
                                     fontWeight: FontWeight.w400,
@@ -207,7 +207,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                 }
               },
               buildWhen: (_, currentState) =>
-                  currentState is GetAllFriendMessagesSuccess ||
+              currentState is GetAllFriendMessagesSuccess ||
                   currentState is GetAllFriendMessagesError ||
                   currentState is GetAllFriendMessagesLoading,
               builder: (_, state) {

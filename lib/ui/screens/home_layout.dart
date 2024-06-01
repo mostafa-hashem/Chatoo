@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/screens/friends_screen.dart';
@@ -13,9 +16,6 @@ import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/drawer_tile.dart';
 import 'package:chat_app/ui/widgets/error_indicator.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 
 class HomeLayout extends StatefulWidget {
   const HomeLayout({super.key});
@@ -50,15 +50,8 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: AppColors.primary,
           actions: [
-            // IconButton(
-            //   onPressed: () {
-            //     showLanguageSheet(context);
-            //   },
-            //   icon: const Icon(
-            //     Icons.translate,
-            //   ),
-            // ),
             IconButton(
               onPressed: () {
                 provider.themeMode == ThemeMode.light
@@ -85,21 +78,24 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
           ],
           bottom: TabBar(
             controller: tabController,
+            indicatorColor: AppColors.accent,
             tabs: [
               Tab(
-                child:
-                    Text("Chats", style: Theme.of(context).textTheme.bodySmall),
+                child: Text(
+                  "Chats",
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.white),
+                ),
               ),
               Tab(
                 child: Text(
                   "Groups",
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.white),
                 ),
               ),
               Tab(
                 child: Text(
                   "Stories",
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.white),
                 ),
               ),
             ],
@@ -115,7 +111,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
               children: [
                 BlocBuilder<FriendCubit, FriendStates>(
                   buildWhen: (_, currentState) =>
-                      currentState is GetCombinedFriendsLoading ||
+                  currentState is GetCombinedFriendsLoading ||
                       currentState is GetCombinedFriendsSuccess ||
                       currentState is GetCombinedFriendsError,
                   builder: (_, state) {
@@ -159,7 +155,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                               "Successfully Created",
                               style: TextStyle(fontSize: 15),
                             ),
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: AppColors.accent,
                             duration: Duration(seconds: 3),
                           ),
                         );
@@ -175,23 +171,23 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
         ),
         floatingActionButton: tabController.index == 1
             ? FloatingActionButton(
-                onPressed: () {
-                  showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    builder: (context) {
-                      return const CreateGroupWidget();
-                    },
-                  );
-                },
-                elevation: 0,
-                backgroundColor: AppColors.primary,
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 30,
-                ),
-              )
+          onPressed: () {
+            showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (context) {
+                return const CreateGroupWidget();
+              },
+            );
+          },
+          elevation: 0,
+          backgroundColor: AppColors.accent,
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 30,
+          ),
+        )
             : null,
       ),
     );

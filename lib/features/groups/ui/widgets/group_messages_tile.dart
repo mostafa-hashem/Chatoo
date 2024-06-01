@@ -229,7 +229,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                   margin: const EdgeInsets.only(bottom: 8.0),
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: AppColors.borderColor,
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Column(

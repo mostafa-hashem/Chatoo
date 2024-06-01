@@ -27,6 +27,7 @@ class _StoryViewState extends State<StoryView> {
   int currentIndex = 0;
   bool isPlaying = false;
   bool myStory = false;
+  String friendName = '';
   Timer? _storyTimer;
   double _progress = 0.0;
   static const int defaultStoryDurationSeconds = 10;
@@ -42,6 +43,7 @@ class _StoryViewState extends State<StoryView> {
       stories = args['stories'] as List<Story>;
       currentIndex = args['initialIndex'] as int;
       myStory = args['myStory'] as bool;
+      friendName = args['userName'] as String;
       _pageController.addListener(() {
         setState(() {
           currentIndex = _pageController.page!.round();
@@ -124,7 +126,7 @@ class _StoryViewState extends State<StoryView> {
   void _resumeStory() {
     final remainingDuration = isVideo
         ? _videoController!.value.duration - _videoController!.value.position
-        : Duration(seconds: defaultStoryDurationSeconds) * (1.0 - _progress);
+        : const Duration(seconds: defaultStoryDurationSeconds) * (1.0 - _progress);
     _startStoryTimer(remainingDuration);
     if (_videoController != null && !_videoController!.value.isPlaying) {
       _videoController!.play();
@@ -209,7 +211,32 @@ class _StoryViewState extends State<StoryView> {
     final storyCubit = StoriesCubit.get(context);
     _checkTextDirection(mediaTitle);
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black45,
+        elevation: 0,
+        centerTitle: false,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              friendName,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              getFormattedTime(stories[currentIndex].uploadedAt!.millisecondsSinceEpoch),
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12.sp,
+              ),
+            ),
+          ],
+        ),
         actions: [
           if (myStory)
             IconButton(
@@ -223,6 +250,23 @@ class _StoryViewState extends State<StoryView> {
               icon: const Icon(Icons.delete_forever_outlined),
             ),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(4.0.h),
+          child: Row(
+            children: List.generate(stories.length, (index) {
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                  child: LinearProgressIndicator(
+                    value: currentIndex == index ? _progress : (currentIndex > index ? 1.0 : 0.0),
+                    backgroundColor: Colors.black.withOpacity(0.5),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -289,46 +333,25 @@ class _StoryViewState extends State<StoryView> {
                         ],
                       ),
                       if (isLoading) const Center(child: LoadingIndicator()),
+                      Positioned(
+                        bottom: 14.h,
+                        left: 10.w,
+                        right: 10.w,
+                        child: Text(
+                          textAlign: _textAlign,
+                          textDirection: _textDirection,
+                          mediaTitle,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               );
             },
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Row(
-              children: List.generate(stories.length, (index) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                    child: LinearProgressIndicator(
-                      value: currentIndex == index ? _progress : (currentIndex > index ? 1.0 : 0.0),
-                      backgroundColor: Colors.black.withOpacity(0.5),
-                      valueColor:
-                      const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 14.h),
-                child: Text(
-                  textAlign: _textAlign,
-                  textDirection: _textDirection,
-                  mediaTitle,
-                ),
-              ),
-            ),
           ),
         ],
       ),

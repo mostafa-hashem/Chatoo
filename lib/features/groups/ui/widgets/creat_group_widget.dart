@@ -182,7 +182,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                         groupName = value;
                       });
                     },
-                    style: const TextStyle(color: Colors.black),
+                    style: Theme.of(context).textTheme.bodySmall,
                     decoration: InputDecoration(
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(

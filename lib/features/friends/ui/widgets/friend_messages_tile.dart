@@ -1,6 +1,7 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
+import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/image_widget.dart';
 import 'package:chat_app/ui/widgets/record_tile.dart';
 import 'package:chat_app/ui/widgets/video_widget.dart';
@@ -190,7 +191,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                   margin: const EdgeInsets.only(bottom: 8.0),
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: AppColors.borderColor,
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Column(
