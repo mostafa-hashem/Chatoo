@@ -5,6 +5,7 @@ import 'package:chat_app/features/profile/data/services/profile_firebase_service
 import 'package:chat_app/features/stories/data/models/story.dart';
 import 'package:chat_app/utils/data/failure/failure.dart';
 import 'package:chat_app/utils/data/models/user.dart';
+import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -48,13 +49,12 @@ class ProfileCubit extends Cubit<ProfileState> {
   }
 
   Future<void> uploadProfileImageToFireStorage(
-    String filePath,
     File imageFile,
   ) async {
     emit(UploadProfileImageLoading());
     try {
       await profileFirebaseService
-          .uploadProfileImage(filePath, imageFile)
+          .uploadProfileImage(imageFile, getImageFileName)
           .then((value) => getUser());
       emit(UploadProfileImageSuccess());
     } catch (e) {
@@ -64,7 +64,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  void fetchStories()  {
+  void fetchStories() {
     emit(GetUserStoriesLoading());
     try {
       profileFirebaseService.fetchStories().listen((newStories) {

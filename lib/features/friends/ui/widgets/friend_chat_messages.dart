@@ -1,15 +1,15 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_messages_tile.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
-import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FriendChatMessages extends StatefulWidget {
-  final User friendData;
+  final CombinedFriend friendData;
 
   FriendChatMessages({super.key, required this.friendData});
 
@@ -20,8 +20,9 @@ class FriendChatMessages extends StatefulWidget {
 class _FriendChatMessagesState extends State<FriendChatMessages> {
   @override
   Widget build(BuildContext context) {
+    final profileCubit = ProfileCubit.get(context);
     final friendMessages = FriendCubit.get(context)
-        .filteredMessages[widget.friendData.id]
+        .filteredMessages[widget.friendData.user?.id ?? '']
         ?.reversed
         .toList();
 
@@ -61,10 +62,33 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
                 ),
               ),
               ...messages.map((message) {
-                return FriendMessagesTile(
-                  friendMessage: message,
-                  sentByMe: ProfileCubit.get(context).user.id == message.sender,
-                  friendName: widget.friendData.userName ?? '',
+                return Column(
+                  children: [
+                    FriendMessagesTile(
+                      friendMessage: message,
+                      sentByMe: profileCubit.user.id == message.sender,
+                      friendName: widget.friendData.user?.userName ?? '',
+                    ),
+                    if (widget.friendData.recentMessageData.seen != null &&
+                        widget.friendData.recentMessageData.seen! &&
+                        profileCubit.user.id ==
+                            widget.friendData.recentMessageData
+                                .recentMessageSenderId &&
+                        message.sentAt ==
+                            widget.friendData.recentMessageData.sentAt)
+                      Padding(
+                        padding: EdgeInsets.only(right: 22.w),
+                        child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "Seen ✓✓",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(fontSize: 8.sp),
+                            )),
+                      ),
+                  ],
                 );
               }),
             ],

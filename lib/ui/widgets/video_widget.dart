@@ -13,16 +13,16 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 
 class VideoWidget extends StatefulWidget {
   final String videoPath;
-  final String senderName;
+  final String? senderName;
   final String senderId;
   final bool isInGroup;
-  final int sentAt;
+  final int? sentAt;
 
   const VideoWidget({
     super.key,
     required this.videoPath,
-    required this.sentAt,
-    required this.senderName,
+     this.sentAt,
+     this.senderName,
     required this.senderId,
     required this.isInGroup,
   });
@@ -113,8 +113,9 @@ class _VideoWidgetState extends State<VideoWidget> {
             : CrossAxisAlignment.start,
         children: [
           if (widget.isInGroup)
+          if (widget.senderName!= null)
             Text(
-              widget.senderName,
+              widget.senderName!,
               style: TextStyle(
                 fontSize: 10.sp,
                 fontWeight: FontWeight.bold,
@@ -171,8 +172,9 @@ class _VideoWidgetState extends State<VideoWidget> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
+          if (widget.sentAt!= null)
           Text(
-            getFormattedTime(widget.sentAt),
+            getFormattedTime(widget.sentAt!),
             style: TextStyle(
               fontSize: 10.sp,
               color: Colors.white,

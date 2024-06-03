@@ -8,16 +8,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ImageWidget extends StatefulWidget {
   final String imagePath;
-  final String senderName;
+  final String? senderName;
   final String senderId;
   final bool isInGroup;
-  final int sentAt;
+  final int? sentAt;
 
   const ImageWidget({
     super.key,
     required this.imagePath,
-    required this.sentAt,
-    required this.senderName,
+     this.sentAt,
+     this.senderName,
     required this.senderId,
     required this.isInGroup,
   });
@@ -68,14 +68,15 @@ class _ImageWidgetState extends State<ImageWidget> {
             : CrossAxisAlignment.start,
         children: [
           if (widget.isInGroup)
-            Text(
-              widget.senderName,
-              style: TextStyle(
-                fontSize: 10.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            if (widget.senderName != null)
+              Text(
+                widget.senderName!,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
           if (widget.isInGroup)
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.01,
@@ -89,9 +90,10 @@ class _ImageWidgetState extends State<ImageWidget> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
+          if (widget.sentAt != null)
           Text(
             getFormattedTime(
-              widget.sentAt,
+              widget.sentAt!,
             ),
             style: TextStyle(
               fontSize: 10.sp,

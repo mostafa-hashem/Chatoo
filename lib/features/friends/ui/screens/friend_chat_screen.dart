@@ -207,6 +207,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                 }
               },
               buildWhen: (_, currentState) =>
+              currentState is MarkMessagesAsReadSuccess ||
               currentState is GetAllFriendMessagesSuccess ||
                   currentState is GetAllFriendMessagesError ||
                   currentState is GetAllFriendMessagesLoading,
@@ -215,12 +216,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   return const LoadingIndicator();
                 }
                 return FriendChatMessages(
-                  friendData: friendCubit.friendData ?? User.empty(),
+                  friendData: friendData,
                 );
               },
             ),
             FriendTypeMessageWidget(
-              friendData: friendCubit.friendData ?? friendData.user!,
+              friendData: friendData,
             ),
           ],
         ),

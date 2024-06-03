@@ -193,7 +193,7 @@ class _UserStoryState extends State<UserStory> {
                 Routes.storyView,
                 arguments: {
                   'stories': userStories,
-                  'userName': profileCubit.user.userName,
+                  'userData': profileCubit.user,
                   'initialIndex': 0,
                   'myStory': true,
                 },

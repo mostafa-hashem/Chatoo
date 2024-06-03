@@ -33,40 +33,44 @@ class ProfileFirebaseService {
     });
   }
 
-  Future<void> uploadProfileImage(String filePath, File imageFile) async {
+  Future<void> uploadProfileImage(
+    File imageFile,
+    Future<String> Function(File imageFile) getFileName,
+  ) async {
+    final String fileName = await getFileName(imageFile);
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final Reference storageRef = _storage
         .ref()
         .child(FirebasePath.users)
-        .child('profilePictures')
-        .child(filePath);
+        .child(FirebasePath.profilePictures)
+        .child(currentUserId)
+        .child(fileName);
     final UploadTask uploadTask =
-        storageRef.child('${imageFile.hashCode}').putFile(imageFile);
+        storageRef.putFile(imageFile);
     final TaskSnapshot snapshot = await uploadTask;
     final String downloadUrl = await snapshot.ref.getDownloadURL();
 
-    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final userDoc = _usersCollection.doc(currentUserId);
 
-    // Update user's profile image
     await userDoc.update({'profileImage': downloadUrl});
 
     final userSnapshot = await userDoc.get();
     final List<dynamic> friendIds =
         userSnapshot.data()?['friends'] as List<dynamic>;
 
-    // Update profile image for each friend
-    for (final friendId in friendIds) {
-      final friendDoc = _usersCollection
-          .doc(friendId.toString())
-          .collection(FirebasePath.friends)
-          .doc(currentUserId);
-
-      final friendSnapshot = await friendDoc.get();
-      if (friendSnapshot.exists) {
-        // Update the friendData field with the new profile image URL
-        await friendDoc.update({'friendData.profileImage': downloadUrl});
-      }
-    }
+    // // Update profile image for each friend
+    // for (final friendId in friendIds) {
+    //   final friendDoc = _usersCollection
+    //       .doc(friendId.toString())
+    //       .collection(FirebasePath.friends)
+    //       .doc(currentUserId);
+    //
+    //   final friendSnapshot = await friendDoc.get();
+    //   if (friendSnapshot.exists) {
+    //     // Update the friendData field with the new profile image URL
+    //     await friendDoc.update({'friendData.profileImage': downloadUrl});
+    //   }
+    // }
   }
 
   Stream<List<Story>> fetchStories() {
@@ -75,9 +79,10 @@ class ProfileFirebaseService {
     return FirebaseFirestore.instance
         .collection('stories')
         .where(
-      'uploadedAt',
-      isGreaterThanOrEqualTo: DateTime.now().subtract(const Duration(hours: 24)),
-    )
+          'uploadedAt',
+          isGreaterThanOrEqualTo:
+              DateTime.now().subtract(const Duration(hours: 24)),
+        )
         .orderBy('uploadedAt', descending: true)
         .snapshots()
         .map((querySnapshot) {

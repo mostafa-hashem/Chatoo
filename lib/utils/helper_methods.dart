@@ -107,7 +107,7 @@ void showImageDialog(BuildContext context, String imageUrl) {
           Navigator.pushNamed(
             context,
             Routes.mediaView,
-            arguments: {'path': imageUrl, 'isVideo': false},
+            arguments: {'path': imageUrl, 'mediaTitle': '', 'isVideo': false},
           );
         },
         child: Dialog(

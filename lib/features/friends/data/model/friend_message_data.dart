@@ -1,3 +1,4 @@
+import 'package:chat_app/features/stories/data/models/story.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -18,6 +19,7 @@ class FriendMessage {
   MessageType? messageType;
   DateTime? sentAt;
   FriendMessage? repliedMessage;
+  Story? replayToStory;
 
   FriendMessage({
     required this.friendId,
@@ -28,6 +30,7 @@ class FriendMessage {
     this.messageType,
     this.sentAt,
     this.repliedMessage,
+    this.replayToStory,
   });
 
   FriendMessage.empty()
@@ -62,8 +65,13 @@ class FriendMessage {
       sentAt = (json['sentAt'] as Timestamp).toDate().toLocal();
     }
     if (json['repliedMessage'] != null) {
-      repliedMessage =
-          FriendMessage.fromJson(json['repliedMessage'] as Map<String, dynamic>);
+      repliedMessage = FriendMessage.fromJson(
+        json['repliedMessage'] as Map<String, dynamic>,
+      );
+    }
+    if (json['replayToStory'] != null) {
+      replayToStory =
+          Story.fromJson(json['replayToStory'] as Map<String, dynamic>);
     }
   }
 
@@ -76,8 +84,9 @@ class FriendMessage {
       'sender': sender,
       if (mediaUrls != null) 'mediaUrls': mediaUrls,
       if (messageType != null) 'messageType': messageType!.index,
-      'sentAt': Timestamp.now(),
+      'sentAt': sentAt ?? Timestamp.now(),
       if (repliedMessage != null) 'repliedMessage': repliedMessage!.toJson(),
+      if (replayToStory != null) 'replayToStory': replayToStory!.toJson(),
     };
   }
 }

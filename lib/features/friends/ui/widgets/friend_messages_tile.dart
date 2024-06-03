@@ -34,6 +34,9 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
   late FriendCubit friendCubit;
   TextAlign _textAlign = TextAlign.left;
   TextDirection _textDirection = TextDirection.ltr;
+  String? mediaUrl;
+  String? fileName;
+  bool isVideo = false;
 
   @override
   void didChangeDependencies() {
@@ -76,6 +79,39 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         friendCubit.setRepliedMessage(widget.friendMessage);
       },
       onLongPress: () {
+        // showModalBottomSheet(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return ReactionButton<String>(
+        //       onReactionChanged: (Reaction<String>? reaction) {
+        //         print('Selected reaction: ${reaction?.value}');
+        //       },
+        //       reactions: <Reaction<String>>[
+        //         Reaction<String>(
+        //           value: '❤️',
+        //           icon: Icon(Icons.favorite, color: Colors.red),
+        //         ),
+        //         Reaction<String>(
+        //           value: '😂',
+        //           icon: Icon(Icons.emoji_emotions, color: Colors.yellow),
+        //         ),
+        //         Reaction<String>(
+        //           value: '😮',
+        //           icon: Icon(Icons.sentiment_satisfied, color: Colors.orange),
+        //         ),
+        //         Reaction<String>(
+        //           value: '😢',
+        //           icon: Icon(Icons.sentiment_very_dissatisfied, color: Colors.blue),
+        //         ),
+        //         Reaction<String>(
+        //           value: '👍',
+        //           icon: Icon(Icons.thumb_up, color: Colors.green),
+        //         ),
+        //       ],
+        //       itemSize: Size(6.w,8.h),
+        //     );
+        //   },
+        // );
         showDialog(
           context: context,
           builder: (context) {
@@ -146,9 +182,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                           topRight: Radius.circular(20.r),
                           bottomRight: Radius.circular(20.r),
                         ),
-                  color: isSender
-                      ? const Color(0xffecae7d)
-                      : const Color(0xff8db4ad),
+                  color: AppColors.messageColor,
                 ),
           child: _buildMessageContent(context, isSender),
         ),
@@ -174,6 +208,17 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
   }
 
   Widget _buildMessageContent(BuildContext context, bool isSender) {
+    if (widget.friendMessage.replayToStory != null) {
+      mediaUrl = widget.friendMessage.replayToStory?.mediaUrl ?? '';
+      fileName = mediaUrl!
+          .split('%')
+          .last
+          .split('.')
+          .last
+          .substring(0, 3)
+          .toLowerCase();
+       isVideo = ['mp4', 'mov', 'avi', 'mkv'].contains(fileName);
+    }
     _checkReplayedMessageDirection(
       widget.friendMessage.repliedMessage?.message ?? '',
     );
@@ -188,6 +233,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
               GestureDetector(
                 onTap: () {},
                 child: Container(
+                  width: double.infinity,
                   margin: const EdgeInsets.only(bottom: 8.0),
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
@@ -209,6 +255,18 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                     ],
                   ),
                 ),
+              ),
+            if (widget.friendMessage.replayToStory != null && isVideo)
+              VideoWidget(
+                videoPath: mediaUrl!,
+                senderId: profileCubit.id!,
+                isInGroup: false,
+              ),
+            if (widget.friendMessage.replayToStory != null && !isVideo)
+              ImageWidget(
+                imagePath: mediaUrl!,
+                senderId: profileCubit.id!,
+                isInGroup: false,
               ),
             GestureDetector(
               onTap: isLink

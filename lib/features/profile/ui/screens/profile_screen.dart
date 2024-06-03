@@ -97,7 +97,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (context.mounted) {
           final profile = ProfileCubit.get(context);
           profile.uploadProfileImageToFireStorage(
-            profile.user.id!,
             imageFile!,
           );
         }

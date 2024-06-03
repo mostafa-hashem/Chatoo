@@ -49,6 +49,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   String? notificationBody;
   TextAlign _textAlign = TextAlign.left;
   TextDirection _textDirection = TextDirection.ltr;
+  bool _isMounted = false;
 
   @override
   void didChangeDependencies() {
@@ -61,12 +62,14 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   @override
   void initState() {
     _audioRecorder = AudioRecorder();
+    _isMounted = true;
     super.initState();
   }
 
   @override
   void dispose() {
     _audioRecorder.dispose();
+    _isMounted = false;
     super.dispose();
   }
 
@@ -334,15 +337,19 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   void _checkTextDirection() {
     final text = groupCubit.messageController.text;
     if (text.isNotEmpty && isArabic(text)) {
-      setState(() {
-        _textAlign = TextAlign.right;
-        _textDirection = TextDirection.rtl;
-      });
+      if (_isMounted) {
+        setState(() {
+          _textAlign = TextAlign.right;
+          _textDirection = TextDirection.rtl;
+        });
+      }
     } else {
-      setState(() {
-        _textAlign = TextAlign.left;
-        _textDirection = TextDirection.ltr;
-      });
+      if (_isMounted) {
+        setState(() {
+          _textAlign = TextAlign.left;
+          _textDirection = TextDirection.ltr;
+        });
+      }
     }
   }
 
@@ -355,11 +362,13 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   }
 
   void scrollToBottom() {
-    groupCubit.scrollController.animateTo(
-      0.0,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
-    );
+    if (_isMounted && groupCubit.scrollController.hasClients) {
+      groupCubit.scrollController.animateTo(
+        groupCubit.scrollController.position.minScrollExtent,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -368,7 +377,9 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
     return BlocConsumer<GroupCubit, GroupStates>(
       listener: (_, state) {
         if (state is SendMessageToGroupSuccess) {
-          scrollToBottom();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            scrollToBottom();
+          });
           audioPlayer.play(AssetSource("audios/message_received.wav"));
           final List<dynamic> memberIds = widget.groupData.members!.toList();
           for (final memberId in memberIds) {
@@ -497,6 +508,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                     style: TextStyle(
                                       fontSize: 16.sp,
                                       fontWeight: FontWeight.w500,
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ],

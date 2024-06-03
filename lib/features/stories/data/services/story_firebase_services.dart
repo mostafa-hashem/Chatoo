@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:chat_app/features/stories/data/models/story.dart';
 import 'package:chat_app/utils/constants.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:firebase_storage/firebase_storage.dart';
 
 class StoryFirebaseServices {
@@ -57,7 +58,9 @@ class StoryFirebaseServices {
   }
 
   Future<void> deleteStory(
-      String storyId, String fileName,) async {
+    String storyId,
+    String fileName,
+  ) async {
     final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     await _storiesCollection.doc(storyId).delete();
@@ -91,5 +94,34 @@ class StoryFirebaseServices {
           .map((doc) => Story.fromJson(doc.data()))
           .toList();
     });
+  }
+
+  Future<void> updateStorySeen(String storyId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final storyRef = _storiesCollection.doc(storyId);
+    final storyDoc = await storyRef.get();
+
+    if (storyDoc.exists) {
+      final storyData = storyDoc.data();
+      if (storyData != null) {
+        final seenMap = storyData['seen'] as Map<String, dynamic>? ?? {};
+        if (!seenMap.containsKey(currentUserId)) {
+          seenMap[currentUserId] = FieldValue.serverTimestamp();
+          await storyRef.update({
+            'seen': seenMap,
+          });
+        }
+      }
+    }
+  }
+
+
+  Future<User?> getUserById(String userId) async {
+    final DocumentSnapshot<Map<String, dynamic>> userDoc =
+        await FirebaseFirestore.instance.collection(FirebasePath.users).doc(userId).get();
+    if (userDoc.exists) {
+      return User.fromJson(userDoc.data()!);
+    }
+    return null;
   }
 }

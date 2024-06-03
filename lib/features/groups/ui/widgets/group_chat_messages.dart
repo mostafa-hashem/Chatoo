@@ -19,15 +19,19 @@ class GroupChatMessages extends StatefulWidget {
 }
 
 class _GroupChatMessagesState extends State<GroupChatMessages> {
-  final ScrollController _scrollController = ScrollController();
-
+  late GroupCubit _groupCubit;
+@override
+  void didChangeDependencies() {
+  _groupCubit = GroupCubit.get(context);
+    super.didChangeDependencies();
+  }
   void _scrollToMessage(String messageId) {
-    final groupMessages = GroupCubit.get(context).filteredMessages[widget.groupId]?.toList();
+    final groupMessages = _groupCubit.filteredMessages[widget.groupId]?.toList();
     final index = groupMessages?.indexWhere((message) => message.messageId == messageId);
 
-    if (index != null && index >= 0 && _scrollController.hasClients) {
-      final position = index * 20.0;
-      _scrollController.animateTo(
+    if (index != null && index >= 0 && _groupCubit.scrollController.hasClients) {
+      final position = index * 60.0;
+      _groupCubit.scrollController.animateTo(
         position,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -54,7 +58,7 @@ class _GroupChatMessagesState extends State<GroupChatMessages> {
     return Expanded(
       child: ListView.builder(
         reverse: true,
-        controller: _scrollController,
+        controller: GroupCubit.get(context).scrollController,
         itemCount: dateEntries.length,
         itemBuilder: (context, index) {
           final dateEntry = dateEntries[index];

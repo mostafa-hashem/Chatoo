@@ -107,7 +107,7 @@ class _FriendsStoryState extends State<FriendsStory> {
                   Routes.storyView,
                   arguments: {
                     'stories': stories,
-                    'userName':combinedFriend.user?.userName,
+                    'userData':combinedFriend.user,
                     'initialIndex': 0,
                     'myStory' : false,
                   },

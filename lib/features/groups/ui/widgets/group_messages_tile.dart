@@ -181,9 +181,8 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                                       topRight: Radius.circular(20),
                                       bottomRight: Radius.circular(20),
                                     ),
-                              color: isSender
-                                  ? const Color(0xffecae7d)
-                                  : const Color(0xff8db4ad),
+                              color:
+                              AppColors.messageColor,
                             ),
                   child: _buildMessageContent(context, isSender),
                 ),
@@ -219,6 +218,15 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
           crossAxisAlignment:
               isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
+            Text(
+              widget.groupMessage.sender?.userName ?? '',
+              textAlign: _textAlign,
+              textDirection: _textDirection,
+              style: TextStyle(
+                fontSize: 12.sp,
+              ),
+            ),
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.01,),
             if (widget.groupMessage.repliedMessage != null)
               GestureDetector(
                 onTap: () {
@@ -233,7 +241,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
                         widget.groupMessage.repliedMessage!.sender?.userName ??
@@ -274,8 +282,6 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   color: isLink ? Colors.blue : Colors.white,
-                  decoration:
-                      isLink ? TextDecoration.underline : TextDecoration.none,
                 ),
               ),
             ),

@@ -4,30 +4,36 @@ class FriendRecentMessage {
   String? friendId;
   String? recentMessage;
   String? recentMessageSender;
+  String? recentMessageSenderId;
   DateTime? sentAt;
   DateTime? addedAt;
   bool? typing;
   bool? recording;
+  bool? seen;
   int? unreadCount;
 
   FriendRecentMessage({
     required this.recentMessage,
     required this.recentMessageSender,
+    required this.recentMessageSenderId,
     required this.sentAt,
     required this.addedAt,
     this.unreadCount = 0,
     this.typing = false,
     this.recording = false,
+    this.seen = false,
   });
 
   FriendRecentMessage.empty()
       : recentMessage = '',
         recentMessageSender = '',
+        recentMessageSenderId = '',
         unreadCount = 0,
         sentAt = null,
         addedAt = null,
         typing = false,
-        recording = false;
+        recording = false,
+        seen = false;
 
   FriendRecentMessage.fromJson(Map<String, dynamic> json) {
     if (json['friendId'] != null) {
@@ -38,6 +44,9 @@ class FriendRecentMessage {
     }
     if (json['recentMessageSender'] != null) {
       recentMessageSender = json['recentMessageSender'] as String;
+    }
+    if (json['recentMessageSenderId'] != null) {
+      recentMessageSenderId = json['recentMessageSenderId'] as String;
     }
     if (json['sentAt'] != null) {
       sentAt = (json['sentAt'] as Timestamp).toDate().toLocal();
@@ -51,6 +60,9 @@ class FriendRecentMessage {
     if (json['recording'] != null) {
       recording = json['recording'] as bool?;
     }
+    if (json['seen'] != null) {
+      seen = json['seen'] as bool?;
+    }
     if (json['unreadCount'] != null) {
       unreadCount = json['unreadCount'] as int?;
     }
@@ -61,10 +73,13 @@ class FriendRecentMessage {
         if (recentMessage != null) 'recentMessage': recentMessage,
         if (recentMessageSender != null)
           'recentMessageSender': recentMessageSender,
-       'sentAt': Timestamp.now(),
+        if (recentMessageSenderId != null)
+          'recentMessageSenderId': recentMessageSenderId,
+        'sentAt': sentAt ?? Timestamp.now(),
         if (addedAt != null) 'addedAt': Timestamp.now(),
         if (typing != null) 'typing': typing,
         if (recording != null) 'recording': typing,
+        if (seen != null) 'seen': seen,
         if (unreadCount != null) 'unreadCount': unreadCount,
       };
 }

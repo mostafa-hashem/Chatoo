@@ -266,7 +266,7 @@ class FriendTitle extends StatelessWidget {
               : '',
           style: GoogleFonts.novaSquare(
             fontWeight: FontWeight.w700,
-            fontSize: 9.sp,
+            fontSize: 7.sp,
           ),
           overflow: TextOverflow.ellipsis,
         ),

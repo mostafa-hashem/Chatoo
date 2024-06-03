@@ -8,6 +8,7 @@ class FirebasePath {
   static const String data = 'data';
   static const String suggestions = 'suggestions';
   static const String records = 'records';
+  static const String profilePictures = 'profilePictures';
   static const String images = 'images';
   static const String videos = 'videos';
   static const String audios = 'audios';
