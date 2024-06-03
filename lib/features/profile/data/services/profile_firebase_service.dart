@@ -54,9 +54,9 @@ class ProfileFirebaseService {
 
     await userDoc.update({'profileImage': downloadUrl});
 
-    final userSnapshot = await userDoc.get();
-    final List<dynamic> friendIds =
-        userSnapshot.data()?['friends'] as List<dynamic>;
+    // final userSnapshot = await userDoc.get();
+    // final List<dynamic> friendIds =
+    //     userSnapshot.data()?['friends'] as List<dynamic>;
 
     // // Update profile image for each friend
     // for (final friendId in friendIds) {

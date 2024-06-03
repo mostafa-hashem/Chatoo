@@ -459,6 +459,10 @@ class _StoryViewState extends State<StoryView> {
                         resumeStory: _resumeStory,
                         pauseStory: _pauseStory,
                       ),
+                    if (!myStory)
+                      SizedBox(
+                        height: 20.h,
+                      ),
                   ],
                 ),
               ),
@@ -470,10 +474,11 @@ class _StoryViewState extends State<StoryView> {
   }
 
   Future<void> showViewersBottomSheet(
-      BuildContext context,
-      Map<String, dynamic>? seen,
-      StoriesCubit storiesCubit,
-      ) async {
+    BuildContext context,
+    Map<String, dynamic>? seen,
+    StoriesCubit storiesCubit,
+  ) async {
+    final bottomSheetHeight = MediaQuery.sizeOf(context).height;
     if (seen == null || seen.isEmpty) return;
 
     final List<MapEntry<String, dynamic>> seenEntries = seen.entries.toList();
@@ -489,34 +494,37 @@ class _StoryViewState extends State<StoryView> {
     if (cachedViewers.length == seen.length) {
       viewers = cachedViewers;
     }
-
     showModalBottomSheet(
       context: context,
+      constraints: BoxConstraints(
+        maxHeight: viewers.length == 1
+            ? bottomSheetHeight * 0.2
+            : viewers.length == 2
+                ? bottomSheetHeight * 0.28
+                : bottomSheetHeight * 0.5,
+        maxWidth: MediaQuery.sizeOf(context).width * 0.95,
+      ),
+      sheetAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
       ),
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return BlocBuilder<StoriesCubit, StoriesState>(
-              builder: (_, state) {
-                if (state is GetUserByIdLoading) {
-                  return const LoadingIndicator();
-                } else if (state is GetUserByIdError) {
-                  return const ErrorIndicator();
-                } else {
-                  return StoryViewersBottomSheet(
-                    viewers: viewers,
-                    seenEntries: seenEntries,
-                  );
-                }
-              },
-            );
+        return BlocBuilder<StoriesCubit, StoriesState>(
+          builder: (_, state) {
+            if (state is GetUserByIdLoading) {
+              return const LoadingIndicator();
+            } else if (state is GetUserByIdError) {
+              return const ErrorIndicator();
+            } else {
+              return StoryViewersBottomSheet(
+                viewers: viewers,
+                seenEntries: seenEntries,
+              );
+            }
           },
         );
       },
     );
   }
-
 }
