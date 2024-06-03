@@ -2,8 +2,10 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
+import 'package:chat_app/features/groups/data/model/group_message_data.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_chat_messages.dart';
 import 'package:chat_app/features/groups/ui/widgets/group_type_message_widget.dart';
+import 'package:chat_app/features/groups/ui/widgets/message_seen_bottom_sheet.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
@@ -27,6 +29,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   final audioPlayer = AudioPlayer();
   late Group groupData;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  GroupMessage? selectedMessage;
+  bool isSender = false;
 
   @override
   void didChangeDependencies() {
@@ -40,22 +44,37 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     groupCubit.filteredMessages.clear();
     groupCubit.allGroupMembers.clear();
     groupCubit.allGroupRequests.clear();
+    selectedMessage = null;
     groupCubit.setRepliedMessage(null);
     super.dispose();
+  }
+
+  void onMessageSelected(GroupMessage message) {
+    setState(() {
+      selectedMessage = message;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final profileCubit = ProfileCubit.get(context);
+    if (selectedMessage != null) {
+      isSender = profileCubit.user.id == selectedMessage?.sender?.id;
+    }
     return GestureDetector(
       onTap: () {
+        setState(() {
+          selectedMessage = null;
+        });
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
           centerTitle: false,
-          title: Row(
+          title: selectedMessage != null
+              ? const SizedBox.shrink()
+              : Row(
             children: [
               if (groupData.groupIcon!.isNotEmpty)
                 ClipOval(
@@ -102,40 +121,150 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ],
           ),
           actions: [
-            BlocBuilder<GroupCubit, GroupStates>(
-              buildWhen: (_, currentState) =>
-                  currentState is GetAllGroupRequestsSuccess ||
-                  currentState is GetAllGroupRequestsError ||
-                  currentState is GetAllGroupRequestsLoading,
-              builder: (_, state) {
-                return Stack(
-                  alignment: Alignment.topLeft,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          Routes.groupInfo,
-                          arguments: groupData,
+            if (selectedMessage != null)
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      isSender
+                          ? showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Delete Message'),
+                            content: const Text(
+                              'Are you sure you want to delete this message?',
+                            ),
+                            actionsOverflowDirection:
+                            VerticalDirection.down,
+                            actions: [
+                              TextButton(
+                                child: const Text('Cancel'),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedMessage = null;
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              BlocListener<GroupCubit, GroupStates>(
+                                listener: (_, state) {
+                                  if (state is DeleteMessageForAllSuccess) {}
+                                },
+                                child: TextButton(
+                                  child:
+                                  const Text('Delete for everyone'),
+                                  onPressed: () {
+                                    setState(() {
+                                      selectedMessage = null;
+                                    });
+                                    GroupCubit.get(context)
+                                        .deleteMessageForeAll(
+                                      selectedMessage?.groupId ?? '',
+                                      selectedMessage?.messageId ??
+                                          '',
+                                      ProfileCubit.get(context)
+                                          .user
+                                          .userName!,
+                                    )
+                                        .whenComplete(
+                                          () => Navigator.pop(context),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      )
+                          : showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                            title: const Text('Delete Message'),
+                            content: const Text(
+                              "Sorry you cannot delete other people's messages till now",
+                            ),
+                            actions: [
+                              TextButton(
+                                child: const Text('Ok'),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedMessage = null;
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.delete_forever),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      if (selectedMessage != null) {
+                        debugPrint("Hiiiiiiiii: ${selectedMessage?.readBy?.length}");
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (context) {
+                            return MessageSeenBottomSheet(
+                              groupMessages: selectedMessage!,
+                            );
+                          },
                         );
-                      },
-                      icon: const Icon(Icons.info),
-                    ),
-                    if (groupData.requests!.isNotEmpty &&
-                        groupData.groupAdmins!.any(
-                          (adminId) => adminId == profileCubit.user.id,
-                        ))
-                      Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: CircleAvatar(
-                          radius: 6.r,
-                          backgroundColor: Colors.black,
-                        ),
+                      }
+                    },
+                    icon: const Icon(Icons.info),
+                  ),
+
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedMessage = null;
+                      });
+                    },
+                    icon: const Icon(Icons.cancel),
+                  ),
+                ],
+              )
+            else
+              BlocBuilder<GroupCubit, GroupStates>(
+                buildWhen: (_, currentState) =>
+                currentState is GetAllGroupRequestsSuccess ||
+                    currentState is GetAllGroupRequestsError ||
+                    currentState is GetAllGroupRequestsLoading,
+                builder: (_, state) {
+                  return Stack(
+                    alignment: Alignment.topLeft,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.groupInfo,
+                            arguments: groupData,
+                          );
+                        },
+                        icon: const Icon(Icons.info),
                       ),
-                  ],
-                );
-              },
-            ),
+                      if (groupData.requests!.isNotEmpty &&
+                          groupData.groupAdmins!.any(
+                                (adminId) => adminId == profileCubit.user.id,
+                          ))
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: CircleAvatar(
+                            radius: 6.r,
+                            backgroundColor: Colors.black,
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
           ],
         ),
         body: Column(
@@ -150,7 +279,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 }
               },
               buildWhen: (_, currentState) =>
-                  currentState is GetAllGroupMessagesSuccess ||
+              currentState is GetAllGroupMessagesSuccess ||
                   currentState is GetAllGroupMessagesError ||
                   currentState is GetAllGroupMessagesLoading,
               builder: (_, state) {
@@ -161,6 +290,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                 } else {
                   return GroupChatMessages(
                     groupId: groupData.groupId ?? '',
+                    onMessageSelected: onMessageSelected,
                   );
                 }
               },

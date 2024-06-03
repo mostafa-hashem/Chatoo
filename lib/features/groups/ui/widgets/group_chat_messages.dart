@@ -8,10 +8,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GroupChatMessages extends StatefulWidget {
   final String groupId;
+  final Function(GroupMessage) onMessageSelected;
+
 
   GroupChatMessages({
     super.key,
     required this.groupId,
+    required this.onMessageSelected,
   });
 
   @override
@@ -84,6 +87,9 @@ class _GroupChatMessagesState extends State<GroupChatMessages> {
                 return GroupMessagesTile(
                   key: ValueKey(message.messageId),
                   groupMessage: message,
+                  onMessageSelected: () {
+                    widget.onMessageSelected(message);
+                  },
                   onRepliedMessageTap: (messageId) {
                     _scrollToMessage(messageId);
                   },

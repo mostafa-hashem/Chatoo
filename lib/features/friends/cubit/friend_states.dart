@@ -1,7 +1,7 @@
-
 abstract class FriendStates {}
 
 class FriendInit extends FriendStates {}
+
 class SetRepliedMessageSuccess extends FriendStates {}
 class RequestToAddFriendLoading extends FriendStates {}
 
@@ -214,6 +214,7 @@ class DeleteChatError extends FriendStates {
 
   DeleteChatError(this.message);
 }
+
 class DeleteChatForAllLoading extends FriendStates {}
 
 class DeleteChatForAllSuccess extends FriendStates {}

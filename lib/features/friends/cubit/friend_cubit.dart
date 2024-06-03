@@ -36,7 +36,6 @@ class FriendCubit extends Cubit<FriendStates> {
       emit(SetRepliedMessageSuccess());
     } catch (e) {}
   }
-
   Future<void> requestToAddFriend(String friendId) async {
     emit(RequestToAddFriendLoading());
     try {

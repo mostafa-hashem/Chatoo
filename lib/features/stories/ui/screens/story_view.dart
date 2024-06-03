@@ -479,6 +479,7 @@ class _StoryViewState extends State<StoryView> {
     StoriesCubit storiesCubit,
   ) async {
     final bottomSheetHeight = MediaQuery.sizeOf(context).height;
+    final bottomSheetWidth = MediaQuery.sizeOf(context).width;
     if (seen == null || seen.isEmpty) return;
 
     final List<MapEntry<String, dynamic>> seenEntries = seen.entries.toList();
@@ -502,7 +503,7 @@ class _StoryViewState extends State<StoryView> {
             : viewers.length == 2
                 ? bottomSheetHeight * 0.28
                 : bottomSheetHeight * 0.5,
-        maxWidth: MediaQuery.sizeOf(context).width * 0.95,
+        maxWidth: bottomSheetWidth * 0.95,
       ),
       sheetAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
       shape: const RoundedRectangleBorder(

@@ -30,10 +30,10 @@ class GroupCubit extends Cubit<GroupStates> {
   GroupMessage? replayedMessage;
 
   void setRepliedMessage(GroupMessage? newReplayedMessage) {
-    try{
+    try {
       replayedMessage = newReplayedMessage;
       emit(SetRepliedMessageSuccess());
-    }catch(e){}
+    } catch (e) {}
   }
 
   Future<void> createGroup(Group group, User user) async {
@@ -230,10 +230,15 @@ class GroupCubit extends Cubit<GroupStates> {
   }) async {
     emit(MakeGroupMessageAsReadLoading());
     try {
-      await _groupFirebaseServices.markMessagesAsRead(
-        groupId,
-      );
-      emit(MakeGroupMessageAsReadSuccess());
+      await _groupFirebaseServices
+          .markMessagesAsRead(
+            groupId,
+          )
+          .whenComplete(
+            () => emit(
+              MakeGroupMessageAsReadSuccess(),
+            ),
+          );
     } catch (e) {
       emit(MakeGroupMessageAsReadError(Failure.fromException(e).message));
     }

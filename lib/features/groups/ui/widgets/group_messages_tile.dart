@@ -18,12 +18,14 @@ class GroupMessagesTile extends StatefulWidget {
   final GroupMessage groupMessage;
   final Function(GroupMessage)? onSwipe;
   final Function(String)? onRepliedMessageTap;
+  final VoidCallback onMessageSelected;
 
   const GroupMessagesTile({
     super.key,
     required this.groupMessage,
     this.onSwipe,
     this.onRepliedMessageTap,
+    required this.onMessageSelected,
   });
 
   @override
@@ -80,70 +82,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
         onDoubleTap: () {
           groupCubit.setRepliedMessage(widget.groupMessage);
         },
-        onLongPress: () {
-          widget.groupMessage.isAction!
-              ? const SizedBox.shrink()
-              : isSender
-                  ? showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Delete Message'),
-                          content: const Text(
-                            'Are you sure you want to delete this message?',
-                          ),
-                          actionsOverflowDirection: VerticalDirection.down,
-                          actions: [
-                            TextButton(
-                              child: const Text('Cancel'),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                            BlocListener<GroupCubit, GroupStates>(
-                              listener: (_, state) {
-                                if (state is DeleteMessageForAllSuccess) {}
-                              },
-                              child: TextButton(
-                                child: const Text('Delete for everyone'),
-                                onPressed: () {
-                                  GroupCubit.get(context)
-                                      .deleteMessageForeAll(
-                                        widget.groupMessage.groupId!,
-                                        widget.groupMessage.messageId!,
-                                        ProfileCubit.get(context)
-                                            .user
-                                            .userName!,
-                                      )
-                                      .whenComplete(
-                                          () => Navigator.pop(context),);
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    )
-                  : showDialog(
-                      context: context,
-                      builder: (_) {
-                        return AlertDialog(
-                          title: const Text('Delete Message'),
-                          content: const Text(
-                            "Sorry you cannot delete other people's messages till now",
-                          ),
-                          actions: [
-                            TextButton(
-                              child: const Text('Ok'),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-        },
+        onLongPress: widget.onMessageSelected,
         child: widget.groupMessage.isAction!
             ? Padding(
                 padding: const EdgeInsets.all(6.0),
@@ -181,8 +120,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                                       topRight: Radius.circular(20),
                                       bottomRight: Radius.circular(20),
                                     ),
-                              color:
-                              AppColors.messageColor,
+                              color: AppColors.messageColor,
                             ),
                   child: _buildMessageContent(context, isSender),
                 ),
@@ -210,7 +148,8 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
 
   Widget _buildMessageContent(BuildContext context, bool isSender) {
     _checkReplayedMessageDirection(
-        widget.groupMessage.repliedMessage?.message ?? '',);
+      widget.groupMessage.repliedMessage?.message ?? '',
+    );
     switch (widget.groupMessage.messageType!) {
       case MessageType.text:
         final bool isLink = containsLink(widget.groupMessage.message!);
@@ -226,7 +165,9 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                 fontSize: 12.sp,
               ),
             ),
-            SizedBox(height: MediaQuery.sizeOf(context).height * 0.01,),
+            SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.01,
+            ),
             if (widget.groupMessage.repliedMessage != null)
               GestureDetector(
                 onTap: () {
@@ -247,14 +188,18 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
                         widget.groupMessage.repliedMessage!.sender?.userName ??
                             'UnKnown',
                         style: TextStyle(
-                            fontStyle: FontStyle.italic, fontSize: 12.sp,),
+                          fontStyle: FontStyle.italic,
+                          fontSize: 12.sp,
+                        ),
                       ),
                       Text(
                         '${widget.groupMessage.repliedMessage!.message}',
                         textDirection: _replayedTextDirection,
                         textAlign: _replayedTextAlign,
                         style: TextStyle(
-                            fontStyle: FontStyle.italic, fontSize: 12.sp,),
+                          fontStyle: FontStyle.italic,
+                          fontSize: 12.sp,
+                        ),
                       ),
                     ],
                   ),
