@@ -35,18 +35,29 @@ class ProfileFirebaseService {
 
   Future<void> uploadProfileImage(
     File imageFile,
+    String oldImageUrl,
     Future<String> Function(File imageFile) getFileName,
   ) async {
-    final String fileName = await getFileName(imageFile);
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final Uri uri = Uri.parse(oldImageUrl);
+    final String path = uri.path;
+    final String oldFileName = path.split('%2F').last.split('?').last;
+    _storage
+        .ref()
+        .child(FirebasePath.users)
+        .child(FirebasePath.profilePictures)
+        .child(currentUserId)
+        .child(oldFileName)
+        .delete();
+
+    final String fileName = await getFileName(imageFile);
     final Reference storageRef = _storage
         .ref()
         .child(FirebasePath.users)
         .child(FirebasePath.profilePictures)
         .child(currentUserId)
         .child(fileName);
-    final UploadTask uploadTask =
-        storageRef.putFile(imageFile);
+    final UploadTask uploadTask = storageRef.putFile(imageFile);
     final TaskSnapshot snapshot = await uploadTask;
     final String downloadUrl = await snapshot.ref.getDownloadURL();
 
@@ -71,6 +82,26 @@ class ProfileFirebaseService {
     //     await friendDoc.update({'friendData.profileImage': downloadUrl});
     //   }
     // }
+  }
+
+  Future<void> deleteProfileImage(
+    String oldImageUrl,
+  ) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final Uri uri = Uri.parse(oldImageUrl);
+    final String path = uri.path;
+    final String oldFileName = path.split('%2F').last.split('?').last;
+    _storage
+        .ref()
+        .child(FirebasePath.users)
+        .child(FirebasePath.profilePictures)
+        .child(currentUserId)
+        .child(oldFileName)
+        .delete();
+
+    final userDoc = _usersCollection.doc(currentUserId);
+
+    await userDoc.update({'profileImage': FirebasePath.defaultImage});
   }
 
   Stream<List<Story>> fetchStories() {

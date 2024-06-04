@@ -48,18 +48,37 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> uploadProfileImageToFireStorage(
-    File imageFile,
-  ) async {
+  Future<void> uploadProfileImageToFireStorage({
+    required File imageFile,
+    required String oldImageUrl,
+  }) async {
     emit(UploadProfileImageLoading());
     try {
       await profileFirebaseService
-          .uploadProfileImage(imageFile, getImageFileName)
+          .uploadProfileImage(imageFile, oldImageUrl, getImageFileName)
           .then((value) => getUser());
       emit(UploadProfileImageSuccess());
     } catch (e) {
       emit(
         UploadProfileImageError(Failure.fromException(e).message),
+      );
+    }
+  }
+
+  Future<void> deleteProfileImage({
+    required String oldImageUrl,
+  }) async {
+    emit(DeleteProfileImageLoading());
+    try {
+      await profileFirebaseService
+          .deleteProfileImage(
+            oldImageUrl,
+          )
+          .then((value) => getUser());
+      emit(DeleteProfileImageSuccess());
+    } catch (e) {
+      emit(
+        DeleteProfileImageError(Failure.fromException(e).message),
       );
     }
   }

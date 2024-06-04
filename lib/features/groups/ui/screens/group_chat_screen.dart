@@ -205,7 +205,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   IconButton(
                     onPressed: () {
                       if (selectedMessage != null) {
-                        debugPrint("Hiiiiiiiii: ${selectedMessage?.readBy?.length}");
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,

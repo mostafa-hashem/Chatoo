@@ -34,6 +34,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   TextEditingController addressController = TextEditingController();
   File? imageFile;
   final formKey = GlobalKey<FormState>();
+  final GlobalKey menuKey = GlobalKey();
+  late ProfileCubit profile;
 
   @override
   void initState() {
@@ -44,6 +46,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bioController.text = profile.bio!;
     phoneNumberController.text = profile.phoneNumber!;
     addressController.text = profile.city!;
+  }
+
+  @override
+  void didChangeDependencies() {
+    profile = ProfileCubit.get(context);
+    super.didChangeDependencies();
   }
 
   Future<void> _pickAndCropImage() async {
@@ -95,20 +103,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
           imageFile = File(croppedFile.path);
         });
         if (context.mounted) {
-          final profile = ProfileCubit.get(context);
           profile.uploadProfileImageToFireStorage(
-            imageFile!,
+            oldImageUrl: profile.user.profileImage ?? '',
+            imageFile: imageFile!,
           );
         }
       }
     }
   }
 
+  void _showPopupMenu(BuildContext context) {
+    final RenderBox renderBox =
+        menuKey.currentContext!.findRenderObject()! as RenderBox;
+    final position = renderBox.localToGlobal(Offset.zero);
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx + renderBox.size.width,
+        position.dy + renderBox.size.height,
+      ),
+      items: [
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () {
+              _pickAndCropImage();
+              Navigator.pop(context);
+            },
+            child: const Text('Change'),
+          ),
+        ),
+        PopupMenuItem(
+          child: TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              showDialog(
+                barrierDismissible: false,
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    content: const Text(
+                      "Are you sure you want delete profile picture?",
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          profile.deleteProfileImage(
+                            oldImageUrl: profile.user.profileImage ?? '',
+                          );
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Delete"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: const Text('Remove'),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
-    final profile = ProfileCubit.get(context);
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -162,11 +231,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           );
         } else {
-          Navigator.pop(context);
           if (state is UploadProfileImageError) {
-            _showSnackBar(context, state.message, AppColors.error);
-          } else if (state is UploadProfileImageSuccess) {
+            if (context.mounted) {
+              Navigator.pop(context);
+              _showSnackBar(context, state.message, AppColors.error);
+            }
+          }
+          if (state is UploadProfileImageSuccess) {
             _showSnackBar(context, "Successfully Uploaded", AppColors.primary);
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+          }
+        }
+        if (state is DeleteProfileImageLoading) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const LoadingIndicator();
+            },
+          );
+        } else {
+          if (state is DeleteProfileImageError) {
+            if (context.mounted) {
+              Navigator.pop(context);
+              _showSnackBar(context, state.message, AppColors.error);
+            }
+          }
+          if (state is DeleteProfileImageSuccess) {
+            _showSnackBar(context, "Removed Successfully", AppColors.primary);
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
           }
         }
       },
@@ -199,7 +295,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
             ),
             GestureDetector(
-              onTap: _pickAndCropImage,
+              key: menuKey,
+              onTap: () => _showPopupMenu(context),
               child: const Icon(Icons.edit),
             ),
           ],
