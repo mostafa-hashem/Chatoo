@@ -188,11 +188,12 @@ Future<String> getAudioFileName(File audioFile) async {
 
 bool containsLink(String message) {
   final RegExp urlPattern = RegExp(
-    '^(https?://)?www.',
+    r'(?:(?:https?|ftp)://)?(?:[\w-]+\.)+[a-z]{2,}(?:/[\w-./?%&=]*)?',
     caseSensitive: false,
   );
   return urlPattern.hasMatch(message);
 }
+
 
 bool isArabic(String text) {
   return RegExp(r'^[\u0600-\u06FF]+').hasMatch(text);

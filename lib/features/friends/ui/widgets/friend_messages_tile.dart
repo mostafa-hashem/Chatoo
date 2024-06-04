@@ -290,8 +290,6 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   color: isLink ? Colors.blue : Colors.white,
-                  decoration:
-                      isLink ? TextDecoration.underline : TextDecoration.none,
                 ),
               ),
             ),
