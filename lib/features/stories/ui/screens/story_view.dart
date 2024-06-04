@@ -46,6 +46,7 @@ class _StoryViewState extends State<StoryView> {
   late StoriesCubit storiesCubit;
 
   Duration? _lastVideoPosition;
+  bool _isBottomSheetOpen = false;
 
   @override
   void didChangeDependencies() {
@@ -103,8 +104,10 @@ class _StoryViewState extends State<StoryView> {
         setState(() {
           isLoading = false;
         });
-        _videoController!.play();
-        isPlaying = true;
+        if (!_isBottomSheetOpen) {
+          _videoController!.play();
+          isPlaying = true;
+        }
         _videoController!.addListener(_updatePosition);
         _startStoryTimer(_videoController!.value.duration);
       });
@@ -112,36 +115,36 @@ class _StoryViewState extends State<StoryView> {
 
   Future<void> _initializeImageController(String imageUrl) async {
     NetworkImage(imageUrl).resolve(ImageConfiguration.empty).addListener(
-          ImageStreamListener(
+      ImageStreamListener(
             (info, _) {
-              if (mounted) {
-                setState(() {
-                  isLoading = false;
-                });
-                _startStoryTimer(
-                  const Duration(seconds: defaultStoryDurationSeconds),
-                );
-              }
-            },
-            onError: (_, __) {
-              if (mounted) {
-                setState(() {
-                  isLoading = false;
-                });
-                _startStoryTimer(
-                  const Duration(seconds: defaultStoryDurationSeconds),
-                );
-              }
-            },
-          ),
-        );
+          if (mounted) {
+            setState(() {
+              isLoading = false;
+            });
+            _startStoryTimer(
+              const Duration(seconds: defaultStoryDurationSeconds),
+            );
+          }
+        },
+        onError: (_, __) {
+          if (mounted) {
+            setState(() {
+              isLoading = false;
+            });
+            _startStoryTimer(
+              const Duration(seconds: defaultStoryDurationSeconds),
+            );
+          }
+        },
+      ),
+    );
   }
 
   void _startStoryTimer(Duration duration) {
     _storyTimer?.cancel();
     _progress = 0.0;
     final int storyDurationSeconds =
-        isVideo ? duration.inSeconds : defaultStoryDurationSeconds;
+    isVideo ? duration.inSeconds : defaultStoryDurationSeconds;
     _storyTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!mounted) return;
       setState(() {
@@ -163,10 +166,12 @@ class _StoryViewState extends State<StoryView> {
   }
 
   void _resumeStory() {
+    if (_isBottomSheetOpen) return;
+
     final remainingDuration = isVideo
         ? _videoController!.value.duration - _videoController!.value.position
         : const Duration(seconds: defaultStoryDurationSeconds) *
-            (1.0 - _progress);
+        (1.0 - _progress);
     _startStoryTimer(remainingDuration);
     if (_videoController != null && _lastVideoPosition != null) {
       _videoController!.seekTo(_lastVideoPosition!);
@@ -290,12 +295,12 @@ class _StoryViewState extends State<StoryView> {
                 onPressed: () {
                   storiesCubit
                       .deleteStory(
-                        fileName: fileName,
-                        storyId: stories[currentIndex].id!,
-                      )
+                    fileName: fileName,
+                    storyId: stories[currentIndex].id!,
+                  )
                       .whenComplete(
                         () => _goToNextStory(),
-                      );
+                  );
                 },
                 icon: const Icon(Icons.delete_forever_outlined),
               ),
@@ -359,46 +364,46 @@ class _StoryViewState extends State<StoryView> {
                           children: [
                             if (isVideo)
                               (_videoController != null &&
-                                      _videoController!.value.isInitialized)
+                                  _videoController!.value.isInitialized)
                                   ? Flexible(
-                                      child: AspectRatio(
-                                        aspectRatio:
-                                            _videoController!.value.aspectRatio,
-                                        child: VideoPlayer(_videoController!),
-                                      ),
-                                    )
+                                child: AspectRatio(
+                                  aspectRatio:
+                                  _videoController!.value.aspectRatio,
+                                  child: VideoPlayer(_videoController!),
+                                ),
+                              )
                                   : const SizedBox.shrink()
                             else
                               _localFile != null
                                   ? Expanded(
-                                      child: PhotoView(
-                                        minScale:
-                                            PhotoViewComputedScale.contained,
-                                        maxScale: 5.0,
-                                        initialScale:
-                                            PhotoViewComputedScale.contained,
-                                        imageProvider: FileImage(_localFile!),
-                                        backgroundDecoration:
-                                            const BoxDecoration(
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    )
+                                child: PhotoView(
+                                  minScale:
+                                  PhotoViewComputedScale.contained,
+                                  maxScale: 5.0,
+                                  initialScale:
+                                  PhotoViewComputedScale.contained,
+                                  imageProvider: FileImage(_localFile!),
+                                  backgroundDecoration:
+                                  const BoxDecoration(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              )
                                   : Expanded(
-                                      child: PhotoView(
-                                        minScale:
-                                            PhotoViewComputedScale.contained,
-                                        maxScale: 5.0,
-                                        initialScale:
-                                            PhotoViewComputedScale.contained,
-                                        imageProvider:
-                                            NetworkImage(story.mediaUrl!),
-                                        backgroundDecoration:
-                                            const BoxDecoration(
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
+                                child: PhotoView(
+                                  minScale:
+                                  PhotoViewComputedScale.contained,
+                                  maxScale: 5.0,
+                                  initialScale:
+                                  PhotoViewComputedScale.contained,
+                                  imageProvider:
+                                  NetworkImage(story.mediaUrl!),
+                                  backgroundDecoration:
+                                  const BoxDecoration(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                         if (isLoading) const Center(child: LoadingIndicator()),
@@ -474,10 +479,10 @@ class _StoryViewState extends State<StoryView> {
   }
 
   Future<void> showViewersBottomSheet(
-    BuildContext context,
-    Map<String, dynamic>? seen,
-    StoriesCubit storiesCubit,
-  ) async {
+      BuildContext context,
+      Map<String, dynamic>? seen,
+      StoriesCubit storiesCubit,
+      ) async {
     final bottomSheetHeight = MediaQuery.sizeOf(context).height;
     final bottomSheetWidth = MediaQuery.sizeOf(context).width;
     if (seen == null || seen.isEmpty) return;
@@ -501,8 +506,8 @@ class _StoryViewState extends State<StoryView> {
         maxHeight: viewers.length == 1
             ? bottomSheetHeight * 0.2
             : viewers.length == 2
-                ? bottomSheetHeight * 0.28
-                : bottomSheetHeight * 0.5,
+            ? bottomSheetHeight * 0.28
+            : bottomSheetHeight * 0.5,
         maxWidth: bottomSheetWidth * 0.95,
       ),
       sheetAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
@@ -526,6 +531,16 @@ class _StoryViewState extends State<StoryView> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      setState(() {
+        _isBottomSheetOpen = false;
+        _resumeStory();
+      });
+    });
+    setState(() {
+      _isBottomSheetOpen = true;
+      _pauseStory();
+    });
   }
 }
+

@@ -10,7 +10,7 @@ class StoryViewersBottomSheet extends StatelessWidget {
   final List<User?> viewers;
   final List<MapEntry<String, dynamic>> seenEntries;
 
-  StoryViewersBottomSheet({
+  const StoryViewersBottomSheet({
     super.key,
     required this.viewers,
     required this.seenEntries,

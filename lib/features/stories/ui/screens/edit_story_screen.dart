@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:chat_app/features/stories/cubit/stories_cubit.dart';
 import 'package:chat_app/features/stories/cubit/stories_state.dart';
+import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
@@ -176,7 +177,7 @@ class _EditStoryScreenState extends State<EditStoryScreen> {
                               child: IconButton(
                                 icon: Icon(
                                   isPlaying ? Icons.pause : Icons.play_arrow,
-                                  color: Colors.white,
+                                  color: AppColors.light,
                                   size: 50,
                                 ),
                                 onPressed: _togglePlayPause,
@@ -248,14 +249,16 @@ class _EditStoryScreenState extends State<EditStoryScreen> {
                 padding: const EdgeInsets.all(12.0),
                 child: TextField(
                   controller: _textController,
-                  style: TextStyle(fontSize: 16.sp),
+                  style: TextStyle(fontSize: 16.sp, color: AppColors.light),
                   minLines: 1,
                   maxLines: 5,
                   textAlign: _textAlign,
                   textDirection: _textDirection,
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.black54,
                     hintText: 'Add a caption',
-                    hintStyle: TextStyle(fontSize: 16.sp),
+                    hintStyle: TextStyle(fontSize: 16.sp, color: AppColors.light),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14.r),
                     ),
