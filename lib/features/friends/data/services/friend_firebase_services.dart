@@ -43,11 +43,11 @@ class FriendFirebaseServices {
     }
 
     final Stream<List<String>> friendIdsStream =
-    _usersCollection.doc(currentUser.uid).snapshots().map((snapshot) {
+        _usersCollection.doc(currentUser.uid).snapshots().map((snapshot) {
       final dynamic userData = snapshot.data();
       if (userData != null && userData is Map<String, dynamic>) {
         final List<dynamic> friendIds =
-        (userData['friends'] ?? []) as List<dynamic>;
+            (userData['friends'] ?? []) as List<dynamic>;
         return friendIds.map((id) => id.toString()).toList();
       } else {
         return [];
@@ -55,7 +55,7 @@ class FriendFirebaseServices {
     });
 
     final Stream<List<User?>> allUserFriendsStream =
-    friendIdsStream.switchMap((friendIds) {
+        friendIdsStream.switchMap((friendIds) {
       if (friendIds.isEmpty) {
         return Stream.value([]);
       }
@@ -71,44 +71,44 @@ class FriendFirebaseServices {
     });
 
     final Stream<List<FriendRecentMessage>> recentMessageDataStream =
-    _friendsCollection.orderBy('sentAt', descending: true).snapshots().map(
-          (querySnapshot) => querySnapshot.docs
-          .map(
-            (queryDocSnapshot) =>
-            FriendRecentMessage.fromJson(queryDocSnapshot.data()),
-      )
-          .toList(),
-    );
+        _friendsCollection.orderBy('sentAt', descending: true).snapshots().map(
+              (querySnapshot) => querySnapshot.docs
+                  .map(
+                    (queryDocSnapshot) =>
+                        FriendRecentMessage.fromJson(queryDocSnapshot.data()),
+                  )
+                  .toList(),
+            );
 
     final Stream<List<Story>> storiesStream = FirebaseFirestore.instance
         .collection(FirebasePath.stories)
         .where(
-      'uploadedAt',
-      isGreaterThanOrEqualTo:
-      DateTime.now().toLocal().subtract(const Duration(hours: 24)),
-    )
+          'uploadedAt',
+          isGreaterThanOrEqualTo:
+              DateTime.now().toLocal().subtract(const Duration(hours: 24)),
+        )
         .orderBy('uploadedAt', descending: true)
         .snapshots()
         .map(
           (querySnapshot) => querySnapshot.docs
-          .map((doc) => Story.fromJson(doc.data()))
-          .toList(),
-    );
+              .map((doc) => Story.fromJson(doc.data()))
+              .toList(),
+        );
 
-    return Rx.combineLatest3<List<User?>, List<FriendRecentMessage>, List<Story>,
-        List<CombinedFriend>>(
+    return Rx.combineLatest3<List<User?>, List<FriendRecentMessage>,
+        List<Story>, List<CombinedFriend>>(
       allUserFriendsStream,
       recentMessageDataStream,
       storiesStream,
-          (users, messages, stories) {
+      (users, messages, stories) {
         final combinedFriends = users.map((user) {
           final recentMessage = messages.firstWhere(
-                (message) => message.friendId == user?.id,
+            (message) => message.friendId == user?.id,
             orElse: () => FriendRecentMessage.empty(),
           );
 
           final List<Story> userStories =
-          stories.where((story) => story.userId == user?.id).toList();
+              stories.where((story) => story.userId == user?.id).toList();
 
           return CombinedFriend(
             user: user,
@@ -129,13 +129,42 @@ class FriendFirebaseServices {
     );
   }
 
-
   Future<void> markMessagesAsRead(String friendId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    final DocumentReference myRef = _usersCollection.doc(friendId).collection(FirebasePath.friends).doc(currentUserId);
+
+    final DocumentReference myRef = _usersCollection
+        .doc(friendId)
+        .collection(FirebasePath.friends)
+        .doc(currentUserId);
     final DocumentReference friendRef = _friendsCollection.doc(friendId);
-    await myRef.update({'seen': true,});
-    await friendRef.update({'unreadCount': 0,});
+
+    await myRef.update({
+      'seen': true,
+    });
+    await friendRef.update({
+      'unreadCount': 0,
+    });
+
+    final QuerySnapshot friendMessagesSnapshot = await _friendsCollection
+        .doc(friendId)
+        .collection(FirebasePath.messages)
+        .get();
+
+    if (friendMessagesSnapshot.docs.isNotEmpty) {
+      for (final message in friendMessagesSnapshot.docs) {
+        final messageData = message.data()! as Map<String, dynamic>;
+        final Map<String, dynamic> seenMap =
+            messageData['readBy'] as Map<String, dynamic>? ?? {};
+        final bool alreadySeen = seenMap["userId"] == currentUserId;
+        if (alreadySeen) continue;
+        if (!alreadySeen && messageData['sender'] != currentUserId) {
+          final DocumentReference newMessage =
+              myRef.collection(FirebasePath.messages).doc(message.id);
+
+          await newMessage.update({'readBy.$currentUserId': Timestamp.now()});
+        }
+      }
+    }
   }
 
   Future<void> updateTypingStatus({
@@ -320,7 +349,7 @@ class FriendFirebaseServices {
         .collection(FirebasePath.messages)
         .doc(userMessageDocRef.id);
 
-final now = Timestamp.now();
+    final now = Timestamp.now();
     final String messageId = userMessageDocRef.id;
     final FriendMessage currentUserMessage = FriendMessage(
       messageId: messageId,
@@ -491,16 +520,14 @@ final now = Timestamp.now();
     }
   }
 
-  Future<void> deleteMessageForMe(
-  {
-   required String friendId,
-   required String messageId,
-   required String lastMessage,
-   required String lastMessageSender,
-   required String lastMessageSenderId,
-   required DateTime? sentAt,
-}
-  ) async {
+  Future<void> deleteMessageForMe({
+    required String friendId,
+    required String messageId,
+    required String lastMessage,
+    required String lastMessageSender,
+    required String lastMessageSenderId,
+    required DateTime? sentAt,
+  }) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     _usersCollection
         .doc(currentUserId)
@@ -521,16 +548,14 @@ final now = Timestamp.now();
     });
   }
 
-  Future<void> deleteMessageForAll(
-  {
-   required String friendId,
-   required String messageId,
-   required String lastMessage,
-   required String lastMessageSender,
-   required String recentMessageSenderId,
-   required DateTime? sentAt,
-}
-  ) async {
+  Future<void> deleteMessageForAll({
+    required String friendId,
+    required String messageId,
+    required String lastMessage,
+    required String lastMessageSender,
+    required String recentMessageSenderId,
+    required DateTime? sentAt,
+  }) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     _usersCollection
         .doc(currentUserId)

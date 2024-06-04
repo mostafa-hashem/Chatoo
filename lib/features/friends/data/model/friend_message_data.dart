@@ -1,5 +1,8 @@
 import 'package:chat_app/features/stories/data/models/story.dart';
+import 'package:chat_app/utils/constants.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/cupertino.dart';
 
 enum MessageType {
@@ -20,6 +23,7 @@ class FriendMessage {
   DateTime? sentAt;
   FriendMessage? repliedMessage;
   Story? replayToStory;
+  Map<String, dynamic>? readBy; // تعديل الحقل ليكون خريطة
 
   FriendMessage({
     required this.friendId,
@@ -31,6 +35,7 @@ class FriendMessage {
     this.sentAt,
     this.repliedMessage,
     this.replayToStory,
+    this.readBy,
   });
 
   FriendMessage.empty()
@@ -73,10 +78,12 @@ class FriendMessage {
       replayToStory =
           Story.fromJson(json['replayToStory'] as Map<String, dynamic>);
     }
+    readBy = json['readBy'] != null
+        ? Map<String, dynamic>.from(json['readBy'] as Map<String, dynamic>)
+        : null;
   }
 
   Map<String, dynamic> toJson() {
-    debugPrint("Holla: ${Timestamp.now().toDate()}");
     return {
       'friendId': friendId,
       'messageId': messageId,
@@ -87,6 +94,44 @@ class FriendMessage {
       'sentAt': sentAt ?? Timestamp.now(),
       if (repliedMessage != null) 'repliedMessage': repliedMessage!.toJson(),
       if (replayToStory != null) 'replayToStory': replayToStory!.toJson(),
+      if (readBy != null) 'readBy': readBy,
     };
   }
+
+  List<String> getUserIds() {
+    return readBy?.keys.toList() ?? [];
+  }
+
+  Future<List<User>> fetchUsersByIds(List<String> userIds) async {
+    final List<User> users = [];
+    for (final String userId in userIds) {
+      final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection(FirebasePath.users)
+          .doc(userId)
+          .get();
+      if (userDoc.exists) {
+        users.add(User.fromJson(userDoc.data()! as Map<String, dynamic>));
+      }
+    }
+    return users;
+  }
+
+  Future<List<Map<String, dynamic>>> combinedSeen() async {
+    final List<String> userIds = getUserIds();
+    final List<User> users = await fetchUsersByIds(userIds);
+
+    final combined = <Map<String, dynamic>>[];
+    readBy?.forEach((userId, viewAt) {
+      final user = users.firstWhere((user) => user.id == userId,
+        orElse: () => User.empty(),);
+      combined.add({
+        'user': user,
+        'viewAt': viewAt,
+      });
+    });
+    combined.sort((a, b) =>
+        (a['viewAt'] as Timestamp).compareTo(b['viewAt'] as Timestamp),);
+    return combined;
+  }
 }
+

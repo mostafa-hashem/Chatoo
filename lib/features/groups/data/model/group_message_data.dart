@@ -105,14 +105,14 @@ class GroupMessage {
         continue;
       }
       final user = users.firstWhere((user) => user.id == entry['userId'],
-          orElse: () => User.empty());
+          orElse: () => User.empty(),);
       combined.add({
         'user': user,
         'viewAt': entry['viewAt'],
       });
     }
     combined.sort((a, b) =>
-        (a['viewAt'] as Timestamp).compareTo(b['viewAt'] as Timestamp));
+        (a['viewAt'] as Timestamp).compareTo(b['viewAt'] as Timestamp),);
     return combined;
   }
 }

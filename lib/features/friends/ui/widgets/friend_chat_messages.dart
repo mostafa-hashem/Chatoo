@@ -62,31 +62,33 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
                 ),
               ),
               ...messages.map((message) {
+                final sentByMe = profileCubit.user.id == message.sender;
+                final lastMessage = friendMessages?.last == message;
+
                 return Column(
                   children: [
                     FriendMessagesTile(
                       friendMessage: message,
-                      sentByMe: profileCubit.user.id == message.sender,
+                      sentByMe: sentByMe,
                       friendName: widget.friendData.user?.userName ?? '',
                     ),
-                    if (widget.friendData.recentMessageData.seen != null &&
-                        widget.friendData.recentMessageData.seen! &&
-                        profileCubit.user.id ==
-                            widget.friendData.recentMessageData
-                                .recentMessageSenderId &&
-                        message.sentAt ==
-                            widget.friendData.recentMessageData.sentAt)
+                    if (sentByMe && lastMessage)
                       Padding(
                         padding: EdgeInsets.only(right: 22.w),
                         child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              "Seen ✓✓",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(fontSize: 8.sp),
-                            )),
+                          alignment: Alignment.centerRight,
+                          child: message.readBy?.containsKey(
+                                      widget.friendData.user?.id) ==
+                                  true
+                              ? Text(
+                                  "Seen ✓✓",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(fontSize: 8.sp),
+                                )
+                              : null,
+                        ),
                       ),
                   ],
                 );

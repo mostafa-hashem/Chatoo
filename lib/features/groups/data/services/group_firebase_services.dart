@@ -322,7 +322,7 @@ class GroupFirebaseServices {
 
     if (messagesSnapshot.docs.isNotEmpty) {
       for (final message in messagesSnapshot.docs) {
-        final messageData = message.data() as Map<String, dynamic>;
+        final messageData = message.data()! as Map<String, dynamic>;
         final List seenList = messageData['readBy'] as List<dynamic>? ?? [];
 
         final bool alreadySeen =
@@ -335,7 +335,7 @@ class GroupFirebaseServices {
               .doc(message.id)
               .update({
             'readBy': FieldValue.arrayUnion([
-              {'userId': currentUserId, 'viewAt': Timestamp.now()}
+              {'userId': currentUserId, 'viewAt': Timestamp.now().toDate()}
             ]),
           });
         }
