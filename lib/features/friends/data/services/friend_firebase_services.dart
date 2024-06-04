@@ -137,10 +137,12 @@ class FriendFirebaseServices {
         .collection(FirebasePath.friends)
         .doc(currentUserId);
     final DocumentReference friendRef = _friendsCollection.doc(friendId);
-
-    await myRef.update({
-      'seen': true,
-    });
+    final data = await myRef.get();
+    if (data["recentMessageSenderId"] != currentUserId) {
+      await myRef.update({
+        'seen': true,
+      });
+    }
     await friendRef.update({
       'unreadCount': 0,
     });
@@ -264,8 +266,8 @@ class FriendFirebaseServices {
       'friendId': currentUserId,
       'recentMessage': '',
       'recentMessageSender': '',
-      'sentAt': Timestamp.now(),
-      'addedAt': Timestamp.now(),
+      'sentAt': Timestamp.now().toDate(),
+      'addedAt': Timestamp.now().toDate(),
     });
 
     await _usersCollection
@@ -276,8 +278,8 @@ class FriendFirebaseServices {
       'friendId': friendId,
       'recentMessage': '',
       'recentMessageSender': '',
-      'sentAt': Timestamp.now(),
-      'addedAt': Timestamp.now(),
+      'sentAt': Timestamp.now().toDate(),
+      'addedAt': Timestamp.now().toDate(),
     });
     // Update the current user's friends field
     await currentUserRef.update({
@@ -349,7 +351,7 @@ class FriendFirebaseServices {
         .collection(FirebasePath.messages)
         .doc(userMessageDocRef.id);
 
-    final now = Timestamp.now();
+    final now = Timestamp.now().toDate();
     final String messageId = userMessageDocRef.id;
     final FriendMessage currentUserMessage = FriendMessage(
       messageId: messageId,
@@ -358,7 +360,7 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: currentUserUid,
       messageType: type,
-      sentAt: now.toDate(),
+      sentAt: now,
       repliedMessage: repliedMessage,
       replayToStory: replayToStory,
     );
@@ -369,7 +371,7 @@ class FriendFirebaseServices {
       sender: sender.id!,
       friendId: friend.id!,
       messageType: type,
-      sentAt: now.toDate(),
+      sentAt: now,
       repliedMessage: repliedMessage,
       replayToStory: replayToStory,
     );
@@ -377,7 +379,7 @@ class FriendFirebaseServices {
     await userMessageDocRef.set(currentUserMessage.toJson());
     await friendMessageDocRef.set(friendMessage.toJson());
     _friendsCollection.doc(friend.id).update({
-      'sentAt': now.toDate(),
+      'sentAt': now,
       'recentMessage': message,
       'recentMessageSender': sender.userName,
       'recentMessageSenderId': sender.id,
@@ -388,7 +390,7 @@ class FriendFirebaseServices {
         .collection(FirebasePath.friends)
         .doc(currentUserUid)
         .update({
-      'sentAt': now.toDate(),
+      'sentAt': now,
       'recentMessage': message,
       'recentMessageSender': sender.userName,
       'recentMessageSenderId': sender.id,

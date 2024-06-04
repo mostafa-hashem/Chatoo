@@ -688,6 +688,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                             await _record();
                             final File recordFile = File(_audioPath!);
                             await Fluttertoast.showToast(msg: 'Sending...');
+                            notificationBody = 'sent record';
                             await friendCubit
                                 .sendMediaToFriend(
                               FirebasePath.records,
@@ -701,7 +702,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                     .sendMessageToFriend(
                                       friend: widget.friendData.user?? User.empty(),
                                       sender: sender,
-                                      message: '',
+                                      message: notificationBody ?? '',
                                       type: MessageType.record,
                                     )
                                     .whenComplete(

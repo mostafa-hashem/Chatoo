@@ -1,5 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/data/model/combined_friend.dart';
+import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/route_manager.dart';
@@ -38,7 +39,7 @@ class _FriendTileState extends State<FriendTile> {
 
     return BlocBuilder<ProfileCubit, ProfileState>(
       buildWhen: (_, current) =>
-      current is GetUserSuccess ||
+          current is GetUserSuccess ||
           current is ProfileLoading ||
           current is GetUserError,
       builder: (_, state) {
@@ -55,22 +56,23 @@ class _FriendTileState extends State<FriendTile> {
               userName: widget.friendData.user!.userName,
               sentAt: widget.friendData.recentMessageData.sentAt != null
                   ? Timestamp.fromDate(
-                widget.friendData.recentMessageData.sentAt!,
-              )
+                      widget.friendData.recentMessageData.sentAt!,
+                    )
                   : null,
             ),
             subtitle: RecentMessage(
-              recentMessage: widget.friendData.recentMessageData.recentMessage,
+              friendRecentMessage: widget.friendData.recentMessageData,
               isTyping: widget.friendData.recentMessageData.typing ?? false,
-              isRecording: widget.friendData.recentMessageData.recording ?? false,
+              isRecording:
+                  widget.friendData.recentMessageData.recording ?? false,
               unreadCount: widget.friendData.recentMessageData.unreadCount,
             ),
             trailing: isMuted
                 ? Icon(
-              Icons.notifications_off,
-              color: AppColors.primary,
-              size: 20.sp,
-            )
+                    Icons.notifications_off,
+                    color: AppColors.primary,
+                    size: 20.sp,
+                  )
                 : const SizedBox.shrink(),
             onTap: () {
               friendCubit.getFriendData(widget.friendData.user!.id!);
@@ -100,16 +102,16 @@ class _FriendTileState extends State<FriendTile> {
                       onPressed: () {
                         isMuted
                             ? friendCubit.unMuteFriend(
-                          widget.friendData.user!.id ?? '',
-                        )
+                                widget.friendData.user!.id ?? '',
+                              )
                             : friendCubit
-                            .muteFriend(widget.friendData.user!.id ?? '');
+                                .muteFriend(widget.friendData.user!.id ?? '');
                         if (context.mounted) {
                           Navigator.pop(context);
                         }
                       },
                       child:
-                      isMuted ? const Text('Un Mute') : const Text('Mute'),
+                          isMuted ? const Text('Un Mute') : const Text('Mute'),
                     ),
                   ),
                   PopupMenuItem(
@@ -261,8 +263,8 @@ class FriendTitle extends StatelessWidget {
         Text(
           sentAt != null
               ? getFormattedTime(
-            sentAt!.millisecondsSinceEpoch,
-          )
+                  sentAt!.millisecondsSinceEpoch,
+                )
               : '',
           style: GoogleFonts.novaSquare(
             fontWeight: FontWeight.w700,
@@ -278,13 +280,13 @@ class FriendTitle extends StatelessWidget {
 class RecentMessage extends StatefulWidget {
   const RecentMessage({
     super.key,
-    required this.recentMessage,
+    required this.friendRecentMessage,
     required this.unreadCount,
     this.isTyping = false,
     this.isRecording = false,
   });
 
-  final String? recentMessage;
+  final FriendRecentMessage? friendRecentMessage;
   final int? unreadCount;
   final bool isTyping;
   final bool isRecording;
@@ -313,17 +315,46 @@ class _RecentMessageState extends State<RecentMessage> {
 
   @override
   Widget build(BuildContext context) {
-    final messageText = widget.recentMessage;
-    _checkTextDirection(messageText!);
+    final profileCubit = ProfileCubit.get(context);
+    final messageText = widget.friendRecentMessage?.recentMessage;
+    _checkTextDirection(messageText ?? '');
     return Row(
       children: [
+        if (widget.friendRecentMessage?.seen != null &&
+            widget.friendRecentMessage!.seen! &&
+            widget.friendRecentMessage!.recentMessageSenderId ==
+                profileCubit.user.id)
+          Text(
+            "✓✓",
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.blue, fontSize: 8.sp),
+          ),
+        if (widget.friendRecentMessage?.seen != null &&
+            !widget.friendRecentMessage!.seen! &&
+            widget.friendRecentMessage!.recentMessageSenderId ==
+                profileCubit.user.id)
+          Text(
+            "✓",
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.grey, fontSize: 8.sp),
+          ),
         Flexible(
           child: Text(
-            widget.isTyping ? 'Typing...' : widget.isRecording ? 'Recording...' : widget.recentMessage ?? '',
+            widget.isTyping
+                ? 'Typing...'
+                : widget.isRecording
+                    ? 'Recording...'
+                    : widget.friendRecentMessage?.recentMessage ?? '',
             textAlign: _textAlign,
             textDirection: _textDirection,
             style: GoogleFonts.novaSquare(
-              color: widget.isTyping || widget.isRecording ? Colors.greenAccent : null,
+              color: widget.isTyping || widget.isRecording
+                  ? Colors.greenAccent
+                  : null,
               fontWeight: FontWeight.w700,
               fontSize: 10.sp,
             ),
