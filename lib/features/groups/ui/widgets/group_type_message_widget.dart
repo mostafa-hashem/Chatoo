@@ -404,6 +404,7 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                   ? groupCubit.mediaUrls.first
                   : null,
               groupData: widget.groupData,
+
             );
           }
         }

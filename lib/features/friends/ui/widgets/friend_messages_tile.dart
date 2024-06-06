@@ -60,6 +60,49 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
     }
   }
 
+  void _showEditMessageBottomSheet(BuildContext context) {
+    final TextEditingController messageController =
+        TextEditingController(text: widget.friendMessage.message);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
+            right: 16.w,
+            left: 16.w,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: messageController,
+                decoration: const InputDecoration(
+                  labelText: 'Edit Message',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                child: const Text('Save'),
+                onPressed: () {
+                  friendCubit.editeMessage(
+                    friendId: widget.friendMessage.friendId,
+                    messageId: widget.friendMessage.messageId,
+                    newMessage: messageController.text,
+                  );
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isSender = widget.sentByMe;
@@ -79,46 +122,13 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         friendCubit.setRepliedMessage(widget.friendMessage);
       },
       onLongPress: () {
-        // showModalBottomSheet(
-        //   context: context,
-        //   builder: (BuildContext context) {
-        //     return ReactionButton<String>(
-        //       onReactionChanged: (Reaction<String>? reaction) {
-        //         print('Selected reaction: ${reaction?.value}');
-        //       },
-        //       reactions: <Reaction<String>>[
-        //         Reaction<String>(
-        //           value: '❤️',
-        //           icon: Icon(Icons.favorite, color: Colors.red),
-        //         ),
-        //         Reaction<String>(
-        //           value: '😂',
-        //           icon: Icon(Icons.emoji_emotions, color: Colors.yellow),
-        //         ),
-        //         Reaction<String>(
-        //           value: '😮',
-        //           icon: Icon(Icons.sentiment_satisfied, color: Colors.orange),
-        //         ),
-        //         Reaction<String>(
-        //           value: '😢',
-        //           icon: Icon(Icons.sentiment_very_dissatisfied, color: Colors.blue),
-        //         ),
-        //         Reaction<String>(
-        //           value: '👍',
-        //           icon: Icon(Icons.thumb_up, color: Colors.green),
-        //         ),
-        //       ],
-        //       itemSize: Size(6.w,8.h),
-        //     );
-        //   },
-        // );
         showDialog(
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('Delete Message'),
+              title: const Text('Manage Message'),
               content:
-                  const Text('Are you sure you want to delete this message?'),
+                  const Text('What would you like to do with this message?'),
               actions: [
                 TextButton(
                   child: const Text('Cancel'),
@@ -126,6 +136,15 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                     Navigator.pop(context);
                   },
                 ),
+                if (isSender &&
+                    widget.friendMessage.messageType == MessageType.text)
+                  TextButton(
+                    child: const Text('Edit message'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showEditMessageBottomSheet(context);
+                    },
+                  ),
                 TextButton(
                   child: const Text('Delete for me'),
                   onPressed: () {
@@ -217,7 +236,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
           .last
           .substring(0, 3)
           .toLowerCase();
-       isVideo = ['mp4', 'mov', 'avi', 'mkv'].contains(fileName);
+      isVideo = ['mp4', 'mov', 'avi', 'mkv'].contains(fileName);
     }
     _checkReplayedMessageDirection(
       widget.friendMessage.repliedMessage?.message ?? '',
@@ -294,15 +313,34 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
               ),
             ),
             SizedBox(height: 5.h),
-            Text(
-              getFormattedTime(
-                widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
-              ),
-              style: TextStyle(
-                fontSize: 9.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  getFormattedTime(
+                    widget.friendMessage.sentAt!
+                        .toLocal()
+                        .millisecondsSinceEpoch,
+                  ),
+                  style: TextStyle(
+                    fontSize: 9.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  width: 12.w,
+                ),
+                if (widget.friendMessage.edited != null)
+                  Text(
+                    'Edited',
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      color: AppColors.mainColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+              ],
             ),
           ],
         );

@@ -20,6 +20,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -29,16 +31,15 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (BuildContext context) => MyAppProvider(),
-      child: const MyApp(),
+      child: MyApp(navigatorKey: navigatorKey),
     ),
   );
 }
 
 class MyApp extends StatefulWidget {
-  // static final GlobalKey<NavigatorState> navigatorKey =
-  //     GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> navigatorKey;
 
-  const MyApp({super.key});
+  const MyApp({required this.navigatorKey, super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -51,34 +52,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     _initPackageInfo();
     super.initState();
-    // FirebaseMessaging.onMessageOpenedApp.listen((message) {
-    //   Future.delayed(Duration.zero, () => _handleMessage(message));
-    // });
     WidgetsBinding.instance.addObserver(this);
     updateStatus(true);
   }
-
-  // void _handleMessage(RemoteMessage message) {
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     final currentContext = MyApp
-  //         .navigatorKey.currentState?.context;
-  //     if (currentContext != null) {
-  //       if (message.data.containsKey('friendData')) {
-  //         final User friendData = message.data['friendData'] as User;
-  //         Navigator.pushNamed(currentContext, Routes.friendChatScreen,
-  //             arguments: friendData);
-  //       } else if (message.data.containsKey('groupData')) {
-  //         final Group groupData =
-  //             Group.fromJson(message.data['groupData'] as Map<String, dynamic>);
-  //         Navigator.pushNamed(
-  //           currentContext,
-  //           Routes.groupChatScreen,
-  //           arguments: groupData,
-  //         );
-  //       }
-  //     }
-  //   });
-  // }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -120,7 +96,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
             if (routeName == Routes.splash)
               BlocProvider(
-                create: (_) => NotificationsCubit()..initNotifications(),
+                create: (_) => NotificationsCubit(widget.navigatorKey)..initNotifications(),
                 lazy: false,
               ),
             BlocProvider(
@@ -140,7 +116,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
           ],
           child: MaterialApp(
-            // navigatorKey: MyApp.navigatorKey,
+            navigatorKey: widget.navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: darkTheme,

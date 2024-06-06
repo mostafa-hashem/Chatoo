@@ -120,18 +120,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               countryListTheme: CountryListThemeData(
                                 flagSize: 25,
                                 backgroundColor: Colors.white,
-                                textStyle: const TextStyle(
-                                  fontSize: 16,
+                                textStyle:  TextStyle(
+                                  fontSize: 16.sp,
                                   color: Colors.blueGrey,
                                 ),
-                                bottomSheetHeight: 500,
+                                bottomSheetHeight: 500.h,
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(20.0),
                                   topRight: Radius.circular(20.0),
                                 ),
                                 inputDecoration: InputDecoration(
                                   labelText: 'Search',
-                                  hintText: 'Start typing to search',
+                                  labelStyle: Theme.of(context).textTheme.bodySmall,
                                   prefixIcon: const Icon(Icons.search),
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -185,15 +185,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Navigator.pop(context);
                           if (state is EmailVerifyRequestSentSuccess) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                               SnackBar(
                                 content: Text(
                                   "A verification link has been sent to your email address. Please check your email to complete the registration process.",
-                                  style: TextStyle(fontSize: 15),
+                                  style: TextStyle(fontSize: 13.sp),
                                 ),
                                 backgroundColor: AppColors.snackBar,
-                                duration: Duration(
-                                  seconds: 6,
-                                ), // You can adjust the duration as per your preference
+                                duration: const Duration(
+                                  seconds: 9,
+                                ),
                               ),
                             );
                             Navigator.pushReplacementNamed(

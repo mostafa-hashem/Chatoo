@@ -8,6 +8,7 @@ import 'package:chat_app/features/groups/ui/widgets/group_type_message_widget.da
 import 'package:chat_app/features/groups/ui/widgets/message_seen_bottom_sheet.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
+import 'package:chat_app/ui/widgets/error_indicator.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
@@ -36,12 +37,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void didChangeDependencies() {
     groupCubit = GroupCubit.get(context);
     groupData = ModalRoute.of(context)!.settings.arguments! as Group;
+    groupCubit.getAllGroupMessages(
+      groupData.groupId!,
+    );
+    groupCubit.getAllGroupMembers(
+      groupData.groupId!,
+    );
     super.didChangeDependencies();
   }
 
   @override
   void dispose() {
-    groupCubit.filteredMessages.clear();
     groupCubit.allGroupMembers.clear();
     groupCubit.allGroupRequests.clear();
     selectedMessage = null;
@@ -53,6 +59,53 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     setState(() {
       selectedMessage = message;
     });
+  }
+
+  void _showEditMessageBottomSheet(BuildContext context) {
+    if (selectedMessage == null) return;
+    final TextEditingController messageController =
+    TextEditingController(text: selectedMessage!.message);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
+            right: 16.w,
+            left: 16.w,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: messageController,
+                decoration: const InputDecoration(
+                  labelText: 'Edit Message',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                child: const Text('Save'),
+                onPressed: () {
+                  groupCubit.editeMessage(
+                    groupId: selectedMessage!.groupId!,
+                    messageId: selectedMessage!.messageId!,
+                    newMessage: messageController.text,
+                  );
+                  Navigator.pop(context);
+                  setState(() {
+                    selectedMessage = null;
+                  });
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -124,6 +177,13 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             if (selectedMessage != null)
               Row(
                 children: [
+                  if (isSender)
+                    IconButton(
+                      onPressed: () {
+                        _showEditMessageBottomSheet(context);
+                      },
+                      icon: const Icon(Icons.edit),
+                    ),
                   IconButton(
                     onPressed: () {
                       isSender
@@ -149,7 +209,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               ),
                               BlocListener<GroupCubit, GroupStates>(
                                 listener: (_, state) {
-                                  if (state is DeleteMessageForAllSuccess) {}
+                                  if (state
+                                  is DeleteMessageForAllSuccess) {}
                                 },
                                 child: TextButton(
                                   child:
@@ -218,7 +279,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     },
                     icon: const Icon(Icons.info),
                   ),
-
                   IconButton(
                     onPressed: () {
                       setState(() {
@@ -283,9 +343,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                   currentState is GetAllGroupMessagesLoading,
               builder: (_, state) {
                 if (state is GetAllGroupMessagesLoading) {
-                  return const LoadingIndicator();
+                  return const Expanded(child: LoadingIndicator());
                 } else if (state is GetAllGroupMessagesError) {
-                  return const LoadingIndicator();
+                  return const Expanded(child: ErrorIndicator());
                 } else {
                   return GroupChatMessages(
                     groupId: groupData.groupId ?? '',

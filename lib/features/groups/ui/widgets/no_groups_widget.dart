@@ -1,4 +1,5 @@
 import 'package:chat_app/features/groups/ui/widgets/creat_group_widget.dart';
+import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -22,9 +23,9 @@ class NoGroupsWidget extends StatelessWidget {
                 },
               );
             },
-            child: Icon(
+            child: const Icon(
               Icons.add_circle,
-              color: Colors.grey[700],
+              color: AppColors.accent,
               size: 75,
             ),
           ),

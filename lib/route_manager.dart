@@ -4,6 +4,7 @@ import 'package:chat_app/features/auth/ui/screens/reset_password.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_chat_screen.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_info_screen.dart';
 import 'package:chat_app/features/friends/ui/screens/friend_search_screen.dart';
+import 'package:chat_app/features/friends/ui/screens/requests_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/add_friends_to_group_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/grop_search_screen.dart';
 import 'package:chat_app/features/groups/ui/screens/group_chat_screen.dart';
@@ -31,6 +32,7 @@ class Routes {
   static const String groupsScreen = "/groupsScreen";
   static const String groupChatScreen = "/groupChatScreen";
   static const String groupInfo = "/groupInfo";
+  static const String requestsScreen = "/requestsScreen";
   static const String addFriendsToGroup = "/addFriendToGroup";
   static const String joinGroupRequestsScreen = "/joinGroupRequestsScreen";
   static const String groupSearchScreen = "/groupSearchScreen";
@@ -75,6 +77,11 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
     case Routes.storiesScreen:
       return MaterialPageRoute(
         builder: (_) => StoriesScreen(),
+        settings: routeSettings,
+      );
+    case Routes.requestsScreen:
+      return MaterialPageRoute(
+        builder: (_) => const RequestsScreen(),
         settings: routeSettings,
       );
     case Routes.groupsScreen:
@@ -135,7 +142,7 @@ Route? onGenerateRoute(RouteSettings routeSettings) {
         builder: (_) => const MediaView(),
         settings: routeSettings,
       );
-      case Routes.storyView:
+    case Routes.storyView:
       return MaterialPageRoute(
         builder: (_) => const StoryView(),
         settings: routeSettings,

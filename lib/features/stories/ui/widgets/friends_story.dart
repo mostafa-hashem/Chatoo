@@ -43,11 +43,22 @@ class _FriendsStoryState extends State<FriendsStory> {
           current is GetFriendDataSuccess ||
           current is GetFriendDataSuccess,
       builder: (_, state) {
+        final friendsWithStories = friendCubit.combinedFriends.where((friend) => friend.stories?.isNotEmpty ?? false).toList();
+
+        if (friendsWithStories.isEmpty) {
+          return Center(
+            child: Text(
+              'No stories available at the moment',
+              style: TextStyle(fontSize: 15.sp),
+            ),
+          );
+        }
+
         return ListView.separated(
           padding: EdgeInsets.zero,
-          itemCount: friendCubit.combinedFriends.length,
+          itemCount: friendsWithStories.length,
           itemBuilder: (context, index) {
-            final combinedFriend = friendCubit.combinedFriends[index];
+            final combinedFriend = friendsWithStories[index];
             final stories = combinedFriend.stories?.reversed.toList() ?? [];
 
             if (stories.isEmpty) {

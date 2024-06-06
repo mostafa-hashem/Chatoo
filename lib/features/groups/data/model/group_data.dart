@@ -27,7 +27,7 @@ class Group {
     this.recentMessageSender = "",
     this.recentMessageSenderId = "",
     this.recentMessageSentAt,
-     this.createdAt,
+    this.createdAt,
     this.unreadMessageCounts,
   });
 
@@ -38,14 +38,24 @@ class Group {
     groupIcon = json['groupIcon'] as String?;
     groupAdmins = json['groupAdmins'] as List<dynamic>?;
     members = json['members'] as List<dynamic>?;
-    requests =
-    json['requests'] != null ? json['requests'] as List<dynamic>? : [];
+    requests = json['requests'] != null ? json['requests'] as List<dynamic>? : [];
     recentMessage = json['recentMessage'] as String?;
-    recentMessageSentAt =
-        (json['recentMessageSentAt'] as Timestamp?)?.toDate().toLocal();
+    if (json['recentMessageSentAt'] != null) {
+      if (json['recentMessageSentAt'] is Timestamp) {
+        recentMessageSentAt = (json['recentMessageSentAt'] as Timestamp).toDate().toLocal();
+      } else if (json['recentMessageSentAt'] is String) {
+        recentMessageSentAt = DateTime.parse(json['recentMessageSentAt'] as String).toLocal();
+      }
+    }
     recentMessageSender = json['recentMessageSender'] as String?;
     recentMessageSenderId = json['recentMessageSenderId'] as String?;
-    createdAt = (json['createdAt'] as Timestamp).toDate().toLocal();
+    if (json['createdAt'] != null) {
+      if (json['createdAt'] is Timestamp) {
+        createdAt = (json['createdAt'] as Timestamp).toDate().toLocal();
+      } else if (json['createdAt'] is String) {
+        createdAt = DateTime.parse(json['createdAt'] as String).toLocal();
+      }
+    }
     if (json['unreadMessageCounts'] != null) {
       unreadMessageCounts = json['unreadMessageCounts'] as Map<String, dynamic>?;
     }
@@ -60,11 +70,10 @@ class Group {
     'members': members,
     'requests': requests!.isNotEmpty ? requests : [],
     'recentMessage': recentMessage,
-    'recentMessageSentAt': Timestamp.now(),
+    'recentMessageSentAt': recentMessageSentAt?.toIso8601String(),
     'recentMessageSender': recentMessageSender,
     'recentMessageSenderId': recentMessageSenderId,
-    'createdAt': Timestamp.now(),
-    if (unreadMessageCounts != null)
-      'unreadMessageCounts': unreadMessageCounts,
+    'createdAt': createdAt?.toIso8601String(),
+    if (unreadMessageCounts != null) 'unreadMessageCounts': unreadMessageCounts,
   };
 }

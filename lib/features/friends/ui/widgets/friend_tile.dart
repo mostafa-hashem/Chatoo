@@ -1,10 +1,13 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
+import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/ui/widgets/error_indicator.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/helper_methods.dart';
@@ -78,14 +81,13 @@ class _FriendTileState extends State<FriendTile> {
               friendCubit.getFriendData(widget.friendData.user!.id!);
               Future.wait([
                 friendCubit.markMessagesAsRead(widget.friendData.user!.id!),
-                friendCubit.getAllFriendMessages(widget.friendData.user!.id!),
               ]);
 
               Future.delayed(const Duration(milliseconds: 50), () {
                 Navigator.pushNamed(
                   context,
                   Routes.friendChatScreen,
-                  arguments: widget.friendData,
+                  arguments: widget.friendData.user,
                 );
               });
             },
@@ -147,6 +149,55 @@ class _FriendTileState extends State<FriendTile> {
                   PopupMenuItem(
                     child: TextButton(
                       onPressed: () {
+                        showDialog(
+                          barrierDismissible: false,
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              content: const Text(
+                                "Are you sure you want to remove friend ?",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text("Cancel"),
+                                ),
+                                BlocListener<FriendCubit, FriendStates>(
+                                  listener: (_, state) {
+                                    if (state is RemoveFriendLoading) {
+                                      const LoadingIndicator();
+                                    } else {
+                                      if (context.mounted) {
+                                        Navigator.pop(context);
+                                      }
+                                      if (state is RemoveFriendSuccess) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Removed successfully",
+                                              style: TextStyle(fontSize: 15),
+                                            ),
+                                            backgroundColor: AppColors.primary,
+                                            duration: Duration(seconds: 3),
+                                          ),
+                                        );
+                                      }
+                                      if (state is RemoveFriendError) {
+                                        const ErrorIndicator();
+                                      }
+                                    }
+                                  },
+                                  child: TextButton(
+                                    onPressed: () {},
+                                    child: const Text("Leave"),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
                         friendCubit
                             .removeFriend(widget.friendData.user!.id ?? '');
                         if (context.mounted) {

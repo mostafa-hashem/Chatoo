@@ -296,6 +296,16 @@ class DeleteMessageForAllError extends GroupStates {
   DeleteMessageForAllError(this.message);
 }
 
+class EditMessageLoading extends GroupStates {}
+
+class EditMessageSuccess extends GroupStates {}
+
+class EditMessageError extends GroupStates {
+  final String message;
+
+  EditMessageError(this.message);
+}
+
 class DeleteGroupLoading extends GroupStates {}
 
 class DeleteGroupSuccess extends GroupStates {}

@@ -2,12 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:chat_app/features/stories/cubit/stories_cubit.dart';
-import 'package:chat_app/features/stories/cubit/stories_state.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:video_player/video_player.dart';

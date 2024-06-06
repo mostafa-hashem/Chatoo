@@ -7,14 +7,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NotificationsCubit extends Cubit<NotificationsStates> {
-  NotificationsCubit() : super(NotificationsInitial());
+  final GlobalKey<NavigatorState> navigatorKey;
+  late final NotificationsServices notificationsServices;
+
+  NotificationsCubit(this.navigatorKey) : super(NotificationsInitial()) {
+    notificationsServices = NotificationsServices(navigatorKey);
+  }
 
   static NotificationsCubit get(BuildContext context) =>
       BlocProvider.of(context);
 
-  final notificationsServices = NotificationsServices();
   String? fCMToken;
-
   Future<void> initNotifications() async {
     emit(NotificationsLoading());
     try {
@@ -32,6 +35,7 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
     String? imageUrl,
     User? friendData,
     Group? groupData,
+    String? isFriendRequest,
   }) async {
     emit(SendNotificationLoading());
     try {
@@ -42,6 +46,7 @@ class NotificationsCubit extends Cubit<NotificationsStates> {
         imageUrl: imageUrl,
         friendData: friendData,
         groupData: groupData,
+        isFriendRequest: isFriendRequest
       );
       emit(SendNotificationSuccess());
     } catch (e) {

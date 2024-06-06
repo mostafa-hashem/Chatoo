@@ -22,6 +22,7 @@ class GroupMessage {
   bool? isAction;
   GroupMessage? repliedMessage;
   List<Map<String, dynamic>>? readBy;
+  bool? edited;
 
   GroupMessage({
     this.groupId,
@@ -35,6 +36,7 @@ class GroupMessage {
     this.isAction,
     this.repliedMessage,
     this.readBy,
+    this.edited,
   });
 
   GroupMessage.fromJson(Map<String, dynamic> json) {
@@ -61,6 +63,9 @@ class GroupMessage {
     readBy = json['readBy'] != null
         ? List<Map<String, dynamic>>.from(json['readBy'] as List<dynamic>)
         : null;
+    if(json['edited'] != null){
+      edited = json['edited'] as bool;
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -75,6 +80,7 @@ class GroupMessage {
         if (isAction != null) 'isAction': isAction,
         if (repliedMessage != null) 'repliedMessage': repliedMessage!.toJson(),
         if (readBy != null) 'readBy': readBy,
+        if (edited != null) 'edited': edited,
       };
 
   List<String> getUserIds() {

@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
-import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
@@ -29,7 +28,7 @@ import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 
 class FriendTypeMessageWidget extends StatefulWidget {
-  final CombinedFriend friendData;
+  final User friendData;
 
   const FriendTypeMessageWidget({super.key, required this.friendData});
 
@@ -111,7 +110,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
       setState(() {
         _audioPath = path;
         friendCubit.updateRecordingStatus(
-          friendId: widget.friendData.user?.id ?? '',
+          friendId: widget.friendData.id ?? '',
           isRecording: false,
         );
       });
@@ -128,7 +127,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
         setState(() {
           isRecording = true;
           friendCubit.updateRecordingStatus(
-            friendId: widget.friendData.user?.id ?? '',
+            friendId: widget.friendData.id ?? '',
             isRecording: true,
           );
         });
@@ -192,13 +191,13 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
             .sendMediaToFriend(
           FirebasePath.images,
           mediaFile!,
-          widget.friendData.user?.id ?? '',
+          widget.friendData.id ?? '',
           getImageFileName,
         )
             .then((value) {
           friendCubit
               .sendMessageToFriend(
-                friend: widget.friendData.user ?? User.empty(),
+                friend: widget.friendData,
                 message: notificationBody ?? '',
                 sender: sender,
                 type: MessageType.image,
@@ -239,7 +238,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                     .sendMediaToFriend(
                   FirebasePath.videos,
                   videoFile,
-                  widget.friendData.user?.id ?? '',
+                  widget.friendData.id ?? '',
                   getVideoFileName,
                 )
                     .then((value) {
@@ -247,7 +246,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                   debugPrint('Video file sent successfully');
                   friendCubit
                       .sendMessageToFriend(
-                        friend: widget.friendData.user ?? User.empty(),
+                        friend: widget.friendData,
                         message: notificationBody ?? '',
                         sender: sender,
                         type: MessageType.video,
@@ -329,7 +328,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                     .sendMediaToFriend(
                   FirebasePath.audios,
                   audioFile,
-                  widget.friendData.user?.id ?? '',
+                  widget.friendData.id ?? '',
                   getAudioFileName,
                 )
                     .then((value) {
@@ -337,7 +336,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                   debugPrint('Audio file sent successfully');
                   friendCubit
                       .sendMessageToFriend(
-                        friend: widget.friendData .user?? User.empty(),
+                        friend: widget.friendData,
                         message: notificationBody ?? '',
                         sender: sender,
                         type: MessageType.audio,
@@ -401,8 +400,8 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
   }
 
   bool isMuted() {
-    if (widget.friendData.user?.mutedFriends != null) {
-      return widget.friendData.user!.mutedFriends!
+    if (widget.friendData.mutedFriends != null) {
+      return widget.friendData.mutedFriends!
           .any((userId) => userId == sender.id);
     }
     return false;
@@ -419,13 +418,13 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
               scrollToBottom();
               if (!isMuted()) {
                 NotificationsCubit.get(context).sendNotification(
-                  fCMToken: widget.friendData.user?.fCMToken ?? '',
+                  fCMToken: widget.friendData.fCMToken ?? '',
                   title: sender.userName!,
                   body: notificationBody ?? '',
                   imageUrl: friendCubit.mediaUrls.isNotEmpty
                       ? friendCubit.mediaUrls.first
                       : null,
-                  friendData: ProfileCubit.get(context).user,
+                  friendData: sender,
                 );
               }
             }
@@ -547,12 +546,12 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                       .messageController.text.isNotEmpty;
                                   if (isTyping) {
                                     friendCubit.updateTypingStatus(
-                                      friendId: widget.friendData.user?.id ?? '',
+                                      friendId: widget.friendData.id ?? '',
                                       isTyping: true,
                                     );
                                   } else {
                                     friendCubit.updateTypingStatus(
-                                      friendId: widget.friendData.user?.id ?? '',
+                                      friendId: widget.friendData.id ?? '',
                                       isTyping: false,
                                     );
                                   }
@@ -649,12 +648,12 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                       if (friendCubit.messageController.text.isNotEmpty) {
                         friendCubit.messageController.clear();
                         friendCubit.updateTypingStatus(
-                          friendId: widget.friendData.user?.id ?? '',
+                          friendId: widget.friendData.id ?? '',
                           isTyping: false,
                         );
                         await friendCubit
                             .sendMessageToFriend(
-                          friend: widget.friendData.user?? User.empty(),
+                          friend: widget.friendData,
                           message: notificationBody ?? '',
                           sender: sender,
                           type: MessageType.text,
@@ -693,14 +692,14 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                 .sendMediaToFriend(
                               FirebasePath.records,
                               recordFile,
-                              widget.friendData.user?.id ?? '',
+                              widget.friendData.id ?? '',
                               getAudioFileName,
                             )
                                 .whenComplete(
                               () {
                                 friendCubit
                                     .sendMessageToFriend(
-                                      friend: widget.friendData.user?? User.empty(),
+                                      friend: widget.friendData,
                                       sender: sender,
                                       message: notificationBody ?? '',
                                       type: MessageType.record,

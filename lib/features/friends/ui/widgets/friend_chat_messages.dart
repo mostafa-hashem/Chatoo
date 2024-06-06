@@ -1,15 +1,15 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
-import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_messages_tile.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FriendChatMessages extends StatefulWidget {
-  final CombinedFriend friendData;
+  final User friendData;
 
   FriendChatMessages({super.key, required this.friendData});
 
@@ -22,7 +22,7 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
   Widget build(BuildContext context) {
     final profileCubit = ProfileCubit.get(context);
     final friendMessages = FriendCubit.get(context)
-        .filteredMessages[widget.friendData.user?.id ?? '']
+        .filteredMessages[widget.friendData.id ?? '']
         ?.reversed
         .toList();
 
@@ -70,7 +70,7 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
                     FriendMessagesTile(
                       friendMessage: message,
                       sentByMe: sentByMe,
-                      friendName: widget.friendData.user?.userName ?? '',
+                      friendName: widget.friendData.userName ?? '',
                     ),
                     if (sentByMe && lastMessage)
                       Padding(
@@ -78,7 +78,7 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: message.readBy?.containsKey(
-                                      widget.friendData.user?.id) ==
+                                      widget.friendData.id) ==
                                   true
                               ? Text(
                                   "Seen ✓✓",

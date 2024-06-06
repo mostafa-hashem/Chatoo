@@ -17,6 +17,7 @@ class User {
   String? fCMToken;
   bool? onLine;
   DateTime? lastSeen;
+  DateTime? joinedAt;
 
   User({
     required this.id,
@@ -31,6 +32,7 @@ class User {
     this.stories,
     this.requests,
     this.lastSeen,
+    this.joinedAt,
     this.city = '',
     this.onLine = true,
   });
@@ -48,6 +50,7 @@ class User {
         stories = [],
         requests = [],
         lastSeen = DateTime.now().toLocal(),
+        joinedAt = DateTime.now().toLocal(),
         city = '',
         onLine = false;
 
@@ -58,35 +61,29 @@ class User {
     bio = json['bio'] as String?;
     phoneNumber = json['phoneNumber'] as String?;
     profileImage = json['profileImage'] as String?;
-    if (json['fCMToken'] != null) {
-      fCMToken = json['fCMToken'] as String?;
-    }
-    if (json['city'] != null) {
-      city = json['city'] as String?;
-    }
-    if (json['stories'] != null && json['stories'] is List<dynamic>) {
-      stories = json['stories'] as List<dynamic>;
-    }
-    if (json['groups'] != null && json['groups'] is List<dynamic>) {
-      groups = json['groups'] as List<dynamic>;
-    }
-    if (json['friends'] != null && json['friends'] is List<dynamic>) {
-      friends = json['friends'] as List<dynamic>;
-    }
-    if (json['mutedGroups'] != null && json['mutedGroups'] is List<dynamic>) {
-      mutedGroups = json['mutedGroups'] as List<dynamic>;
-    }
-    if (json['mutedFriends'] != null && json['mutedFriends'] is List<dynamic>) {
-      mutedFriends = json['mutedFriends'] as List<dynamic>;
-    }
-    if (json['requests'] != null && json['requests'] is List<dynamic>) {
-      requests = json['requests'] as List<dynamic>;
-    }
-    if (json['onLine'] != null) {
-      onLine = json['onLine'] as bool?;
-    }
+    fCMToken = json['fCMToken'] as String?;
+    city = json['city'] as String?;
+    stories = json['stories'] as List<dynamic>?;
+    groups = json['groups'] as List<dynamic>?;
+    friends = json['friends'] as List<dynamic>?;
+    mutedGroups = json['mutedGroups'] as List<dynamic>?;
+    mutedFriends = json['mutedFriends'] as List<dynamic>?;
+    requests = json['requests'] as List<dynamic>?;
+    onLine = json['onLine'] as bool?;
+
     if (json['lastSeen'] != null) {
-      lastSeen = (json['lastSeen'] as Timestamp?)?.toDate().toLocal();
+      if (json['lastSeen'] is Timestamp) {
+        lastSeen = (json['lastSeen'] as Timestamp).toDate().toLocal();
+      } else if (json['lastSeen'] is String) {
+        lastSeen = DateTime.parse(json['lastSeen'] as String).toLocal();
+      }
+    }
+    if (json['joinedAt'] != null) {
+      if (json['joinedAt'] is Timestamp) {
+        joinedAt = (json['joinedAt'] as Timestamp).toDate().toLocal();
+      } else if (json['joinedAt'] is String) {
+        joinedAt = DateTime.parse(json['joinedAt'] as String).toLocal();
+      }
     }
   }
 
@@ -107,7 +104,8 @@ class User {
       if (mutedFriends != null) 'mutedFriends': mutedFriends,
       if (requests != null) 'requests': requests,
       if (onLine != null) 'onLine': onLine,
-      if (lastSeen != null) 'lastSeen': lastSeen,
+      if (lastSeen != null) 'lastSeen': lastSeen?.toIso8601String(),
+      if (joinedAt != null) 'joinedAt': DateTime.now().toIso8601String(),
     };
   }
 }

@@ -189,14 +189,8 @@ class _GroupTileState extends State<GroupTile> {
                 : const SizedBox.shrink(),
             onTap: () {
               Future.wait([
-                groupCubit.getAllGroupMembers(
-                  widget.groupData.groupId!,
-                ),
                 groupCubit.markMessagesAsRead(
                   groupId: widget.groupData.groupId!,
-                ),
-                groupCubit.getAllGroupMessages(
-                  widget.groupData.groupId!,
                 ),
               ]);
 
@@ -262,9 +256,15 @@ class _GroupTileState extends State<GroupTile> {
                                         Navigator.pop(context);
                                       }
                                       if (state is DeleteGroupSuccess) {
-                                        Navigator.pushReplacementNamed(
-                                          context,
-                                          Routes.layout,
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Leaved successfully",
+                                              style: TextStyle(fontSize: 15),
+                                            ),
+                                            backgroundColor: AppColors.primary,
+                                            duration: Duration(seconds: 3),
+                                          ),
                                         );
                                       }
                                       if (state is DeleteGroupError) {

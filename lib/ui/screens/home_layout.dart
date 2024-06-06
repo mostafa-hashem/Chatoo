@@ -47,10 +47,37 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<MyAppProvider>(context);
+    final friendCubit = FriendCubit.get(context);
+
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primary,
+           leading: BlocBuilder<FriendCubit, FriendStates>(
+             buildWhen: (_, currentState) =>
+             currentState is GetAllUserRequestsLoading ||
+                 currentState is GetAllUserRequestsSuccess ||
+                 currentState is GetAllUserRequestsError,
+             builder: (context, state) {
+               return Stack(
+                 children: [
+                   IconButton(
+                     icon: const Icon(Icons.menu),
+                     onPressed: () => Scaffold.of(context).openDrawer(),
+                   ),
+                   if (friendCubit.allUserRequests.isNotEmpty)
+                     const Positioned(
+                       right: 11,
+                       top: 11,
+                       child: CircleAvatar(
+                         radius: 6,
+                         backgroundColor: Colors.red,
+                       ),
+                     ),
+                 ],
+               );
+             },
+           ),
           actions: [
             IconButton(
               onPressed: () {
@@ -83,19 +110,28 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
               Tab(
                 child: Text(
                   "Chats",
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.white),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: Colors.white),
                 ),
               ),
               Tab(
                 child: Text(
                   "Groups",
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.white),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: Colors.white),
                 ),
               ),
               Tab(
                 child: Text(
                   "Stories",
-                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.white),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: Colors.white),
                 ),
               ),
             ],

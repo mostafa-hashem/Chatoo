@@ -93,12 +93,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushNamed(context, Routes.resetPassword),
                       child: Row(
                         children: [
-                          const Icon(Icons.lock_reset_outlined),
+                          const Icon(Icons.lock_reset_outlined,size: 25,),
                           SizedBox(
                             width: 8.w,
                           ),
-                          const Text(
-                            "Forget password",
+                           Text(
+                            "Forget password",style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize:14.sp ),
                           ),
                         ],
                       ),

@@ -2,6 +2,8 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_requests_tile.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
+import 'package:chat_app/ui/widgets/error_indicator.dart';
+import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -31,6 +33,11 @@ class RequestsScreen extends StatelessWidget {
                     currentState is GetAllUserRequestsSuccess ||
                     currentState is GetAllUserRequestsError,
                 builder: (context, state) {
+                  if(state is ApproveToAddFriendLoading || state is DeclineToAddFriendLoading){
+                    return const Expanded(child: LoadingIndicator());
+                  }else if(state is ApproveToAddFriendError || state is DeclineToAddFriendError){
+                    return const Expanded(child: ErrorIndicator());
+                  }
                   return Expanded(
                     child: ListView.separated(
                       itemBuilder: (context, index) {

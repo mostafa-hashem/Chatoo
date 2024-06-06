@@ -17,7 +17,7 @@ class FriendFirebaseServices {
       FirebaseFirestore.instance.collection(FirebasePath.users);
   final _friendsCollection = FirebaseFirestore.instance
       .collection(FirebasePath.users)
-      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .doc(FirebaseAuth.instance.currentUser?.uid)
       .collection(FirebasePath.friends);
 
   Stream<List<User>> getUsers() {
@@ -433,16 +433,16 @@ class FriendFirebaseServices {
   Future<void> removeFriend(String friendId) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     final friendID = friendId;
-    await _friendsCollection.doc(friendID).delete();
-    await _usersCollection
+     _friendsCollection.doc(friendID).delete();
+     _usersCollection
         .doc(friendID)
         .collection(FirebasePath.friends)
         .doc(currentUserId)
         .delete();
-    await _usersCollection.doc(currentUserId).update({
+     _usersCollection.doc(currentUserId).update({
       'friends': FieldValue.arrayRemove([friendID]),
     });
-    await _usersCollection.doc(friendId).update({
+     _usersCollection.doc(friendId).update({
       'friends': FieldValue.arrayRemove([currentUserId]),
     });
   }
@@ -476,47 +476,38 @@ class FriendFirebaseServices {
 
   Future<void> deleteChatForAll(String friendId, DateTime addedAt) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    _usersCollection
+
+    final userDocRef = _usersCollection
         .doc(currentUserId)
         .collection(FirebasePath.friends)
+        .doc(friendId);
+
+    final friendDocRef = _usersCollection
         .doc(friendId)
-        .update({
+        .collection(FirebasePath.friends)
+        .doc(currentUserId);
+
+    final updates = {
       'sentAt': addedAt,
       'recentMessage': '',
       'recentMessageSender': '',
       'recentMessageSenderId': '',
       'unreadCount': 0,
       'seen': false,
-    });
+    };
 
-    _friendsCollection.doc(currentUserId).update({
-      'sentAt': addedAt,
-      'recentMessage': '',
-      'recentMessageSender': '',
-      'recentMessageSenderId': '',
-      'unreadCount': 0,
-      'seen': false,
-    });
-    final messagesCollection = _usersCollection
-        .doc(currentUserId)
-        .collection(FirebasePath.friends)
-        .doc(friendId)
-        .collection(FirebasePath.messages);
+    await userDocRef.update(updates);
+    await friendDocRef.update(updates);
 
+    final messagesCollection = userDocRef.collection(FirebasePath.messages);
     final querySnapshot = await messagesCollection.get();
-
     for (final doc in querySnapshot.docs) {
       await doc.reference.delete();
     }
 
-    final friendMessagesCollection = _usersCollection
-        .doc(friendId)
-        .collection(FirebasePath.friends)
-        .doc(currentUserId)
-        .collection(FirebasePath.messages);
-
+    final friendMessagesCollection =
+        friendDocRef.collection(FirebasePath.messages);
     final friendQuerySnapshot = await friendMessagesCollection.get();
-
     for (final doc in friendQuerySnapshot.docs) {
       await doc.reference.delete();
     }
@@ -556,7 +547,7 @@ class FriendFirebaseServices {
     required String lastMessage,
     required String lastMessageSender,
     required String recentMessageSenderId,
-    required DateTime? sentAt,
+    required DateTime sentAt,
   }) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
     _usersCollection
@@ -571,7 +562,7 @@ class FriendFirebaseServices {
         .collection(FirebasePath.friends)
         .doc(friendId)
         .update({
-      'sentAt': Timestamp.fromDate(sentAt!),
+      'sentAt': Timestamp.fromDate(sentAt),
       'recentMessage': lastMessage,
       'recentMessageSender': lastMessageSender,
       'recentMessageSenderId': recentMessageSenderId,
@@ -593,5 +584,28 @@ class FriendFirebaseServices {
       'recentMessageSender': lastMessageSender,
       'recentMessageSenderId': recentMessageSenderId,
     });
+  }
+
+  Future<void> editeMessage({
+    required String friendId,
+    required String messageId,
+    required String newMessage,
+  }) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    _usersCollection
+        .doc(currentUserId)
+        .collection(FirebasePath.friends)
+        .doc(friendId)
+        .collection(FirebasePath.messages)
+        .doc(messageId)
+        .update({'message': newMessage, 'edited': true});
+
+    _usersCollection
+        .doc(friendId)
+        .collection(FirebasePath.friends)
+        .doc(currentUserId)
+        .collection(FirebasePath.messages)
+        .doc(messageId)
+        .update({'message': newMessage, 'edited': true});
   }
 }

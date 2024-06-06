@@ -4,8 +4,10 @@ import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:firebase_storage/firebase_storage.dart';
 
 class AuthFirebaseService {
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final _usersCollection =
       FirebaseFirestore.instance.collection(FirebasePath.users);
 
@@ -63,10 +65,22 @@ class AuthFirebaseService {
   bool getAuthStatus() => FirebaseAuth.instance.currentUser != null;
 
   Future<void> deleteAccount() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await user.delete();
-      await _usersCollection.doc(user.uid).delete();
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUserId = currentUser!.uid;
+
+
+    await _usersCollection.doc(currentUserId).delete();
+
+    final userProfileImageRef = _storage
+        .ref()
+        .child(FirebasePath.users)
+        .child(FirebasePath.profilePictures)
+        .child(currentUserId);
+    final ListResult result = await userProfileImageRef.listAll();
+    for (final fileRef in result.items) {
+      await fileRef.delete();
     }
+
+    await currentUser.delete();
   }
 }

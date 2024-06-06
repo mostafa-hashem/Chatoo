@@ -335,7 +335,7 @@ class GroupFirebaseServices {
               .doc(message.id)
               .update({
             'readBy': FieldValue.arrayUnion([
-              {'userId': currentUserId, 'viewAt': Timestamp.now().toDate()}
+              {'userId': currentUserId, 'viewAt': Timestamp.now().toDate()},
             ]),
           });
         }
@@ -457,6 +457,18 @@ class GroupFirebaseServices {
         });
       }
     });
+  }
+
+  Future<void> editeMessage({
+    required String groupId,
+    required String messageId,
+    required String newMessage,
+  }) async {
+    _groupsCollection
+        .doc(groupId)
+        .collection(FirebasePath.messages)
+        .doc(messageId)
+        .update({'message': newMessage, 'edited': true});
   }
 
   Future<void> deleteGroup(String groupId) async {

@@ -1,7 +1,6 @@
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_info_tile.dart';
-import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/error_indicator.dart';
@@ -27,7 +26,6 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
   @override
   Widget build(BuildContext context) {
     final friendData = ModalRoute.of(context)!.settings.arguments! as User;
-    final profileCubit = ProfileCubit.get(context).user;
     final friendCubit = FriendCubit.get(context);
     return GestureDetector(
       onTap: () {
@@ -38,7 +36,13 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
           appBar: AppBar(
             toolbarHeight: MediaQuery.sizeOf(context).height * 0.1,
             actions: [
-              if (profileCubit.friends!.contains(friendData.id))
+              if (friendCubit.combinedFriends.any(
+                    (friend) =>
+                friend.user != null &&
+                    friend.user!.id!.contains(
+                      friendData.id!,
+                    ),
+              ))
                 BlocListener<FriendCubit, FriendStates>(
                   listener: (context, state) {
                     if (state is RemoveFriendLoading) {

@@ -33,9 +33,9 @@ class _MessageSeenBottomSheetState extends State<MessageSeenBottomSheet> {
       future: combinedSeenFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const LoadingIndicator();
+          return const Expanded(child: LoadingIndicator());
         } else if (snapshot.hasError) {
-          return const ErrorIndicator();
+          return const Expanded(child: ErrorIndicator());
         } else {
           final combinedSeen = snapshot.data ?? [];
           return DraggableScrollableSheet(

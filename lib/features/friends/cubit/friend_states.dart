@@ -3,6 +3,7 @@ abstract class FriendStates {}
 class FriendInit extends FriendStates {}
 
 class SetRepliedMessageSuccess extends FriendStates {}
+
 class RequestToAddFriendLoading extends FriendStates {}
 
 class RequestToAddFriendSuccess extends FriendStates {}
@@ -243,4 +244,14 @@ class DeleteMessageForMeAndFriendError extends FriendStates {
   final String message;
 
   DeleteMessageForMeAndFriendError(this.message);
+}
+
+class EditMessageLoading extends FriendStates {}
+
+class EditMessageSuccess extends FriendStates {}
+
+class EditMessageError extends FriendStates {
+  final String message;
+
+  EditMessageError(this.message);
 }

@@ -37,7 +37,7 @@ class DefaultFormField extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         TextFormField(
-          style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 16.sp),
+          style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 14.sp),
           maxLines: maxLines,
           controller: controller,
           keyboardType: type,
@@ -51,6 +51,7 @@ class DefaultFormField extends StatelessWidget {
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.all(12),
             labelText: label,
+            labelStyle: Theme.of(context).textTheme.bodySmall,
             suffixIcon: suffix != null
                 ? IconButton(
                     onPressed: suffixPressed,

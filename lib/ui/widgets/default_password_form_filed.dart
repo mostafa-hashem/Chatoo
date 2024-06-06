@@ -32,7 +32,7 @@ class _DefaultPasswordFormFieldState extends State<DefaultPasswordFormField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 16.sp),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 14.sp),
       controller: widget.controller,
       keyboardType: TextInputType.text,
       textInputAction: TextInputAction.next,
@@ -45,6 +45,7 @@ class _DefaultPasswordFormFieldState extends State<DefaultPasswordFormField> {
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.all(12),
         labelText: widget.label,
+        labelStyle: Theme.of(context).textTheme.bodySmall,
         suffixIcon: isPassword
             ? IconButton(
                 onPressed: suffixPressed,

@@ -1,7 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
-import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_chat_messages.dart';
 import 'package:chat_app/features/friends/ui/widgets/friend_type_message_widget.dart';
 import 'package:chat_app/route_manager.dart';
@@ -27,7 +26,7 @@ class FriendChatScreen extends StatefulWidget {
 
 class _FriendChatScreenState extends State<FriendChatScreen> {
   late FriendCubit friendCubit;
-  late CombinedFriend friendData;
+  late User friendData;
   final audioPlayer = AudioPlayer();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -35,14 +34,14 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     friendCubit = FriendCubit.get(context);
-    friendData = ModalRoute.of(context)!.settings.arguments! as CombinedFriend;
-    friendCubit.listenToTypingStatus(friendData.user!.id!);
-    friendCubit.listenToRecordingStatus(friendData.user!.id!);
+    friendData = ModalRoute.of(context)!.settings.arguments! as User;
+    friendCubit.getAllFriendMessages(friendData.id ?? '');
+    friendCubit.listenToTypingStatus(friendData.id!);
+    friendCubit.listenToRecordingStatus(friendData.id!);
   }
 
   @override
   void dispose() {
-    friendCubit.filteredMessages.clear();
     friendCubit.setRepliedMessage(null);
     super.dispose();
   }
@@ -59,12 +58,12 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
           centerTitle: false,
           title: Row(
             children: [
-              if (friendData.user?.profileImage != null &&
-                  friendData.user!.profileImage!.isNotEmpty)
+              if (friendData.profileImage != null &&
+                  friendData.profileImage!.isNotEmpty)
                 ClipOval(
                   child: FancyShimmerImage(
                     imageUrl: friendCubit.friendData?.profileImage ??
-                        friendData.user!.profileImage!,
+                        friendData.profileImage!,
                     width: 44.w,
                     height: 40.h,
                     errorWidget: ClipOval(
@@ -82,11 +81,9 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   backgroundColor: AppColors.dark,
                   child: Text(
                     friendCubit.friendData?.userName
-                        ?.substring(0, 1)
-                        .toUpperCase() ??
-                        friendData.user!.userName!
-                            .substring(0, 1)
-                            .toUpperCase(),
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        friendData.userName!.substring(0, 1).toUpperCase(),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.ubuntu(
                       fontWeight: FontWeight.w500,
@@ -102,7 +99,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      friendCubit.friendData?.userName ?? friendData.user!.userName!,
+                      friendCubit.friendData?.userName ?? friendData.userName!,
                       style: GoogleFonts.ubuntu(
                         fontWeight: FontWeight.w500,
                         fontSize: 14.sp,
@@ -111,7 +108,7 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                     ),
                     BlocBuilder<FriendCubit, FriendStates>(
                       buildWhen: (_, current) =>
-                      current is UpdateTypingStatus ||
+                          current is UpdateTypingStatus ||
                           current is UpdateRecordingStatus ||
                           current is UpdateTypingStatusSuccess ||
                           current is UpdateTypingStatusError ||
@@ -133,10 +130,10 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                 friendCubit.friendData?.lastSeen != null
                                     ? const SizedBox.shrink()
                                     : Icon(
-                                  Icons.circle,
-                                  color: Colors.grey,
-                                  size: 10.r,
-                                ),
+                                        Icons.circle,
+                                        color: Colors.grey,
+                                        size: 10.r,
+                                      ),
                               SizedBox(
                                 width: MediaQuery.sizeOf(context).width * 0.01,
                               ),
@@ -145,22 +142,22 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                                   friendCubit.isTyping
                                       ? 'Typing...'
                                       : friendCubit.isRecording
-                                      ? 'Recording...'
-                                      : friendCubit.friendData!.onLine!
-                                      ? 'Online'
-                                      : friendCubit.friendData
-                                      ?.lastSeen !=
-                                      null
-                                      ? "Last seen: ${getFormattedTime(
-                                    friendCubit
-                                        .friendData!
-                                        .lastSeen!
-                                        .millisecondsSinceEpoch,
-                                  )}"
-                                      : 'Offline',
+                                          ? 'Recording...'
+                                          : friendCubit.friendData!.onLine!
+                                              ? 'Online'
+                                              : friendCubit.friendData
+                                                          ?.lastSeen !=
+                                                      null
+                                                  ? "Last seen: ${getFormattedTime(
+                                                      friendCubit
+                                                          .friendData!
+                                                          .lastSeen!
+                                                          .millisecondsSinceEpoch,
+                                                    )}"
+                                                  : 'Offline',
                                   style: GoogleFonts.ubuntu(
                                     color: friendCubit.isTyping ||
-                                        friendCubit.isRecording
+                                            friendCubit.isRecording
                                         ? Colors.greenAccent
                                         : null,
                                     fontWeight: FontWeight.w400,
@@ -203,17 +200,17 @@ class _FriendChatScreenState extends State<FriendChatScreen> {
                 }
                 if (state is GetCombinedFriendsSuccess) {
                   // audioPlayer.play(AssetSource("audios/message_received.wav"));
-                  friendCubit.markMessagesAsRead(friendData.user!.id!);
+                  friendCubit.markMessagesAsRead(friendData.id!);
                 }
               },
               buildWhen: (_, currentState) =>
-              currentState is MarkMessagesAsReadSuccess ||
-              currentState is GetAllFriendMessagesSuccess ||
+                  currentState is MarkMessagesAsReadSuccess ||
+                  currentState is GetAllFriendMessagesSuccess ||
                   currentState is GetAllFriendMessagesError ||
                   currentState is GetAllFriendMessagesLoading,
               builder: (_, state) {
                 if (state is GetAllFriendMessagesLoading) {
-                  return const LoadingIndicator();
+                  return const Expanded(child: LoadingIndicator());
                 }
                 return FriendChatMessages(
                   friendData: friendData,

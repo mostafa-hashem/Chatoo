@@ -231,15 +231,32 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
               ),
             ),
             SizedBox(height: 5.h),
-            Text(
-              getFormattedTime(
-                widget.groupMessage.sentAt!.millisecondsSinceEpoch,
-              ),
-              style: TextStyle(
-                fontSize: 9.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  getFormattedTime(
+                    widget.groupMessage.sentAt!.millisecondsSinceEpoch,
+                  ),
+                  style: TextStyle(
+                    fontSize: 9.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  width: 12.w,
+                ),
+                if (widget.groupMessage.edited != null)
+                  Text(
+                    'Edited',
+                    style: TextStyle(
+                      fontSize: 9.sp,
+                      color: AppColors.mainColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+              ],
             ),
           ],
         );

@@ -167,6 +167,7 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                               fCMToken: widget.friendData.fCMToken!,
                               title: "${profileCubit.user.userName}",
                               body: "Friend request",
+                              isFriendRequest: 'true',
                             ),
                           );
                     },

@@ -1,11 +1,15 @@
 import 'dart:io';
+import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
+import 'package:chat_app/features/auth/cubit/auth_state.dart';
 import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/widgets/custom_profile_container.dart';
 import 'package:chat_app/provider/app_provider.dart';
+import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/default_text_button.dart';
+import 'package:chat_app/ui/widgets/error_indicator.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/constants.dart';
@@ -177,6 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authCubit = AuthCubit.get(context);
     final provider = Provider.of<MyAppProvider>(context);
     return GestureDetector(
       onTap: () {
@@ -209,6 +214,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildTextFields(context),
                     SizedBox(height: 40.h),
                     _buildSaveButton(context, profile, provider),
+                    SizedBox(height: 24.h),
+                    BlocListener<AuthCubit, AuthState>(
+                      listener: (context, state) {
+                        if (state is DeleteAccountLoading) {
+                          const LoadingIndicator();
+                        } else {
+                          if (state is DeleteAccountSuccess) {
+                            showSnackBar(
+                              context,
+                              Colors.green,
+                              "Account deleted successfully",
+                            );
+
+                            if (context.mounted) {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                Routes.login,
+                                (route) => false,
+                              );
+                            }
+                          }
+                          if (state is DeleteAccountError) {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                            const ErrorIndicator();
+                          }
+                        }
+                      },
+                      child: InkWell(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('Delete account?'),
+                                actionsOverflowDirection:
+                                    VerticalDirection.down,
+                                actions: [
+                                  TextButton(
+                                    child: const Text('Cancel'),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('Delete'),
+                                    onPressed: () {
+                                      authCubit.deleteAccount();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.black,
+                              border: Border.all(color: Colors.white),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            child: Text(
+                              "Delete account",
+                              style: GoogleFonts.ubuntu(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 24.h),
                   ],
                 ),

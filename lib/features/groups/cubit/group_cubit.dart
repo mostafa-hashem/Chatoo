@@ -117,9 +117,9 @@ class GroupCubit extends Cubit<GroupStates> {
     emit(GetAllGroupsLoading());
 
     try {
-      StreamSubscription<List<Group?>>? groupSubscription;
-
-      groupSubscription = _groupFirebaseServices.getAllUserGroups().listen(
+      // StreamSubscription<List<Group?>>? groupSubscription;
+      // groupSubscription =
+       _groupFirebaseServices.getAllUserGroups().listen(
         (groups) {
           allUserGroups = groups;
           allUserGroups.sort((a, b) {
@@ -475,6 +475,21 @@ class GroupCubit extends Cubit<GroupStates> {
       emit(DeleteMessageForAllSuccess());
     } catch (e) {
       emit(DeleteMessageForAllError(Failure.fromException(e).message));
+    }
+  }
+
+  Future<void> editeMessage({
+    required String groupId,
+    required String messageId,
+    required String newMessage,
+  }) async {
+    emit(EditMessageLoading());
+    try {
+      await _groupFirebaseServices.editeMessage(
+          groupId: groupId, messageId: messageId, newMessage: newMessage,);
+      emit(EditMessageSuccess());
+    } catch (e) {
+      emit(EditMessageError(Failure.fromException(e).message));
     }
   }
 
