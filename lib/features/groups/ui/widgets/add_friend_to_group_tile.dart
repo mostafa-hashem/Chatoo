@@ -55,8 +55,9 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                       widget.friendData.profileImage!.isNotEmpty
                   ? InkWell(
                       onTap: () => showImageDialog(
-                        context,
-                        widget.friendData.profileImage!,
+                        context: context,
+                        imageUrl: widget.friendData.profileImage!,
+                        chatName: widget.friendData.userName!,
                       ),
                       child: FancyShimmerImage(
                         imageUrl: widget.friendData.profileImage!,

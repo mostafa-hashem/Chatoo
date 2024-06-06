@@ -360,8 +360,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: profile.user.profileImage != null &&
                       profile.user.profileImage!.isNotEmpty
                   ? InkWell(
-                      onTap: () =>
-                          showImageDialog(context, profile.user.profileImage!),
+                      onTap: () => showImageDialog(
+                        context: context,
+                        imageUrl: profile.user.profileImage!,
+                        chatName: 'You',
+                      ),
                       child: CircleAvatar(
                         backgroundColor: Colors.transparent,
                         backgroundImage:

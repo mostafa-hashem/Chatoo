@@ -67,7 +67,7 @@ class _GroupTileState extends State<GroupTile> {
     _checkTextDirection(messageText!);
     return BlocBuilder<ProfileCubit, ProfileState>(
       buildWhen: (_, current) =>
-      current is GetUserSuccess ||
+          current is GetUserSuccess ||
           current is GetUserError ||
           current is ProfileLoading,
       builder: (_, state) {
@@ -77,45 +77,48 @@ class _GroupTileState extends State<GroupTile> {
             key: listTileKey,
             leading: widget.groupData.groupIcon!.isEmpty
                 ? CircleAvatar(
-              radius: 26.r,
-              backgroundColor: AppColors.primary,
-              child: Text(
-                widget.groupData.groupName!.substring(0, 1).toUpperCase(),
-                textAlign: TextAlign.center,
-                style: GoogleFonts.ubuntu(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                ),
-              ),
-            )
+                    radius: 26.r,
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      widget.groupData.groupName!.substring(0, 1).toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.ubuntu(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  )
                 : InkWell(
-              onTap: () =>
-                  showImageDialog(context, widget.groupData.groupIcon!),
-              child: ClipOval(
-                child: CircleAvatar(
-                  radius: 26.r,
-                  child: FancyShimmerImage(
-                    imageUrl: widget.groupData.groupIcon!,
-                    errorWidget: CircleAvatar(
-                      radius: 26.r,
-                      backgroundColor: AppColors.primary,
-                      child: Text(
-                        widget.groupData.groupName!
-                            .substring(0, 1)
-                            .toUpperCase(),
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.ubuntu(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                          fontSize: 16.sp,
+                    onTap: () => showImageDialog(
+                      context: context,
+                      imageUrl: widget.groupData.groupIcon!,
+                      chatName: widget.groupData.groupName!,
+                    ),
+                    child: ClipOval(
+                      child: CircleAvatar(
+                        radius: 26.r,
+                        child: FancyShimmerImage(
+                          imageUrl: widget.groupData.groupIcon!,
+                          errorWidget: CircleAvatar(
+                            radius: 26.r,
+                            backgroundColor: AppColors.primary,
+                            child: Text(
+                              widget.groupData.groupName!
+                                  .substring(0, 1)
+                                  .toUpperCase(),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.ubuntu(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
             title: Row(
               children: [
                 Text(
@@ -130,9 +133,10 @@ class _GroupTileState extends State<GroupTile> {
                 Text(
                   widget.groupData.recentMessageSentAt?.toLocal() != null
                       ? getFormattedTime(
-                    widget.groupData.recentMessageSentAt!.toLocal()
-                        .millisecondsSinceEpoch,
-                  )
+                          widget.groupData.recentMessageSentAt!
+                              .toLocal()
+                              .millisecondsSinceEpoch,
+                        )
                       : '',
                   style: GoogleFonts.novaSquare(
                     fontWeight: FontWeight.bold,
@@ -160,10 +164,15 @@ class _GroupTileState extends State<GroupTile> {
                 ),
                 const Spacer(),
                 if (widget.groupData.unreadMessageCounts != null &&
-                    widget.groupData.unreadMessageCounts![profileCubit.user.id] != null &&
-                    widget.groupData.unreadMessageCounts![profileCubit.user.id] as int > 0)
+                    widget.groupData
+                            .unreadMessageCounts![profileCubit.user.id] !=
+                        null &&
+                    widget.groupData.unreadMessageCounts![profileCubit.user.id]
+                            as int >
+                        0)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(14.r),
@@ -182,10 +191,10 @@ class _GroupTileState extends State<GroupTile> {
             ),
             trailing: isMuted
                 ? Icon(
-              Icons.notifications_off,
-              color: AppColors.primary,
-              size: 20.sp,
-            )
+                    Icons.notifications_off,
+                    color: AppColors.primary,
+                    size: 20.sp,
+                  )
                 : const SizedBox.shrink(),
             onTap: () {
               Future.wait([
@@ -198,7 +207,7 @@ class _GroupTileState extends State<GroupTile> {
                 const Duration(
                   milliseconds: 50,
                 ),
-                    () => Navigator.pushNamed(
+                () => Navigator.pushNamed(
                   context,
                   Routes.groupChatScreen,
                   arguments: widget.groupData,
@@ -218,15 +227,15 @@ class _GroupTileState extends State<GroupTile> {
                       onPressed: () {
                         isMuted
                             ? groupCubit
-                            .unMuteGroup(widget.groupData.groupId ?? '')
+                                .unMuteGroup(widget.groupData.groupId ?? '')
                             : groupCubit
-                            .muteGroup(widget.groupData.groupId ?? '');
+                                .muteGroup(widget.groupData.groupId ?? '');
                         if (context.mounted) {
                           Navigator.pop(context);
                         }
                       },
                       child:
-                      isMuted ? const Text('Un Mute') : const Text('Mute'),
+                          isMuted ? const Text('Un Mute') : const Text('Mute'),
                     ),
                   ),
                   PopupMenuItem(
@@ -256,7 +265,8 @@ class _GroupTileState extends State<GroupTile> {
                                         Navigator.pop(context);
                                       }
                                       if (state is DeleteGroupSuccess) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           const SnackBar(
                                             content: Text(
                                               "Leaved successfully",

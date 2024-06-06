@@ -173,7 +173,8 @@ class _FriendTileState extends State<FriendTile> {
                                         Navigator.pop(context);
                                       }
                                       if (state is RemoveFriendSuccess) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           const SnackBar(
                                             content: Text(
                                               "Removed successfully",
@@ -250,7 +251,11 @@ class ProfileImage extends StatelessWidget {
         else
           InkWell(
             onTap: () {
-              showImageDialog(context, imageUrl);
+              showImageDialog(
+                context: context,
+                imageUrl: imageUrl,
+                chatName: userName,
+              );
             },
             child: ClipOval(
               child: CircleAvatar(

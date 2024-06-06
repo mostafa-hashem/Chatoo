@@ -87,8 +87,9 @@ class DrawerTile extends StatelessWidget {
                   profile.user.profileImage!.isNotEmpty
               ? GestureDetector(
                   onTap: () => showImageDialog(
-                    context,
-                    profile.user.profileImage!,
+                    context: context,
+                    imageUrl: profile.user.profileImage!,
+                    chatName: 'You',
                   ),
                   child: CircleAvatar(
                     backgroundColor: Colors.transparent,

@@ -63,8 +63,9 @@ class _GroupRequestsTileState extends State<GroupRequestsTile> {
                       widget.requesterData.profileImage!.isNotEmpty
                   ? InkWell(
                       onTap: () => showImageDialog(
-                        context,
-                        widget.requesterData.profileImage!,
+                        context: context,
+                        imageUrl: widget.requesterData.profileImage!,
+                        chatName: widget.requesterData.profileImage!,
                       ),
                       child: FancyShimmerImage(
                         imageUrl: widget.requesterData.profileImage!,

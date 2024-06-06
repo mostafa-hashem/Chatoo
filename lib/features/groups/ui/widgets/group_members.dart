@@ -237,8 +237,11 @@ class _GroupMembersState extends State<GroupMembers> {
                                 .isNotEmpty
                         ? InkWell(
                             onTap: () => showImageDialog(
-                              context,
-                              groupCubit.allGroupMembers[index]!.profileImage!,
+                              context: context,
+                              imageUrl: groupCubit
+                                  .allGroupMembers[index]!.profileImage!,
+                              chatName:
+                                  groupCubit.allGroupMembers[index]!.userName!,
                             ),
                             child: FancyShimmerImage(
                               imageUrl: groupCubit

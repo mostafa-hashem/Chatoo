@@ -104,6 +104,9 @@ class _VideoWidgetState extends State<VideoWidget> {
             'isVideo': true,
             'isStory': false,
             'mediaTitle': '',
+            'mediaOwner': widget.senderName,
+            'mediaTime': widget.sentAt,
+            'profilePicture': false,
           },
         );
       },

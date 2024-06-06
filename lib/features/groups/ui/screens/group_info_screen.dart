@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_cropper/image_cropper.dart';  // إضافة مكتبة القص
+import 'package:image_cropper/image_cropper.dart'; // إضافة مكتبة القص
 import 'package:image_picker/image_picker.dart';
 
 class GroupInfo extends StatefulWidget {
@@ -55,7 +55,7 @@ class _GroupInfoState extends State<GroupInfo> {
                   return AlertDialog(
                     title: const Text("Exit"),
                     content:
-                    const Text("Are you sure you want Exit the group ?"),
+                        const Text("Are you sure you want Exit the group ?"),
                     actions: [
                       IconButton(
                         onPressed: () {
@@ -79,14 +79,14 @@ class _GroupInfoState extends State<GroupInfo> {
                                 group: groupData,
                                 sender: profileCubit.user,
                                 message:
-                                '${profileCubit.user.userName} left the group',
+                                    '${profileCubit.user.userName} left the group',
                                 type: MessageType.text,
                                 isAction: true,
                               );
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
                                 Routes.layout,
-                                    (route) => false,
+                                (route) => false,
                               );
                             }
                             if (state is LeaveGroupError) {
@@ -185,7 +185,7 @@ class _GroupInfoState extends State<GroupInfo> {
                           ),
                           items: [
                             if (groupData.groupAdmins!.any(
-                                  (adminId) => adminId == profileCubit.user.id,
+                              (adminId) => adminId == profileCubit.user.id,
                             ))
                               PopupMenuItem(
                                 child: TextButton(
@@ -237,14 +237,14 @@ class _GroupInfoState extends State<GroupInfo> {
                                                 GroupStates>(
                                               listener: (_, state) {
                                                 if (state
-                                                is DeleteGroupLoading) {
+                                                    is DeleteGroupLoading) {
                                                   const LoadingIndicator();
                                                 } else {
                                                   if (context.mounted) {
                                                     Navigator.pop(context);
                                                   }
                                                   if (state
-                                                  is DeleteGroupSuccess) {
+                                                      is DeleteGroupSuccess) {
                                                     Navigator
                                                         .pushReplacementNamed(
                                                       context,
@@ -252,7 +252,7 @@ class _GroupInfoState extends State<GroupInfo> {
                                                     );
                                                   }
                                                   if (state
-                                                  is DeleteGroupError) {
+                                                      is DeleteGroupError) {
                                                     const ErrorIndicator();
                                                   }
                                                 }
@@ -328,16 +328,16 @@ class _GroupInfoState extends State<GroupInfo> {
                       if (groupData.groupIcon!.isNotEmpty)
                         InkWell(
                           onTap: () => showImageDialog(
-                            context,
-                            groupData.groupIcon!,
+                            context: context,
+                            imageUrl: groupData.groupIcon!,
+                            chatName: groupData.groupName!,
                           ),
                           child: FancyShimmerImage(
                             imageUrl: groupData.groupIcon!,
                             height: 140.h,
                             width: 170.w,
                             boxFit: BoxFit.contain,
-                            errorWidget:
-                            ClipOval(
+                            errorWidget: ClipOval(
                               child: SizedBox(
                                 height: 140.h,
                                 width: 170.w,
@@ -361,8 +361,8 @@ class _GroupInfoState extends State<GroupInfo> {
                           ),
                         ),
                       if (groupData.groupAdmins!.any(
-                            (adminId) =>
-                        adminId == ProfileCubit.get(context).user.id!,
+                        (adminId) =>
+                            adminId == ProfileCubit.get(context).user.id!,
                       ))
                         GestureDetector(
                           onTap: _pickAndCropImage,
@@ -403,9 +403,11 @@ class _GroupInfoState extends State<GroupInfo> {
       ),
     );
   }
+
   Future<void> _pickAndCropImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       final CroppedFile? croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
@@ -415,7 +417,7 @@ class _GroupInfoState extends State<GroupInfo> {
           CropAspectRatioPreset.original,
           CropAspectRatioPreset.ratio4x3,
           CropAspectRatioPreset.ratio16x9
-        ],
+        ,],
         compressQuality: 100,
         uiSettings: [
           AndroidUiSettings(
@@ -436,7 +438,7 @@ class _GroupInfoState extends State<GroupInfo> {
               height: 520,
             ),
             viewPort:
-            const CroppieViewPort(width: 480, height: 480, type: 'circle'),
+                const CroppieViewPort(width: 480, height: 480, type: 'circle'),
             enableExif: true,
             enableZoom: true,
             showZoomer: true,
@@ -449,10 +451,12 @@ class _GroupInfoState extends State<GroupInfo> {
           imageFile = File(croppedFile.path);
         });
         final groupData = ModalRoute.of(context)!.settings.arguments! as Group;
-        GroupCubit.get(context).uploadImageAndUpdateGroupIcon(
+        GroupCubit.get(context)
+            .uploadImageAndUpdateGroupIcon(
           imageFile!,
           groupData.groupId!,
-        ).then((downloadUrl) {
+        )
+            .then((downloadUrl) {
           setState(() {
             groupData.groupIcon = downloadUrl;
           });

@@ -98,7 +98,11 @@ String getFormattedDateHeader(int timestamp) {
   }
 }
 
-void showImageDialog(BuildContext context, String imageUrl) {
+void showImageDialog({
+  required BuildContext context,
+  required String imageUrl,
+  required String chatName,
+}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -107,7 +111,14 @@ void showImageDialog(BuildContext context, String imageUrl) {
           Navigator.pushNamed(
             context,
             Routes.mediaView,
-            arguments: {'path': imageUrl, 'mediaTitle': '', 'isVideo': false},
+            arguments: {
+              'path': imageUrl,
+              'mediaTitle': '',
+              'isVideo': false,
+              'mediaOwner': chatName,
+              'mediaTime': 0,
+              'profilePicture': true,
+            },
           );
         },
         child: Dialog(
@@ -194,7 +205,6 @@ bool containsLink(String message) {
   return urlPattern.hasMatch(message);
 }
 
-
 bool isArabic(String text) {
   return RegExp(r'^[\u0600-\u06FF]+').hasMatch(text);
 }
@@ -210,6 +220,3 @@ Future<void> updateStatus(bool status) async {
     );
   }
 }
-
-
-

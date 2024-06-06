@@ -58,7 +58,10 @@ class _ImageWidgetState extends State<ImageWidget> {
             'path': widget.imagePath,
             'isVideo': false,
             'isStory': false,
-            'mediaTitle': ''
+            'mediaTitle': '',
+            'mediaOwner': widget.senderName,
+            'mediaTime': widget.sentAt,
+            'profilePicture': false,
           },
         );
       },

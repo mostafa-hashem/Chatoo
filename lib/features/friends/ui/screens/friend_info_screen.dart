@@ -37,8 +37,8 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
             toolbarHeight: MediaQuery.sizeOf(context).height * 0.1,
             actions: [
               if (friendCubit.combinedFriends.any(
-                    (friend) =>
-                friend.user != null &&
+                (friend) =>
+                    friend.user != null &&
                     friend.user!.id!.contains(
                       friendData.id!,
                     ),
@@ -187,8 +187,11 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                     if (friendData.profileImage != null &&
                         friendData.profileImage!.isNotEmpty)
                       InkWell(
-                        onTap: () =>
-                            showImageDialog(context, friendData.profileImage!),
+                        onTap: () => showImageDialog(
+                          context: context,
+                          imageUrl: friendData.profileImage!,
+                          chatName: friendData.userName!,
+                        ),
                         child: ClipOval(
                           child: FancyShimmerImage(
                             imageUrl: friendData.profileImage!,
@@ -208,8 +211,9 @@ class _FriendInfoScreenState extends State<FriendInfoScreen> {
                     else
                       InkWell(
                         onTap: () => showImageDialog(
-                          context,
-                          FirebasePath.defaultImage,
+                          context: context,
+                          imageUrl: FirebasePath.defaultImage,
+                          chatName: friendData.userName!,
                         ),
                         child: ClipOval(
                           child: FancyShimmerImage(
