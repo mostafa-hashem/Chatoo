@@ -1,5 +1,4 @@
 import 'package:chat_app/ui/resources/app_colors.dart';
-import 'package:chat_app/ui/resources/text_style.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -43,7 +42,7 @@ class _CustomProfileContainerState extends State<CustomProfileContainer> {
       children: [
         Text(
           widget.labelText,
-          style: novaFlat18WhiteLight().copyWith(color: AppColors.primary),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 16.sp),
         ),
         SizedBox(
           height: 8.h,

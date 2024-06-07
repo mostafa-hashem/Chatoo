@@ -138,7 +138,10 @@ class GroupFirebaseServices {
   }
 
   Stream<List<GroupMessage>> getAllGroupMessages(String groupId) {
-    return _groupsCollection
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    return _usersCollection
+        .doc(currentUserId)
+        .collection(FirebasePath.groups)
         .doc(groupId)
         .collection(FirebasePath.messages)
         .orderBy('sentAt', descending: true)
@@ -275,8 +278,8 @@ class GroupFirebaseServices {
       isAction: isAction,
       repliedMessage: repliedMessage,
     );
-
-    await groupMessageDocRef.set(groupMessage.toJson());
+    // For group
+    groupMessageDocRef.set(groupMessage.toJson());
 
     final Map<String, dynamic> updatedUnreadCounts = {
       ...?group.unreadMessageCounts,
@@ -288,14 +291,37 @@ class GroupFirebaseServices {
             (updatedUnreadCounts[memberId] ?? 0) + 1;
       }
     }
-
-    await _groupsCollection.doc(group.groupId).update({
+    _groupsCollection.doc(group.groupId).update({
       'recentMessage': message,
-      'recentMessageSentAt': Timestamp.now(),
+      'recentMessageSentAt': Timestamp.now().toDate(),
       'recentMessageSender': sender.userName,
       'recentMessageSenderId': sender.id,
       'unreadMessageCounts': updatedUnreadCounts,
     });
+    //For every user in group
+    for (final userId in group.members!) {
+      final user = _usersCollection
+          .doc(userId as String)
+          .collection(FirebasePath.groups)
+          .doc(group.groupId);
+
+      user
+          .collection(FirebasePath.messages)
+          .doc(groupMessageDocRef.id)
+          .set(groupMessage.toJson())
+          .whenComplete(() {
+        user.set(
+          {
+            'recentMessage': message,
+            'recentMessageSentAt': Timestamp.now().toDate(),
+            'recentMessageSender': sender.userName,
+            'recentMessageSenderId': sender.id,
+            if (userId != currentUserUid) '{}}': FieldValue.increment(1),
+          },
+          SetOptions(merge: true),
+        );
+      });
+    }
   }
 
   Future<void> markMessagesAsRead(String groupId) async {
@@ -318,6 +344,13 @@ class GroupFirebaseServices {
           'unreadMessageCounts.$currentUserId': 0,
         });
       }
+      _usersCollection
+          .doc(currentUserId)
+          .collection(FirebasePath.groups)
+          .doc(groupId)
+          .update(
+        {'unreadMessageCounts': 0},
+      );
     }
 
     if (messagesSnapshot.docs.isNotEmpty) {
@@ -430,33 +463,97 @@ class GroupFirebaseServices {
     });
   }
 
-  Future<void> deleteMessageForeAll(
-    String groupId,
-    String messageId,
-    String senderName,
-    String lastMessage,
-    String lastMessageSender,
-    DateTime? lastMessageSentAt,
-    String lastMessageSenderId,
-  ) async {
-    _groupsCollection
+  Future<void> deleteMessageForeAll({
+    required String groupId,
+    required String messageId,
+    required String senderName,
+    required String lastMessage,
+    required String lastMessageSender,
+    required DateTime lastMessageSentAt,
+    required String lastMessageSenderId,
+  }) async {
+    final String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
+    await _groupsCollection
         .doc(groupId)
         .collection(FirebasePath.messages)
         .doc(messageId)
-        .delete()
-        .whenComplete(() async {
-      final DocumentSnapshot<Map<String, dynamic>> senderSnapshot =
-          await _groupsCollection.doc(groupId).get();
+        .delete();
+    _usersCollection
+        .doc(currentUserUid)
+        .collection(FirebasePath.groups)
+        .doc(groupId)
+        .collection(FirebasePath.messages)
+        .doc(messageId)
+        .delete();
+    final updates = {
+      'recentMessage': lastMessage,
+      'recentMessageSender': lastMessageSender,
+      'recentMessageSentAt': Timestamp.fromDate(lastMessageSentAt),
+      'recentMessageSenderId': lastMessageSenderId,
+    };
+    //*********************** For group ***********************
+    final DocumentSnapshot<Map<String, dynamic>> groupSenderSnapshot =
+        await _groupsCollection.doc(groupId).get();
+    final groupSenderData = groupSenderSnapshot.data();
+
+    if (groupSenderData != null &&
+        groupSenderData['recentMessageSender'] == senderName) {
+      await _groupsCollection.doc(groupId).update(updates);
+    }
+
+    //*********************** For me ***********************
+    final groupData = await _groupsCollection.doc(groupId).get();
+    final usersIds = groupData['members'] as List<dynamic>;
+    for (final userId in usersIds) {
+      final senderSnapshot = await _usersCollection
+          .doc(userId as String)
+          .collection(FirebasePath.groups)
+          .doc(groupId)
+          .get();
       final senderData = senderSnapshot.data();
-      if (senderData?['recentMessageSender'] == senderName) {
-        _groupsCollection.doc(groupId).update({
-          'recentMessage': lastMessage,
-          'recentMessageSender': lastMessageSender,
-          'recentMessageSentAt': Timestamp.fromDate(lastMessageSentAt!),
-          'recentMessageSenderId': lastMessageSenderId,
-        });
+
+      if (senderData != null) {
+        _usersCollection
+            .doc(userId)
+            .collection(FirebasePath.groups)
+            .doc(groupId)
+            .update(updates);
       }
-    });
+    }
+  }
+
+  Future<void> deleteMessageForMe({
+    required String groupId,
+    required String messageId,
+    required String senderName,
+    required String lastMessage,
+    required String lastMessageSender,
+    required DateTime lastMessageSentAt,
+    required String lastMessageSenderId,
+  }) async {
+    final String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
+
+    _usersCollection
+        .doc(currentUserUid)
+        .collection(FirebasePath.groups)
+        .doc(groupId)
+        .collection(FirebasePath.messages)
+        .doc(messageId)
+        .delete();
+    final updates = {
+      'recentMessage': lastMessage,
+      'recentMessageSender': lastMessageSender,
+      'recentMessageSentAt': Timestamp.fromDate(lastMessageSentAt),
+      'recentMessageSenderId': lastMessageSenderId,
+    };
+
+    //*********************** For me ***********************
+        _usersCollection
+            .doc(currentUserUid)
+            .collection(FirebasePath.groups)
+            .doc(groupId)
+            .update(updates);
+
   }
 
   Future<void> editeMessage({

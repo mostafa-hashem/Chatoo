@@ -119,7 +119,7 @@ class GroupCubit extends Cubit<GroupStates> {
     try {
       // StreamSubscription<List<Group?>>? groupSubscription;
       // groupSubscription =
-       _groupFirebaseServices.getAllUserGroups().listen(
+      _groupFirebaseServices.getAllUserGroups().listen(
         (groups) {
           allUserGroups = groups;
           allUserGroups.sort((a, b) {
@@ -438,34 +438,34 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
-  Future<void> deleteMessageForeAll(
-    String groupId,
-    String messageId,
-    String senderName,
-  ) async {
+  Future<void> deleteMessageForeAll({
+    required String groupId,
+    required String messageId,
+    required String senderName,
+  }) async {
     emit(DeleteMessageForAllLoading());
     try {
       await _groupFirebaseServices.deleteMessageForeAll(
-        groupId,
-        messageId,
-        senderName,
-        filteredMessages[groupId]!.length > 2
+        groupId: groupId,
+        messageId: messageId,
+        senderName: senderName,
+        lastMessage: filteredMessages[groupId]!.length > 2
             ? filteredMessages[groupId]!
                 .elementAt(filteredMessages[groupId]!.length - 2)
                 .message!
             : '',
-        filteredMessages[groupId]!.length > 2
+        lastMessageSender: filteredMessages[groupId]!.length > 2
             ? filteredMessages[groupId]!
                 .elementAt(filteredMessages[groupId]!.length - 2)
                 .sender!
                 .userName!
             : '',
-        filteredMessages[groupId]!.length > 2
+        lastMessageSentAt: filteredMessages[groupId]!.length > 2
             ? filteredMessages[groupId]!
                 .elementAt(filteredMessages[groupId]!.length - 2)
                 .sentAt!
-            : null,
-        filteredMessages[groupId]!.length > 2
+            : DateTime.now(),
+        lastMessageSenderId: filteredMessages[groupId]!.length > 2
             ? filteredMessages[groupId]!
                 .elementAt(filteredMessages[groupId]!.length - 2)
                 .sender!
@@ -478,6 +478,46 @@ class GroupCubit extends Cubit<GroupStates> {
     }
   }
 
+  Future<void> deleteMessageForeMe({
+    required String groupId,
+    required String messageId,
+    required String senderName,
+  }) async {
+    emit(DeleteMessageForMeLoading());
+    try {
+      await _groupFirebaseServices.deleteMessageForMe(
+        groupId: groupId,
+        messageId: messageId,
+        senderName: senderName,
+        lastMessage: filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
+                .message!
+            : '',
+        lastMessageSender: filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
+                .sender!
+                .userName!
+            : '',
+        lastMessageSentAt: filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
+                .sentAt!
+            : DateTime.now(),
+        lastMessageSenderId: filteredMessages[groupId]!.length > 2
+            ? filteredMessages[groupId]!
+                .elementAt(filteredMessages[groupId]!.length - 2)
+                .sender!
+                .id!
+            : '',
+      );
+      emit(DeleteMessageForMeSuccess());
+    } catch (e) {
+      emit(DeleteMessageForMeError(Failure.fromException(e).message));
+    }
+  }
+
   Future<void> editeMessage({
     required String groupId,
     required String messageId,
@@ -486,7 +526,10 @@ class GroupCubit extends Cubit<GroupStates> {
     emit(EditMessageLoading());
     try {
       await _groupFirebaseServices.editeMessage(
-          groupId: groupId, messageId: messageId, newMessage: newMessage,);
+        groupId: groupId,
+        messageId: messageId,
+        newMessage: newMessage,
+      );
       emit(EditMessageSuccess());
     } catch (e) {
       emit(EditMessageError(Failure.fromException(e).message));

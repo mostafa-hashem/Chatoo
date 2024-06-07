@@ -242,7 +242,7 @@ class FriendCubit extends Cubit<FriendStates> {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
-        isTyping = (snapshot.data()!['typing'] as bool?)!;
+        isTyping = (snapshot.data()!['typing'] as bool?) ?? false;
         emit(UpdateTypingStatus(isTyping));
       }
     });
@@ -276,7 +276,7 @@ class FriendCubit extends Cubit<FriendStates> {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
-        isRecording = (snapshot.data()!['recording'] as bool?)!;
+        isRecording = (snapshot.data()!['recording'] as bool?) ?? false;
         emit(UpdateRecordingStatus(isRecording));
       }
     });

@@ -14,6 +14,7 @@ import 'package:chat_app/ui/screens/suggestions_screens.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/helper_methods.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -93,15 +94,24 @@ class DrawerTile extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     backgroundColor: Colors.transparent,
-                    backgroundImage: NetworkImage(profile.user.profileImage!),
+                    child: FancyShimmerImage(
+                      imageUrl: profile.user.profileImage!,
+                      boxFit: BoxFit.cover,
+                      width: 100.w,
+                      height: 100.h,
+                      imageBuilder: (context, imageProvider) => CircleAvatar(
+                        backgroundImage: imageProvider,
+                        radius: 50.r,
+                      ),
+                    ),
                   ),
-                )
+          )
               : CircleAvatar(
                   backgroundColor: Colors.grey,
                   child: Text(
                     profile.user.userName != null
                         ? profile.user.userName!.substring(0, 1).toUpperCase()
-                        : 'U',
+                        : 'M',
                     style: GoogleFonts.ubuntu(
                       fontSize: 40.sp,
                       fontWeight: FontWeight.bold,
@@ -158,11 +168,12 @@ class DrawerTile extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              if(counterCubit.allUserRequests.isNotEmpty)
               CircleAvatar(
                 radius: 12.r,
                 backgroundColor: AppColors.primary,
                 child: Text(
-                  counterCubit.allUserRequests.length.toString(),
+                counterCubit.allUserRequests.length.toString(),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12.sp,

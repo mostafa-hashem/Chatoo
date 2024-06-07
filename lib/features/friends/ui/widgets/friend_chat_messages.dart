@@ -41,62 +41,70 @@ class _FriendChatMessagesState extends State<FriendChatMessages> {
         messagesByDate.entries.toList().reversed.toList();
 
     return Expanded(
-      child: ListView.builder(
-        reverse: true,
-        controller: FriendCubit.get(context).scrollController,
-        itemCount: dateEntries.length,
-        itemBuilder: (_, index) {
-          final dateEntry = dateEntries[index];
-          final date = dateEntry.key;
-          final messages = dateEntry.value;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: Center(
-                  child: Text(
-                    date,
-                    style: TextStyle(fontSize: 12.sp, color: AppColors.primary),
-                  ),
-                ),
-              ),
-              ...messages.map((message) {
-                final sentByMe = profileCubit.user.id == message.sender;
-                final lastMessage = friendMessages?.last == message;
-
+      child: dateEntries.isNotEmpty
+          ? ListView.builder(
+              reverse: true,
+              controller: FriendCubit.get(context).scrollController,
+              itemCount: dateEntries.length,
+              itemBuilder: (_, index) {
+                final dateEntry = dateEntries[index];
+                final date = dateEntry.key;
+                final messages = dateEntry.value;
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FriendMessagesTile(
-                      friendMessage: message,
-                      sentByMe: sentByMe,
-                      friendName: widget.friendData.userName ?? '',
-                    ),
-                    if (sentByMe && lastMessage)
-                      Padding(
-                        padding: EdgeInsets.only(right: 22.w),
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: message.readBy?.containsKey(
-                                      widget.friendData.id) ==
-                                  true
-                              ? Text(
-                                  "Seen ✓✓",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(fontSize: 8.sp),
-                                )
-                              : null,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: Center(
+                        child: Text(
+                          date,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
+                    ),
+                    ...messages.map((message) {
+                      final sentByMe = profileCubit.user.id == message.sender;
+                      final lastMessage = friendMessages?.last == message;
+
+                      return Column(
+                        children: [
+                          FriendMessagesTile(
+                            friendMessage: message,
+                            sentByMe: sentByMe,
+                            friendName: widget.friendData.userName ?? '',
+                          ),
+                          if (sentByMe && lastMessage)
+                            Padding(
+                              padding: EdgeInsets.only(right: 22.w),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: message.readBy?.containsKey(
+                                          widget.friendData.id,
+                                        ) ==
+                                        true
+                                    ? Text(
+                                        "Seen ✓✓",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(fontSize: 8.sp),
+                                      )
+                                    : null,
+                              ),
+                            ),
+                        ],
+                      );
+                    }),
                   ],
                 );
-              }),
-            ],
-          );
-        },
-      ),
+              },
+            )
+          : const Center(
+              child: Text("No messages at this moment"),
+            ),
     );
   }
 }

@@ -29,28 +29,42 @@ class RequestsScreen extends StatelessWidget {
             children: [
               BlocBuilder<FriendCubit, FriendStates>(
                 buildWhen: (_, currentState) =>
-                    currentState is GetAllUserRequestsLoading ||
+                currentState is GetAllUserRequestsLoading ||
                     currentState is GetAllUserRequestsSuccess ||
                     currentState is GetAllUserRequestsError,
                 builder: (context, state) {
-                  if(state is ApproveToAddFriendLoading || state is DeclineToAddFriendLoading){
+                  if (state is ApproveToAddFriendLoading || state is DeclineToAddFriendLoading) {
                     return const Expanded(child: LoadingIndicator());
-                  }else if(state is ApproveToAddFriendError || state is DeclineToAddFriendError){
+                  } else if (state is ApproveToAddFriendError || state is DeclineToAddFriendError) {
                     return const Expanded(child: ErrorIndicator());
                   }
-                  return Expanded(
-                    child: ListView.separated(
-                      itemBuilder: (context, index) {
-                        return FriendRequestsTile(
-                          friendData: friendCubit.allUserRequests[index],
-                        );
-                      },
-                      separatorBuilder: (context, index) => const Divider(
-                        color: AppColors.primary,
+                  if (friendCubit.allUserRequests.isNotEmpty) {
+                    return Expanded(
+                      child: ListView.separated(
+                        itemBuilder: (context, index) {
+                          return FriendRequestsTile(
+                            friendData: friendCubit.allUserRequests[index],
+                          );
+                        },
+                        separatorBuilder: (context, index) => const Divider(
+                          color: AppColors.primary,
+                        ),
+                        itemCount: friendCubit.allUserRequests.length,
                       ),
-                      itemCount: friendCubit.allUserRequests.length,
-                    ),
-                  );
+                    );
+                  } else {
+                    return Expanded(
+                      child: Center(
+                        child: Text(
+                          'There are no friend requests at the moment.',
+                          style: GoogleFonts.ubuntu(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
                 },
               ),
             ],

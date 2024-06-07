@@ -15,6 +15,7 @@ import 'package:chat_app/ui/widgets/widgets.dart';
 import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -78,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
-            toolbarColor: Colors.deepOrange,
+            toolbarColor: AppColors.primary,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
@@ -210,6 +211,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildProfileImage(context, profile),
                     SizedBox(height: 24.h),
                     _buildBioSection(context),
+                    SizedBox(height: 24.h),
+                    Divider(
+                      color: provider.themeMode == ThemeMode.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                    SizedBox(height: 24.h),
+                     Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'USER INFO',style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
                     SizedBox(height: 24.h),
                     _buildTextFields(context),
                     SizedBox(height: 40.h),
@@ -347,7 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         }
       },
-      builder: (context, state) {
+      builder: (_, state) {
         return Stack(
           alignment: Alignment.topRight,
           children: [
@@ -367,8 +381,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       child: CircleAvatar(
                         backgroundColor: Colors.transparent,
-                        backgroundImage:
-                            NetworkImage(profile.user.profileImage!),
+                        child: FancyShimmerImage(
+                          imageUrl: profile.user.profileImage!,
+                          boxFit: BoxFit.cover,
+                          width: 150.w,
+                          height: 150.h,
+                          imageBuilder: (context, imageProvider) =>
+                              CircleAvatar(
+                            backgroundImage: imageProvider,
+                            radius: 50.r,
+                          ),
+                        ),
                       ),
                     )
                   : CircleAvatar(
@@ -411,7 +434,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               current is UpdateUserBioLoading ||
               current is UpdateUserBioSuccess ||
               current is UpdateUserBioError,
-          builder: (context, state) {
+          builder: (_, state) {
             return Text(
               bioController.text,
               style: Theme.of(context)
@@ -438,7 +461,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           },
         ),
-        Divider(height: 30.h),
+        SizedBox(height: 18.h,),
         CustomProfileContainer(
           labelText: "Email",
           isClickable: false,
@@ -446,18 +469,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           controller: emailController,
           validator: validateEmail,
         ),
-        Divider(height: 30.h),
+        SizedBox(height: 18.h,),
         BlocBuilder<ProfileCubit, ProfileState>(
           builder: (_, state) {
             return CustomProfileContainer(
-              labelText: "Phone Num",
+              labelText: "Phone Number",
               textInputType: TextInputType.phone,
               controller: phoneNumberController,
               validator: validatePhoneNumber,
             );
           },
         ),
-        Divider(height: 30.h),
+        SizedBox(height: 18.h,),
         BlocBuilder<ProfileCubit, ProfileState>(
           builder: (_, state) {
             return CustomProfileContainer(

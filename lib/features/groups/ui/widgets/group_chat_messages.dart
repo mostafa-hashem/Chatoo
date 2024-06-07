@@ -10,8 +10,7 @@ class GroupChatMessages extends StatefulWidget {
   final String groupId;
   final Function(GroupMessage) onMessageSelected;
 
-
-  GroupChatMessages({
+  const GroupChatMessages({
     super.key,
     required this.groupId,
     required this.onMessageSelected,
@@ -23,11 +22,13 @@ class GroupChatMessages extends StatefulWidget {
 
 class _GroupChatMessagesState extends State<GroupChatMessages> {
   late GroupCubit _groupCubit;
-@override
+
+  @override
   void didChangeDependencies() {
-  _groupCubit = GroupCubit.get(context);
+    _groupCubit = GroupCubit.get(context);
     super.didChangeDependencies();
   }
+
   void _scrollToMessage(String messageId) {
     final groupMessages = _groupCubit.filteredMessages[widget.groupId]?.toList();
     final index = groupMessages?.indexWhere((message) => message.messageId == messageId);
@@ -46,13 +47,27 @@ class _GroupChatMessagesState extends State<GroupChatMessages> {
   Widget build(BuildContext context) {
     final groupMessages = GroupCubit.get(context).filteredMessages[widget.groupId]?.toList();
 
+    if (groupMessages == null || groupMessages.isEmpty) {
+      return Expanded(
+        child: Center(
+          child: Text(
+            'No messages at this moment',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      );
+    }
+
     final Map<String, List<GroupMessage>> messagesByDate = {};
-    for (final message in groupMessages ?? []) {
-      final String date = getFormattedDateHeader(message.sentAt!.millisecondsSinceEpoch as int);
+    for (final message in groupMessages) {
+      final String date = getFormattedDateHeader(message.sentAt!.millisecondsSinceEpoch);
       if (messagesByDate.containsKey(date)) {
-        messagesByDate[date]!.add(message as GroupMessage);
+        messagesByDate[date]!.add(message);
       } else {
-        messagesByDate[date] = [message as GroupMessage];
+        messagesByDate[date] = [message];
       }
     }
 

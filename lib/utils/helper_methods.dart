@@ -45,7 +45,7 @@ String? validateConfirmPassword(String? value, String password) {
 
 String? validatePhoneNumber(String? value) {
   if (value == null || value.isEmpty) {
-    return 'Please enter your phone number only for search';
+    return 'For search';
   }
   return null;
 }

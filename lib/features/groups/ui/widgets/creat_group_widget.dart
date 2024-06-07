@@ -7,7 +7,6 @@ import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/helper_methods.dart';
-import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -27,6 +26,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
   File? imageFile;
   final formKey = GlobalKey<FormState>();
   late GroupCubit groupCubit;
+
   @override
   void didChangeDependencies() {
     groupCubit = GroupCubit.get(context);
@@ -36,7 +36,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
   Future<void> _pickAndCropImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? pickedFile =
-        await picker.pickImage(source: ImageSource.gallery);
+    await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       final CroppedFile? croppedFile = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
@@ -50,7 +50,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
-            toolbarColor: Colors.deepOrange,
+            toolbarColor: AppColors.primary,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
@@ -66,7 +66,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
               height: 520,
             ),
             viewPort:
-                const CroppieViewPort(width: 480, height: 480, type: 'circle'),
+            const CroppieViewPort(width: 480, height: 480, type: 'circle'),
             enableExif: true,
             enableZoom: true,
             showZoomer: true,
@@ -79,7 +79,7 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
           imageFile = File(croppedFile.path);
         });
         if(context.mounted){
-        groupCubit.uploadGroupImageToFireStorage(imageFile!);
+          groupCubit.uploadGroupImageToFireStorage(imageFile!);
         }
       }
     }
@@ -92,160 +92,155 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
       onTap: () {
         FocusScope.of(context).unfocus();
       },
-      child: StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            scrollable: true,
-            title: Text(
-              "Create a group",
-              textAlign: TextAlign.left,
-              style: GoogleFonts.novaFlat(),
-            ),
-            content: Form(
-              key: formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  BlocConsumer<GroupCubit, GroupStates>(
-                    listener: (_, state) {
-                      if (state is UploadGroupImageToFireStorageLoading) {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return const LoadingIndicator();
-                          },
-                        );
-                      } else {
-                        if (state is UploadGroupImageToFireStorageError) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                state.message,
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                              backgroundColor: AppColors.error,
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                        if (state is UploadGroupImageToFireStorageSuccess) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Successfully Uploaded",
-                                style: TextStyle(fontSize: 15),
-                              ),
-                              backgroundColor: AppColors.primary,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    builder: (context, state) => GestureDetector(
-                      onTap: _pickAndCropImage,
-                      child: Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          if (groupCubit.groupIcon.isNotEmpty)
-                            FancyShimmerImage(
-                              imageUrl: groupCubit.groupIcon,
-                              height: 115.h,
-                              width: 115.w,
-                            )
-                          else
-                            Container(
-                              height: 130.h,
-                              width: 145.w,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(40.r),
-                              ),
-                              child: const ClipOval(
-                                child: Icon(Icons.groups_outlined),
-                              ),
-                            ),
-                          const Icon(Icons.edit),
-                        ],
+      child: AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    "Create a Group",
+                    style: GoogleFonts.novaFlat(
+                      textStyle: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: 30.h,
+                ),
+                SizedBox(height: 20.h),
+                GestureDetector(
+                  onTap: _pickAndCropImage,
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 150.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: imageFile != null
+                            ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12.r),
+                          child: Image.file(
+                            imageFile!,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                            : Center(
+                          child: Icon(
+                            Icons.group,
+                            size: 60.sp,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: CircleAvatar(
+                          backgroundColor: AppColors.primary,
+                          radius: 20.r,
+                          child: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  TextFormField(
-                    validator: (value) => validateGeneral(value, "group name"),
+                ),
+                SizedBox(height: 20.h),
+                Form(
+                  key: formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: TextFormField(
+                    validator: (value) => validateGeneral(value, "Group name"),
                     onChanged: (value) {
                       setState(() {
                         groupName = value;
                       });
                     },
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: TextStyle(fontSize: 16.sp),
                     decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
-                        ),
-                        borderRadius: BorderRadius.circular(22),
+                      labelText: 'Group name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.red),
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
-                        ),
-                        borderRadius: BorderRadius.circular(22),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 14.h,
+                        horizontal: 16.w,
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
                 ),
-                child: const Text("CANCEL"),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final group = Group(
-                    groupIcon: groupCubit.groupIcon,
-                    groupName: groupName,
-                    mainAdminId: userData.user.id,
-                    requests: [],
-                    groupAdmins: [],
-                  );
-                  final user = userData.user;
-                  if (formKey.currentState!.validate()) {
-                    groupCubit
-                        .createGroup(
-                      group,
-                      user,
-                    )
-                        .whenComplete(
-                      () {
-                        Navigator.pop(context);
+                SizedBox(height: 20.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
                       },
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                        padding: EdgeInsets.symmetric(
+                          vertical: 12.h,
+                          horizontal: 24.w,
+                        ),
+                      ),
+                      child: Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 20.w),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final group = Group(
+                          groupIcon: groupCubit.groupIcon,
+                          groupName: groupName,
+                          mainAdminId: userData.user.id,
+                          requests: [],
+                          groupAdmins: [],
+                        );
+                        final user = userData.user;
+                        if (formKey.currentState!.validate()) {
+                          groupCubit.createGroup(group, user).whenComplete(() {
+                            Navigator.pop(context);
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: EdgeInsets.symmetric(
+                          vertical: 12.h,
+                          horizontal: 24.w,
+                        ),
+                      ),
+                      child: Text(
+                        "Create",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text("CREATE"),
-              ),
-            ],
-          );
-        },
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
