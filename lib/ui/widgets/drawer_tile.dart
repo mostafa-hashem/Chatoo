@@ -4,6 +4,7 @@ import 'package:chat_app/features/friends/cubit/friend_cubit.dart';
 import 'package:chat_app/features/friends/cubit/friend_states.dart';
 import 'package:chat_app/features/friends/ui/screens/requests_screen.dart';
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
+import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/screens/profile_screen.dart';
@@ -13,8 +14,11 @@ import 'package:chat_app/ui/screens/about_us.dart';
 import 'package:chat_app/ui/screens/suggestions_screens.dart';
 import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/ui/widgets/widgets.dart';
+import 'package:chat_app/utils/constants.dart';
 import 'package:chat_app/utils/helper_methods.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -105,7 +109,7 @@ class DrawerTile extends StatelessWidget {
                       ),
                     ),
                   ),
-          )
+                )
               : CircleAvatar(
                   backgroundColor: Colors.grey,
                   child: Text(
@@ -168,18 +172,18 @@ class DrawerTile extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              if(counterCubit.allUserRequests.isNotEmpty)
-              CircleAvatar(
-                radius: 12.r,
-                backgroundColor: AppColors.primary,
-                child: Text(
-                counterCubit.allUserRequests.length.toString(),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.sp,
+              if (counterCubit.allUserRequests.isNotEmpty)
+                CircleAvatar(
+                  radius: 12.r,
+                  backgroundColor: AppColors.primary,
+                  child: Text(
+                    counterCubit.allUserRequests.length.toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           onTap: onTap,
@@ -192,6 +196,8 @@ class DrawerTile extends StatelessWidget {
     final authCubit = AuthCubit.get(context);
     final groupCubit = GroupCubit.get(context);
     final friendCubit = FriendCubit.get(context);
+    final profile = ProfileCubit.get(context);
+    final notifications = NotificationsCubit.get(context);
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (_, state) {
@@ -261,6 +267,12 @@ class DrawerTile extends StatelessWidget {
                     onPressed: () async {
                       groupCubit.allUserGroups.clear();
                       friendCubit.combinedFriends.clear();
+                      final List<dynamic> fcmTokens = profile.user.fCMTokens!;
+                      fcmTokens.remove(notifications.fCMToken);
+                      FirebaseFirestore.instance
+                          .collection(FirebasePath.users)
+                          .doc(profile.user.id)
+                          .update({'fCMToken': fcmTokens});
                       await updateStatus(false);
                       authCubit.logout();
                     },
