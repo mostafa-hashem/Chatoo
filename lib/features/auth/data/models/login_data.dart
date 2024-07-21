@@ -1,7 +1,7 @@
 class LoginData {
   final String email;
   final String password;
-  final List<dynamic> fCMToken;
+  final String fCMToken;
 
   LoginData({
     required this.email,

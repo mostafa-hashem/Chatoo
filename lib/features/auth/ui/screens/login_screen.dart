@@ -35,7 +35,9 @@ class _LoginScreenState extends State<LoginScreen> {
   List<dynamic> fCMTokens = [];
 
   void getFCMTokens(List<dynamic> oldFCMTokens) {
-    fCMTokens = oldFCMTokens;
+    setState(() {
+      fCMTokens = oldFCMTokens;
+    });
   }
 
   @override
@@ -153,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           listener: (_, state) {
                             if (state is GetUserSuccess) {
                               updateStatus(true);
-                              getFCMTokens(profileCubit.user.fCMTokens as List<dynamic>);
+                              getFCMTokens(profileCubit.user.fCMTokens!);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
@@ -178,12 +180,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (formKey.currentState!.validate()) {
                             await notificationsCubit.initNotifications();
                             fCMTokens.add(notificationsCubit.fCMToken ?? '');
-                            fCMTokens.toSet();
+                            // fCMTokens.toSet();
                             authCubit.login(
                               LoginData(
                                 email: emailController.text,
                                 password: passwordController.text,
-                                fCMToken: fCMTokens,
+                                fCMToken: notificationsCubit.fCMToken ?? "",
                               ),
                             );
                           }

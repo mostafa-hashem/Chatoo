@@ -22,7 +22,7 @@ class AuthFirebaseService {
       id: uId,
       email: registerModel.email,
       userName: registerModel.userName,
-      fCMTokens: registerModel.fCMToken,
+      fCMTokens: [registerModel.fCMToken],
       phoneNumber: registerModel.phoneNumber,
       city: registerModel.city,
       bio: 'Hello my friends!',
@@ -49,7 +49,12 @@ class AuthFirebaseService {
     }
     final DocumentSnapshot docSnapshot = await _usersCollection.doc(uId).get();
     if (docSnapshot.exists) {
-      await _usersCollection.doc(uId).update({'fCMToken': loginData.fCMToken});
+      final user = docSnapshot.data()! as Map<String, dynamic>;
+      List<String> fCMTokens = List<String>.from(user['fCMToken'] as Iterable<dynamic>);
+      if (!fCMTokens.contains(loginData.fCMToken)) {
+        fCMTokens.add(loginData.fCMToken);
+        await _usersCollection.doc(uId).update({'fCMToken': fCMTokens});
+      }
     }
 
     final userModel =
