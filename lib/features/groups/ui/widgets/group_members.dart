@@ -205,7 +205,6 @@ class _GroupMembersState extends State<GroupMembers> {
                               type: MessageType.text,
                               isAction: true,
                             );
-                            // groupCubit.getAllGroupMembers(widget.group.groupId!);
                             if (context.mounted) {
                               Navigator.pop(context);
                             }

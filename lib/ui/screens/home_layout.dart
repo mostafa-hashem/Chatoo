@@ -53,31 +53,31 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primary,
-           leading: BlocBuilder<FriendCubit, FriendStates>(
-             buildWhen: (_, currentState) =>
-             currentState is GetAllUserRequestsLoading ||
-                 currentState is GetAllUserRequestsSuccess ||
-                 currentState is GetAllUserRequestsError,
-             builder: (context, state) {
-               return Stack(
-                 children: [
-                   IconButton(
-                     icon: const Icon(Icons.menu),
-                     onPressed: () => Scaffold.of(context).openDrawer(),
-                   ),
-                   if (friendCubit.allUserRequests.isNotEmpty)
-                     const Positioned(
-                       right: 11,
-                       top: 11,
-                       child: CircleAvatar(
-                         radius: 6,
-                         backgroundColor: Colors.red,
-                       ),
-                     ),
-                 ],
-               );
-             },
-           ),
+          leading: BlocBuilder<FriendCubit, FriendStates>(
+            buildWhen: (_, currentState) =>
+                currentState is GetAllUserRequestsLoading ||
+                currentState is GetAllUserRequestsSuccess ||
+                currentState is GetAllUserRequestsError,
+            builder: (context, state) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                  if (friendCubit.allUserRequests.isNotEmpty)
+                    const Positioned(
+                      right: 11,
+                      top: 11,
+                      child: CircleAvatar(
+                        radius: 6,
+                        backgroundColor: Colors.red,
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           actions: [
             IconButton(
               onPressed: () {
@@ -147,7 +147,7 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
               children: [
                 BlocBuilder<FriendCubit, FriendStates>(
                   buildWhen: (_, currentState) =>
-                  currentState is GetCombinedFriendsLoading ||
+                      currentState is GetCombinedFriendsLoading ||
                       currentState is GetCombinedFriendsSuccess ||
                       currentState is GetCombinedFriendsError,
                   builder: (_, state) {
@@ -160,7 +160,14 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                     }
                   },
                 ),
-                BlocListener<GroupCubit, GroupStates>(
+                BlocConsumer<GroupCubit, GroupStates>(
+                  listenWhen:  (_, current) =>
+                  current is CreateGroupError ||
+                      current is CreateGroupLoading ||
+                      current is CreateGroupSuccess ||
+                      current is GetAllGroupsLoading ||
+                      current is GetAllGroupsSuccess ||
+                      current is GetAllGroupsError,
                   listener: (_, state) {
                     if (state is CreateGroupLoading) {
                       showDialog(
@@ -198,7 +205,14 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
                       }
                     }
                   },
-                  child: GroupsScreen(),
+                  // buildWhen: (_, current) =>
+                  //     current is CreateGroupError ||
+                  //     current is CreateGroupLoading ||
+                  //     current is CreateGroupSuccess ||
+                  //     current is GetAllGroupsLoading ||
+                  //     current is GetAllGroupsSuccess ||
+                  //     current is GetAllGroupsError,
+                  builder: (_, state) => GroupsScreen(),
                 ),
                 StoriesScreen(),
               ],
@@ -207,23 +221,23 @@ class _HomeLayoutState extends State<HomeLayout> with TickerProviderStateMixin {
         ),
         floatingActionButton: tabController.index == 1
             ? FloatingActionButton(
-          onPressed: () {
-            showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (context) {
-                return const CreateGroupWidget();
-              },
-            );
-          },
-          elevation: 0,
-          backgroundColor: AppColors.accent,
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 30,
-          ),
-        )
+                onPressed: () {
+                  showDialog(
+                    barrierDismissible: false,
+                    context: context,
+                    builder: (context) {
+                      return const CreateGroupWidget();
+                    },
+                  );
+                },
+                elevation: 0,
+                backgroundColor: AppColors.accent,
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              )
             : null,
       ),
     );

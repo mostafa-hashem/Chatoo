@@ -1,9 +1,5 @@
-import 'package:equatable/equatable.dart';
 
-abstract class AuthState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
+abstract class AuthState {}
 
 class AuthInitial extends AuthState {}
 
@@ -15,9 +11,6 @@ class AuthError extends AuthState {
   final String message;
 
   AuthError(this.message);
-
-  @override
-  List<Object?> get props => [message];
 }
 
 class EmailVerifyRequestSentLoading extends AuthState {}
@@ -28,9 +21,6 @@ class EmailVerifyRequestSentError extends AuthState {
   final String message;
 
   EmailVerifyRequestSentError(this.message);
-
-  @override
-  List<Object?> get props => [message];
 }
 
 class DeleteAccountLoading extends AuthState {}
@@ -41,9 +31,6 @@ class DeleteAccountError extends AuthState {
   final String message;
 
   DeleteAccountError(this.message);
-
-  @override
-  List<Object?> get props => [message];
 }
 
 class PasswordResetRequestSent extends AuthState {}

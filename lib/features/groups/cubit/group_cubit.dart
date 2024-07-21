@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:chat_app/features/friends/data/model/combined_friend.dart';
 import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/groups/data/model/group_message_data.dart';
@@ -23,6 +24,7 @@ class GroupCubit extends Cubit<GroupStates> {
   List<User?> allGroupMembers = [];
   List<User> allGroupRequests = [];
   List<Group> searchedGroups = [];
+  List<CombinedFriend> searchedFriendAddToGroup = [];
   Map<String, List<GroupMessage>> filteredMessages = {};
   ScrollController scrollController = ScrollController();
   List<String> mediaUrls = [];
@@ -172,6 +174,21 @@ class GroupCubit extends Cubit<GroupStates> {
       });
     } catch (e) {
       emit(GetAllGroupMessagesError(Failure.fromException(e).message));
+    }
+  }
+  Future<void> searchOnFriendAddToGroup(List<CombinedFriend> combinedFriends ,String friendData) async {
+    emit(SearchOnFriendAddToGroupLoading());
+    try {
+      searchedFriendAddToGroup = combinedFriends
+          .where(
+            (friend) =>
+        (friend.user?.userName?.toLowerCase().contains(friendData.toLowerCase()) ?? false) ||
+            (friend.user?.phoneNumber?.contains(friendData) ?? false),
+      )
+          .toList();
+      emit(SearchOnFriendAddToGroupSuccess());
+    } catch (e) {
+      emit(SearchOnFriendAddToGroupError(Failure.fromException(e).message));
     }
   }
 

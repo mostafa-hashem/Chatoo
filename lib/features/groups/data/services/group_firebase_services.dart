@@ -25,7 +25,7 @@ class GroupFirebaseServices {
     return _usersCollection
         .doc(currentUser.uid)
         .snapshots()
-        .asyncExpand((snapshot) {
+        .flatMap((snapshot) {
       final userData = snapshot.data();
       if (userData != null) {
         final List<dynamic> groupIds =
@@ -56,42 +56,60 @@ class GroupFirebaseServices {
   }
 
   Stream<List<User?>> getAllGroupMembers(String groupId) {
-    return _groupsCollection
-        .doc(groupId)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    return _groupsCollection.doc(groupId).snapshots().flatMap((snapshot) {
       final List<dynamic> memberIds =
           (snapshot.data()?['members'] ?? []) as List<dynamic>;
-      final List<Future<User?>> userFutures = memberIds.map((memberId) async {
-        final DocumentSnapshot userSnapshot =
-            await _usersCollection.doc(memberId.toString()).get();
-        if (userSnapshot.exists) {
-          final userData = userSnapshot.data();
-          if (userData != null && userData is Map<String, dynamic>) {
-            return User.fromJson(userData);
+      if (memberIds.isEmpty) {
+        return Stream.value([]);
+      }
+
+      final List<Stream<User?>> userStreams = memberIds.map((memberId) {
+        return _usersCollection
+            .doc(memberId.toString())
+            .snapshots()
+            .map((userSnapshot) {
+          if (userSnapshot.exists) {
+            final userData = userSnapshot.data();
+            if (userData != null) {
+              return User.fromJson(userData);
+            }
           }
-        }
-        return null;
+          return null;
+        });
       }).toList();
-      final List<User?> users = await Future.wait(userFutures);
-      return users.where((user) => user != null).toList();
+
+      return Rx.combineLatestList(userStreams).map((users) {
+        return users.where((user) => user != null).toList();
+      });
     });
   }
 
   Stream<List<User>> getAllGroupRequests(String groupId) {
-    return _groupsCollection
-        .doc(groupId)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    return _groupsCollection.doc(groupId).snapshots().flatMap((snapshot) {
       final List<dynamic> userIds =
           (snapshot.data()?['requests'] ?? []) as List<dynamic>;
-      final List<Future<User>> userFutures = userIds.map((userId) async {
-        final DocumentSnapshot userSnapshot =
-            await _usersCollection.doc(userId.toString()).get();
-        return User.fromJson(userSnapshot.data()! as Map<String, dynamic>);
+      if (userIds.isEmpty) {
+        return Stream.value([]);
+      }
+
+      final List<Stream<User?>> userStreams = userIds.map((userId) {
+        return _usersCollection
+            .doc(userId.toString())
+            .snapshots()
+            .map((userSnapshot) {
+          if (userSnapshot.exists) {
+            final userData = userSnapshot.data();
+            if (userData != null) {
+              return User.fromJson(userData);
+            }
+          }
+          return null;
+        });
       }).toList();
-      final List<User> users = await Future.wait(userFutures);
-      return users;
+
+      return Rx.combineLatestList(userStreams).map((users) {
+        return users.where((user) => user != null).cast<User>().toList();
+      });
     });
   }
 
@@ -473,7 +491,7 @@ class GroupFirebaseServices {
     required String lastMessageSenderId,
   }) async {
     final String currentUserUid = FirebaseAuth.instance.currentUser!.uid;
-    await _groupsCollection
+    _groupsCollection
         .doc(groupId)
         .collection(FirebasePath.messages)
         .doc(messageId)
@@ -498,7 +516,7 @@ class GroupFirebaseServices {
 
     if (groupSenderData != null &&
         groupSenderData['recentMessageSender'] == senderName) {
-      await _groupsCollection.doc(groupId).update(updates);
+      _groupsCollection.doc(groupId).update(updates);
     }
 
     //*********************** For me ***********************
@@ -548,12 +566,11 @@ class GroupFirebaseServices {
     };
 
     //*********************** For me ***********************
-        _usersCollection
-            .doc(currentUserUid)
-            .collection(FirebasePath.groups)
-            .doc(groupId)
-            .update(updates);
-
+    _usersCollection
+        .doc(currentUserUid)
+        .collection(FirebasePath.groups)
+        .doc(groupId)
+        .update(updates);
   }
 
   Future<void> editeMessage({
@@ -561,6 +578,17 @@ class GroupFirebaseServices {
     required String messageId,
     required String newMessage,
   }) async {
+    final groupData = await _groupsCollection.doc(groupId).get();
+    final usersIds = groupData['members'] as List<dynamic>;
+    for (final userId in usersIds) {
+      _usersCollection
+          .doc(userId as String)
+          .collection(FirebasePath.groups)
+          .doc(groupId)
+          .collection(FirebasePath.messages)
+          .doc(messageId)
+          .update({'message': newMessage, 'edited': true});
+    }
     _groupsCollection
         .doc(groupId)
         .collection(FirebasePath.messages)
@@ -569,6 +597,18 @@ class GroupFirebaseServices {
   }
 
   Future<void> deleteGroup(String groupId) async {
-    await _groupsCollection.doc(groupId).delete();
+    final groupData = await _groupsCollection.doc(groupId).get();
+    final usersIds = groupData['members'] as List<dynamic>;
+    for (final userId in usersIds) {
+      _usersCollection
+          .doc(userId as String)
+          .collection(FirebasePath.groups)
+          .doc(groupId)
+          .delete();
+      _usersCollection.doc(userId).update({
+        'groups': FieldValue.arrayRemove([groupId]),
+      });
+    }
+    _groupsCollection.doc(groupId).delete();
   }
 }

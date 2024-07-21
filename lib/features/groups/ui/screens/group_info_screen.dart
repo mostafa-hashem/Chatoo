@@ -131,6 +131,10 @@ class _GroupInfoState extends State<GroupInfo> {
                     if (groupData.groupAdmins!
                         .any((groupId) => groupId == profileCubit.user.id!))
                       BlocBuilder<GroupCubit, GroupStates>(
+                        buildWhen: (_, current) =>
+                            current is GetAllGroupMembersLoading ||
+                            current is GetAllGroupMembersSuccess ||
+                            current is GetAllGroupMembersError,
                         builder: (_, state) {
                           return GestureDetector(
                             onTap: () {
@@ -240,9 +244,6 @@ class _GroupInfoState extends State<GroupInfo> {
                                                     is DeleteGroupLoading) {
                                                   const LoadingIndicator();
                                                 } else {
-                                                  if (context.mounted) {
-                                                    Navigator.pop(context);
-                                                  }
                                                   if (state
                                                       is DeleteGroupSuccess) {
                                                     Navigator
@@ -253,6 +254,9 @@ class _GroupInfoState extends State<GroupInfo> {
                                                   }
                                                   if (state
                                                       is DeleteGroupError) {
+                                                    if (context.mounted) {
+                                                      Navigator.pop(context);
+                                                    }
                                                     const ErrorIndicator();
                                                   }
                                                 }
@@ -416,8 +420,8 @@ class _GroupInfoState extends State<GroupInfo> {
           CropAspectRatioPreset.ratio3x2,
           CropAspectRatioPreset.original,
           CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ,],
+          CropAspectRatioPreset.ratio16x9,
+        ],
         compressQuality: 100,
         uiSettings: [
           AndroidUiSettings(

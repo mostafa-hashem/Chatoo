@@ -176,6 +176,16 @@ class SearchOnGroupError extends GroupStates {
   SearchOnGroupError(this.message);
 }
 
+class SearchOnFriendAddToGroupLoading extends GroupStates {}
+
+class SearchOnFriendAddToGroupSuccess extends GroupStates {}
+
+class SearchOnFriendAddToGroupError extends GroupStates {
+  final String message;
+
+  SearchOnFriendAddToGroupError(this.message);
+}
+
 class RequestToJoinGroupLoading extends GroupStates {}
 
 class RequestToJoinGroupSuccess extends GroupStates {}

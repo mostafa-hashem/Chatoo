@@ -453,7 +453,8 @@ class FriendCubit extends Cubit<FriendStates> {
   }) async {
     emit(EditMessageLoading());
     try {
-     await _friendFirebaseServices.editeMessage(friendId: friendId, messageId: messageId, newMessage: newMessage);
+      await _friendFirebaseServices.editeMessage(
+          friendId: friendId, messageId: messageId, newMessage: newMessage);
       emit(EditMessageSuccess());
     } catch (e) {
       emit(EditMessageError(Failure.fromException(e).message));

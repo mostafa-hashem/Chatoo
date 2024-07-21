@@ -1,14 +1,11 @@
 import 'dart:io';
 
 import 'package:chat_app/features/groups/cubit/group_cubit.dart';
-import 'package:chat_app/features/groups/cubit/group_states.dart';
 import 'package:chat_app/features/groups/data/model/group_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
-import 'package:chat_app/ui/widgets/loading_indicator.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -210,6 +207,8 @@ class _CreateGroupWidgetState extends State<CreateGroupWidget> {
                           groupIcon: groupCubit.groupIcon,
                           groupName: groupName,
                           mainAdminId: userData.user.id,
+                          createdAt: DateTime.now(),
+                          recentMessageSentAt: DateTime.now(),
                           requests: [],
                           groupAdmins: [],
                         );
