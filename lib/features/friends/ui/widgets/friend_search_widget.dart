@@ -162,14 +162,17 @@ class _FriendSearchWidgetState extends State<FriendSearchWidget> {
                     onTap: () {
                       friendCubit
                           .requestToAddFriend(widget.friendData.id!)
-                          .whenComplete(
-                            () => notificationCubit.sendNotification(
-                              fCMToken: widget.friendData.fCMToken!,
-                              title: "${profileCubit.user.userName}",
-                              body: "Friend request",
-                              isFriendRequest: 'true',
-                            ),
+                          .whenComplete(() {
+                        for (final  fCMToken
+                            in widget.friendData.fCMTokens!) {
+                          notificationCubit.sendNotification(
+                            fCMToken: fCMToken as String? ?? "",
+                            title: "${profileCubit.user.userName}",
+                            body: "Friend request",
+                            isFriendRequest: 'true',
                           );
+                        }
+                      });
                     },
                     child: Container(
                       decoration: BoxDecoration(

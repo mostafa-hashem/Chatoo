@@ -83,12 +83,14 @@ class _GroupMembersState extends State<GroupMembers> {
                             Colors.green,
                             "Requested successfully",
                           );
-                          notificationCubit.sendNotification(
-                            fCMToken:
-                                groupCubit.allGroupMembers[index]!.fCMToken!,
-                            title: "${profileCubit.user.userName}",
-                            body: "Friend request",
-                          );
+                          for (final String? fCMToken
+                              in groupCubit.allGroupMembers[index]!.fCMTokens! as List<String>) {
+                            notificationCubit.sendNotification(
+                              fCMToken: fCMToken ?? "",
+                              title: "${profileCubit.user.userName}",
+                              body: "Friend request",
+                            );
+                          }
                         }
                         if (state is RemoveFriendSuccess) {
                           showSnackBar(

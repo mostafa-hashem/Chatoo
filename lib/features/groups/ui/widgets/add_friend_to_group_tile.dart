@@ -33,7 +33,7 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
     final notificationCubit = NotificationsCubit.get(context);
     final groupCubit = GroupCubit.get(context);
     final profileCubit = ProfileCubit.get(context);
-    final friendFcmToken = widget.friendData.fCMToken!;
+    final friendFcmTokens = widget.friendData.fCMTokens!;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 5,
@@ -125,12 +125,15 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             type: MessageType.text,
                             isAction: true,
                           );
-                          notificationCubit.sendNotification(
-                            fCMToken: friendFcmToken,
-                            title: '${widget.groupData.groupName}',
-                            body:
-                                "${profileCubit.user.userName} add you to ${widget.groupData.groupName}",
-                          );
+                          for (final String? friendFcmToken
+                              in friendFcmTokens as List<String>) {
+                            notificationCubit.sendNotification(
+                              fCMToken: friendFcmToken ?? "",
+                              title: '${widget.groupData.groupName}',
+                              body:
+                                  "${profileCubit.user.userName} add you to ${widget.groupData.groupName}",
+                            );
+                          }
                         })
                       : groupCubit
                           .requestAddFriendToGroup(
@@ -146,12 +149,15 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                             type: MessageType.text,
                             isAction: true,
                           );
-                          notificationCubit.sendNotification(
-                            fCMToken: friendFcmToken,
-                            title: '${widget.groupData.groupName}',
-                            body:
-                                "${profileCubit.user.userName} request to add you to ${widget.groupData.groupName}",
-                          );
+                          for (final String? friendFcmToken
+                              in friendFcmTokens as List<String>) {
+                            notificationCubit.sendNotification(
+                              fCMToken: friendFcmToken ?? "",
+                              title: '${widget.groupData.groupName}',
+                              body:
+                                  "${profileCubit.user.userName} request to add you to ${widget.groupData.groupName}",
+                            );
+                          }
                           final List<dynamic> adminsIds =
                               widget.groupData.groupAdmins!.toList();
                           for (final adminId in adminsIds) {
@@ -162,12 +168,15 @@ class _AddFriendToGroupTileState extends State<AddFriendToGroupTile> {
                                 .getUserData(adminId.toString())
                                 .whenComplete(
                               () {
-                                notificationCubit.sendNotification(
-                                  fCMToken: groupCubit.userData!.fCMToken!,
-                                  title: '${widget.groupData.groupName}',
-                                  body:
-                                      "${profileCubit.user.userName} request's to add ${widget.friendData.userName}",
-                                );
+                                for (final String? fcmToken
+                                    in groupCubit.userData!.fCMTokens! as List<String>) {
+                                  notificationCubit.sendNotification(
+                                    fCMToken: fcmToken ?? "",
+                                    title: '${widget.groupData.groupName}',
+                                    body:
+                                        "${profileCubit.user.userName} request's to add ${widget.friendData.userName}",
+                                  );
+                                }
                               },
                             );
                           }

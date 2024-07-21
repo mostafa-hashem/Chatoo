@@ -120,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               countryListTheme: CountryListThemeData(
                                 flagSize: 25,
                                 backgroundColor: Colors.white,
-                                textStyle:  TextStyle(
+                                textStyle: TextStyle(
                                   fontSize: 16.sp,
                                   color: Colors.blueGrey,
                                 ),
@@ -131,7 +131,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 inputDecoration: InputDecoration(
                                   labelText: 'Search',
-                                  labelStyle: Theme.of(context).textTheme.bodySmall,
+                                  labelStyle:
+                                      Theme.of(context).textTheme.bodySmall,
                                   prefixIcon: const Icon(Icons.search),
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -185,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Navigator.pop(context);
                           if (state is EmailVerifyRequestSentSuccess) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                               SnackBar(
+                              SnackBar(
                                 content: Text(
                                   "A verification link has been sent to your email address. Please check your email to complete the registration process.",
                                   style: TextStyle(fontSize: 13.sp),
@@ -219,14 +220,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (passwordController.text ==
                               confirmPasswordController.text) {
                             if (formKey.currentState!.validate()) {
+                              final List<String> fCMTokens = [];
+                              fCMTokens.add(
+                                  NotificationsCubit.get(context).fCMToken!);
                               authCubit.register(
                                 RegisterData(
                                   email: emailController.text,
                                   userName: userNameController.text,
                                   password: passwordController.text,
                                   phoneNumber: phoneNumberController.text,
-                                  fCMToken:
-                                      NotificationsCubit.get(context).fCMToken!,
+                                  fCMToken: fCMTokens,
                                   city: cityController.text,
                                 ),
                               );

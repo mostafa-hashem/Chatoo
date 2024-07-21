@@ -32,10 +32,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  List<dynamic> fCMTokens = [];
+
+  void getFCMTokens(List<dynamic> oldFCMTokens) {
+    fCMTokens = oldFCMTokens;
+  }
 
   @override
   Widget build(BuildContext context) {
     final authCubit = AuthCubit.get(context);
+    final profileCubit = ProfileCubit.get(context);
     final notificationsCubit = NotificationsCubit.get(context);
     return GestureDetector(
       onTap: () {
@@ -93,12 +99,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.pushNamed(context, Routes.resetPassword),
                       child: Row(
                         children: [
-                          const Icon(Icons.lock_reset_outlined,size: 25,),
+                          const Icon(
+                            Icons.lock_reset_outlined,
+                            size: 25,
+                          ),
                           SizedBox(
                             width: 8.w,
                           ),
-                           Text(
-                            "Forget password",style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize:14.sp ),
+                          Text(
+                            "Forget password",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontSize: 14.sp),
                           ),
                         ],
                       ),
@@ -140,6 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           listener: (_, state) {
                             if (state is GetUserSuccess) {
                               updateStatus(true);
+                              getFCMTokens(profileCubit.user.fCMTokens as List<dynamic>);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
@@ -163,11 +177,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         function: () async {
                           if (formKey.currentState!.validate()) {
                             await notificationsCubit.initNotifications();
+                            fCMTokens.add(notificationsCubit.fCMToken ?? '');
+                            fCMTokens.toSet();
                             authCubit.login(
                               LoginData(
                                 email: emailController.text,
                                 password: passwordController.text,
-                                fCMToken: notificationsCubit.fCMToken ?? "",
+                                fCMToken: fCMTokens,
                               ),
                             );
                           }

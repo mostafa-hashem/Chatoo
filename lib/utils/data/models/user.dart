@@ -14,7 +14,7 @@ class User {
   List<dynamic>? requests;
   List<dynamic>? stories;
   String? city;
-  String? fCMToken;
+  List<dynamic>? fCMTokens;
   bool? onLine;
   DateTime? lastSeen;
   DateTime? joinedAt;
@@ -26,7 +26,7 @@ class User {
     this.bio = '',
     this.phoneNumber = '',
     this.profileImage = '',
-    this.fCMToken,
+    this.fCMTokens,
     this.groups,
     this.friends,
     this.stories,
@@ -44,7 +44,7 @@ class User {
         bio = "",
         phoneNumber = '',
         profileImage = '',
-        fCMToken = '',
+        fCMTokens = [],
         groups = [],
         friends = [],
         stories = [],
@@ -61,7 +61,7 @@ class User {
     bio = json['bio'] as String?;
     phoneNumber = json['phoneNumber'] as String?;
     profileImage = json['profileImage'] as String?;
-    fCMToken = json['fCMToken'] as String?;
+    fCMTokens = json['fCMToken'] as List<dynamic>?;
     city = json['city'] as String?;
     stories = json['stories'] as List<dynamic>?;
     groups = json['groups'] as List<dynamic>?;
@@ -95,7 +95,7 @@ class User {
       'bio': bio,
       'phoneNumber': phoneNumber,
       'profileImage': profileImage,
-      if (fCMToken != null) 'fCMToken': fCMToken,
+      if (fCMTokens != null) 'fCMToken': fCMTokens,
       if (city != null) 'city': city,
       if (stories != null) 'stories': stories,
       if (groups != null) 'groups': groups,

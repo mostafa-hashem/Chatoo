@@ -187,15 +187,17 @@ class _GroupSearchWidgetState extends State<GroupSearchWidget> {
                         );
                         groupCubit
                             .getUserData(widget.searchedGroupData.mainAdminId!)
-                            .whenComplete(
-                              () => NotificationsCubit.get(context)
-                                  .sendNotification(
-                                fCMToken: groupCubit.userData!.fCMToken!,
-                                title: "${widget.searchedGroupData.groupName}",
-                                body:
-                                    "${ProfileCubit.get(context).user.userName!} requested to join ${widget.searchedGroupData.groupName}",
-                              ),
+                            .whenComplete(() {
+                          for (final String? fCMToken
+                              in groupCubit.userData!.fCMTokens! as List<String>) {
+                            NotificationsCubit.get(context).sendNotification(
+                              fCMToken: fCMToken ?? "",
+                              title: "${widget.searchedGroupData.groupName}",
+                              body:
+                                  "${ProfileCubit.get(context).user.userName!} requested to join ${widget.searchedGroupData.groupName}",
                             );
+                          }
+                        });
                       });
                     },
                     child: Container(

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:chat_app/features/auth/cubit/auth_cubit.dart';
 import 'package:chat_app/features/auth/cubit/auth_state.dart';
-import 'package:chat_app/features/notifications/cubit/notifications_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/features/profile/cubit/profile_state.dart';
 import 'package:chat_app/features/profile/ui/widgets/custom_profile_container.dart';
@@ -523,7 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 addressController.text != profile.user.city) {
               profile.updateUser(
                 User(
-                  fCMToken: NotificationsCubit.get(context).fCMToken,
+                  fCMTokens: profile.user.fCMTokens,
                   id: profile.user.id,
                   userName: userNameController.text,
                   email: profile.user.email,

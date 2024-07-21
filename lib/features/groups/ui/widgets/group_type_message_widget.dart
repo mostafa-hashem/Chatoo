@@ -395,17 +395,19 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
             if (memberId == sender.id || isMuted()) {
               continue;
             }
-            NotificationsCubit.get(context).sendNotification(
-              fCMToken: groupCubit.userData?.fCMToken ?? '',
-              title: 'New Messages in ${widget.groupData.groupName}',
-              body:
-                  "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
-              imageUrl: groupCubit.mediaUrls.isNotEmpty
-                  ? groupCubit.mediaUrls.first
-                  : null,
-              groupData: widget.groupData,
-
-            );
+            for (final String? fCMToken
+                in groupCubit.userData!.fCMTokens! as List<String>) {
+              NotificationsCubit.get(context).sendNotification(
+                fCMToken: fCMToken ?? '',
+                title: 'New Messages in ${widget.groupData.groupName}',
+                body:
+                    "${ProfileCubit.get(context).user.userName}: \n$notificationBody",
+                imageUrl: groupCubit.mediaUrls.isNotEmpty
+                    ? groupCubit.mediaUrls.first
+                    : null,
+                groupData: widget.groupData,
+              );
+            }
           }
         }
       },

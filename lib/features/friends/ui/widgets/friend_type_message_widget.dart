@@ -365,7 +365,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
 
   void _checkTextDirection() {
     final text = friendCubit.messageController.text;
-    if (_isMounted){
+    if (_isMounted) {
       if (text.isNotEmpty && isArabic(text)) {
         setState(() {
           _textAlign = TextAlign.right;
@@ -417,15 +417,17 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
             if (state is SendMessageToFriendSuccess) {
               scrollToBottom();
               if (!isMuted()) {
-                NotificationsCubit.get(context).sendNotification(
-                  fCMToken: widget.friendData.fCMToken ?? '',
-                  title: sender.userName!,
-                  body: notificationBody ?? '',
-                  imageUrl: friendCubit.mediaUrls.isNotEmpty
-                      ? friendCubit.mediaUrls.first
-                      : null,
-                  friendData: sender,
-                );
+                for (final  fCMToken in widget.friendData.fCMTokens!) {
+                  NotificationsCubit.get(context).sendNotification(
+                    fCMToken: fCMToken as String? ?? "",
+                    title: sender.userName!,
+                    body: notificationBody ?? '',
+                    imageUrl: friendCubit.mediaUrls.isNotEmpty
+                        ? friendCubit.mediaUrls.first
+                        : null,
+                    friendData: sender,
+                  );
+                }
               }
             }
           },

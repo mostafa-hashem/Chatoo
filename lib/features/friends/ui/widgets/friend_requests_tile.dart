@@ -27,14 +27,14 @@ class _FriendRequestsTileState extends State<FriendRequestsTile> {
   late NotificationsCubit notificationCubit;
   late FriendCubit friendCubit;
   late ProfileCubit profileCubit;
-  late String friendFcmToken;
+  late List<String> friendFcmTokens;
 
   @override
   void didChangeDependencies() {
     notificationCubit = NotificationsCubit.get(context);
     friendCubit = FriendCubit.get(context);
     profileCubit = ProfileCubit.get(context);
-    friendFcmToken = widget.friendData.fCMToken!;
+    friendFcmTokens = widget.friendData.fCMTokens! as List<String>;
     super.didChangeDependencies();
   }
 
@@ -135,15 +135,17 @@ class _FriendRequestsTileState extends State<FriendRequestsTile> {
                 onTap: () {
                   friendCubit
                       .approveToAddFriend(
-                        widget.friendData.id!,
-                      )
-                      .whenComplete(
-                        () => notificationCubit.sendNotification(
-                          fCMToken: friendFcmToken,
-                          title: profileCubit.user.userName!,
-                          body: 'Approved your friend request',
-                        ),
+                    widget.friendData.id!,
+                  )
+                      .whenComplete(() {
+                    for (final String? friendFcmToken in friendFcmTokens) {
+                      notificationCubit.sendNotification(
+                        fCMToken: friendFcmToken ?? "",
+                        title: profileCubit.user.userName!,
+                        body: 'Approved your friend request',
                       );
+                    }
+                  });
                 },
                 child: Container(
                   decoration: BoxDecoration(

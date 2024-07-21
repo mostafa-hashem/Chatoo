@@ -3,7 +3,7 @@ class RegisterData {
   final String email;
   final String password;
   final String phoneNumber;
-  final String fCMToken;
+  final List<String> fCMToken;
   final String city;
 
   RegisterData({
