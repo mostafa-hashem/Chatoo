@@ -63,7 +63,7 @@ class _GroupMessagesTileState extends State<GroupMessagesTile> {
   @override
   Widget build(BuildContext context) {
     final bool isSender =
-        ProfileCubit.get(context).user.id == widget.groupMessage.sender!.id;
+        ProfileCubit.get(context).user.id == widget.groupMessage.sender?.id;
     final EdgeInsetsGeometry messagePadding = isSender
         ? EdgeInsets.only(top: 6.h, bottom: 2.h, right: 15.w)
         : EdgeInsets.only(top: 4, bottom: 4, left: 15.w);

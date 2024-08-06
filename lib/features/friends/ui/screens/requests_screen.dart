@@ -15,6 +15,8 @@ class RequestsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final friendCubit = FriendCubit.get(context);
+    debugPrint("Number of user requests: ${friendCubit.allUserRequests.length}");
+
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -33,15 +35,15 @@ class RequestsScreen extends StatelessWidget {
                     currentState is GetAllUserRequestsSuccess ||
                     currentState is GetAllUserRequestsError,
                 builder: (context, state) {
-                  if (state is ApproveToAddFriendLoading || state is DeclineToAddFriendLoading) {
+                  if (state is GetAllUserRequestsLoading) {
                     return const Expanded(child: LoadingIndicator());
-                  } else if (state is ApproveToAddFriendError || state is DeclineToAddFriendError) {
+                  } else if (state is GetAllUserRequestsError) {
                     return const Expanded(child: ErrorIndicator());
-                  }
-                  if (friendCubit.allUserRequests.isNotEmpty) {
+                  } else if (friendCubit.allUserRequests.isNotEmpty) {
                     return Expanded(
                       child: ListView.separated(
-                        itemBuilder: (context, index) {
+                        itemBuilder: (_, index) {
+                          debugPrint("Rendering friend request at index: $index");
                           return FriendRequestsTile(
                             friendData: friendCubit.allUserRequests[index],
                           );

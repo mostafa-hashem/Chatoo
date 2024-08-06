@@ -438,25 +438,6 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                           size: 24,
                         ),
                       ),
-                    )
-                  else
-                    IconButton(
-                      padding: const EdgeInsets.all(4),
-                      onPressed: () {
-                        setState(() {
-                          emojiShowing = !emojiShowing;
-                          FocusScope.of(context).unfocus();
-                        });
-                      },
-                      icon: CircleAvatar(
-                        backgroundColor: AppColors.primary,
-                        radius: 20.r,
-                        child: const Icon(
-                          Icons.emoji_emotions,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
                     ),
                   if (isRecording)
                     const Flexible(
@@ -517,93 +498,110 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                 ],
                               ),
                             ),
-                          TextField(
-                            controller: groupCubit.messageController,
-                            onChanged: (value) {
-                              setState(() {});
-                            },
-                            textInputAction: TextInputAction.newline,
-                            minLines: 1,
-                            maxLines: 8,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: provider.themeMode == ThemeMode.light
-                                  ? Colors.black87
-                                  : AppColors.light,
-                            ),
-                            textDirection: _textDirection,
-                            textAlign: _textAlign,
-                            decoration: InputDecoration(
-                              hintText: 'Type a message',
-                              hintStyle: Theme.of(context).textTheme.bodySmall,
-                              filled: true,
-                              fillColor: provider.themeMode == ThemeMode.light
-                                  ? Colors.white
-                                  : AppColors.dark,
-                              suffixIcon: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (groupCubit.messageController.text.isEmpty)
-                                    IconButton(
-                                      onPressed: () async {
-                                        final ImagePicker picker =
-                                            ImagePicker();
-                                        final XFile? xFile =
-                                            await picker.pickMedia();
-                                        if (xFile != null) {
-                                          File xFilePathToFile(
-                                            XFile xFile,
-                                          ) {
-                                            return File(xFile.path);
-                                          }
+                          Padding(
+                            padding: EdgeInsets.only(left: 8.w),
+                            child: TextField(
+                              controller: groupCubit.messageController,
+                              onChanged: (value) {
+                                setState(() {});
+                              },
+                              textInputAction: TextInputAction.newline,
+                              minLines: 1,
+                              maxLines: 8,
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: provider.themeMode == ThemeMode.light
+                                    ? Colors.black87
+                                    : AppColors.light,
+                              ),
+                              textDirection: _textDirection,
+                              textAlign: _textAlign,
+                              decoration: InputDecoration(
+                                hintText: 'Type a message',
+                                hintStyle: Theme.of(context).textTheme.bodySmall,
+                                filled: true,
+                                fillColor: provider.themeMode == ThemeMode.light
+                                    ? Colors.white
+                                    : AppColors.dark,
+                                prefixIcon: IconButton(
+                                  padding: const EdgeInsets.all(4),
+                                  onPressed: () {
+                                    setState(() {
+                                      emojiShowing = !emojiShowing;
+                                      FocusScope.of(context).unfocus();
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.emoji_emotions,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                                suffixIcon: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (groupCubit.messageController.text.isEmpty)
+                                      IconButton(
+                                        onPressed: () async {
+                                          final ImagePicker picker =
+                                              ImagePicker();
+                                          final XFile? xFile =
+                                              await picker.pickMedia();
+                                          if (xFile != null) {
+                                            File xFilePathToFile(
+                                              XFile xFile,
+                                            ) {
+                                              return File(xFile.path);
+                                            }
 
-                                          mediaFile = xFilePathToFile(xFile);
-                                          final String fileType = xFile.name
-                                              .split('.')
-                                              .last
-                                              .toLowerCase();
-                                          if ([
-                                            'jpg',
-                                            'jpeg',
-                                            'png',
-                                            'gif',
-                                          ].contains(fileType)) {
-                                            await _cropImage(mediaFile!);
-                                          } else if ([
-                                            'mp4',
-                                            'mov',
-                                            'avi',
-                                            'mkv',
-                                          ].contains(fileType)) {
-                                            await _handleVideoFile(
-                                              mediaFile!,
-                                            );
+                                            mediaFile = xFilePathToFile(xFile);
+                                            final String fileType = xFile.name
+                                                .split('.')
+                                                .last
+                                                .toLowerCase();
+                                            if ([
+                                              'jpg',
+                                              'jpeg',
+                                              'png',
+                                              'gif',
+                                            ].contains(fileType)) {
+                                              await _cropImage(mediaFile!);
+                                            } else if ([
+                                              'mp4',
+                                              'mov',
+                                              'avi',
+                                              'mkv',
+                                            ].contains(fileType)) {
+                                              await _handleVideoFile(
+                                                mediaFile!,
+                                              );
+                                            }
                                           }
-                                        }
-                                      },
-                                      icon: const Icon(Icons.image),
-                                    ),
-                                  if (false)
-                                    IconButton(
-                                      onPressed: _pickAudioFile,
-                                      icon: const Icon(Icons.audiotrack),
-                                    ),
-                                ],
-                              ),
-                              border: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: AppColors.primary,
+                                        },
+                                        icon: const Icon(Icons.image),
+                                      ),
+                                    if (false)
+                                      IconButton(
+                                        onPressed: _pickAudioFile,
+                                        icon: const Icon(Icons.audiotrack),
+                                      ),
+                                  ],
                                 ),
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: AppColors.primary,
+                                border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: AppColors.primary,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10.r),
                                 ),
-                                borderRadius: BorderRadius.circular(10.r),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: AppColors.primary,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
                               ),
                             ),
                           ),

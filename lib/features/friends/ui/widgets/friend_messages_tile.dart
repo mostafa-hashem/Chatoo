@@ -278,14 +278,16 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
             if (widget.friendMessage.replayToStory != null && isVideo)
               VideoWidget(
                 videoPath: mediaUrl!,
-                senderId: profileCubit.id!,
+                senderId: widget.friendMessage.sender,
                 isInGroup: false,
+                senderName: widget.friendName,
               ),
             if (widget.friendMessage.replayToStory != null && !isVideo)
               ImageWidget(
                 imagePath: mediaUrl!,
-                senderId: profileCubit.id!,
+                senderId: widget.friendMessage.sender,
                 isInGroup: false,
+                senderName: widget.friendName,
               ),
             GestureDetector(
               onTap: isLink
@@ -348,7 +350,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         return ImageWidget(
           imagePath: widget.friendMessage.mediaUrls?.first ?? '',
           sentAt: widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
-          senderName: '',
+          senderName: widget.sentByMe ? "You": widget.friendName,
           senderId: widget.friendMessage.sender,
           isInGroup: false,
         );
@@ -356,7 +358,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         return VideoWidget(
           videoPath: widget.friendMessage.mediaUrls?.first ?? '',
           sentAt: widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
-          senderName: '',
+          senderName: widget.sentByMe ? "You": widget.friendName,
           senderId: widget.friendMessage.sender,
           isInGroup: false,
         );
@@ -364,7 +366,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         return RecordTile(
           recordPath: widget.friendMessage.mediaUrls?.first ?? '',
           sentAt: widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
-          senderName: '',
+          senderName:widget.sentByMe ? "You": widget.friendName,
           senderId: widget.friendMessage.sender,
           isInGroup: false,
           audioManager: audioManager,

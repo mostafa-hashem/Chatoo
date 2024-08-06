@@ -202,6 +202,9 @@ class _GroupTileState extends State<GroupTile> {
                   groupId: widget.groupData.groupId!,
                 ),
               ]);
+              groupCubit.getAllGroupMessages(
+                widget.groupData.groupId!,
+              );
               Future.delayed(
                 const Duration(
                   milliseconds: 50,

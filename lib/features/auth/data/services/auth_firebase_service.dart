@@ -22,7 +22,7 @@ class AuthFirebaseService {
       id: uId,
       email: registerModel.email,
       userName: registerModel.userName,
-      fCMTokens: [registerModel.fCMToken],
+      fCMTokens: registerModel.fCMToken,
       phoneNumber: registerModel.phoneNumber,
       city: registerModel.city,
       bio: 'Hello my friends!',

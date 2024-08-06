@@ -334,7 +334,7 @@ class GroupFirebaseServices {
             'recentMessageSentAt': Timestamp.now().toDate(),
             'recentMessageSender': sender.userName,
             'recentMessageSenderId': sender.id,
-            if (userId != currentUserUid) '{}}': FieldValue.increment(1),
+            if (userId != currentUserUid) 'unreadMessageCounts': FieldValue.increment(1),
           },
           SetOptions(merge: true),
         );

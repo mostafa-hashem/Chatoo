@@ -66,6 +66,7 @@ class GroupMessage {
     if(json['edited'] != null){
       edited = json['edited'] as bool;
     }
+    // fetchSender();
   }
 
   Map<String, dynamic> toJson() => {
@@ -121,4 +122,16 @@ class GroupMessage {
         (a['viewAt'] as Timestamp).compareTo(b['viewAt'] as Timestamp),);
     return combined;
   }
+  // Fetch sender data from Firestore based on senderId
+  // Future<void> fetchSender() async {
+  //   if (senderId != null) {
+  //     final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+  //         .collection(FirebasePath.users)
+  //         .doc(senderId)
+  //         .get();
+  //     if (userDoc.exists) {
+  //       sender = User.fromJson(userDoc.data()! as Map<String, dynamic>);
+  //     }
+  //   }
+  // }
 }

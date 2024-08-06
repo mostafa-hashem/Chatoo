@@ -222,7 +222,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (formKey.currentState!.validate()) {
                               final List<String> fCMTokens = [];
                               fCMTokens.add(
-                                  NotificationsCubit.get(context).fCMToken!);
+                                NotificationsCubit.get(context).fCMToken!,
+                              );
                               authCubit.register(
                                 RegisterData(
                                   email: emailController.text,

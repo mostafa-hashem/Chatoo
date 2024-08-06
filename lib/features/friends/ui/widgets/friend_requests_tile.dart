@@ -27,14 +27,14 @@ class _FriendRequestsTileState extends State<FriendRequestsTile> {
   late NotificationsCubit notificationCubit;
   late FriendCubit friendCubit;
   late ProfileCubit profileCubit;
-  late List<String> friendFcmTokens;
+  late List<dynamic> friendFcmTokens;
 
   @override
   void didChangeDependencies() {
     notificationCubit = NotificationsCubit.get(context);
     friendCubit = FriendCubit.get(context);
     profileCubit = ProfileCubit.get(context);
-    friendFcmTokens = widget.friendData.fCMTokens! as List<String>;
+    friendFcmTokens = widget.friendData.fCMTokens!;
     super.didChangeDependencies();
   }
 
@@ -138,9 +138,9 @@ class _FriendRequestsTileState extends State<FriendRequestsTile> {
                     widget.friendData.id!,
                   )
                       .whenComplete(() {
-                    for (final String? friendFcmToken in friendFcmTokens) {
+                    for (final friendFcmToken in friendFcmTokens) {
                       notificationCubit.sendNotification(
-                        fCMToken: friendFcmToken ?? "",
+                        fCMToken: friendFcmToken as String? ?? "" ,
                         title: profileCubit.user.userName!,
                         body: 'Approved your friend request',
                       );

@@ -38,9 +38,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   void didChangeDependencies() {
     groupCubit = GroupCubit.get(context);
     groupData = ModalRoute.of(context)!.settings.arguments! as Group;
-    groupCubit.getAllGroupMessages(
-      groupData.groupId!,
-    );
+
     groupCubit.getAllGroupMembers(
       groupData.groupId!,
     );
