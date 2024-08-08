@@ -204,64 +204,6 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
     }
   }
 
-  Future<void> _handleAudioFile(File audioFile) async {
-    debugPrint('Selected audio file: ${audioFile.path}');
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            'Send audio?',
-          ),
-          actionsOverflowDirection: VerticalDirection.down,
-          actions: [
-            TextButton(
-              child: const Text(
-                'Cancel',
-              ),
-              onPressed: () {
-                Navigator.pop(
-                  context,
-                );
-              },
-            ),
-            TextButton(
-              child: const Text(
-                'Send',
-              ),
-              onPressed: () {
-                Fluttertoast.showToast(msg: 'Sending...');
-                groupCubit
-                    .uploadMediaToGroup(
-                  FirebasePath.audios,
-                  mediaFile!,
-                  widget.groupData.groupId!,
-                  getAudioFileName,
-                )
-                    .whenComplete(
-                  () {
-                    notificationBody = 'sent audio';
-                    groupCubit.sendMessageToGroup(
-                      group: widget.groupData,
-                      sender: sender,
-                      message: notificationBody ?? '',
-                      type: MessageType.record,
-                      isAction: false,
-                      mediaUrls: groupCubit.mediaUrls,
-                    );
-                  },
-                );
-                Navigator.pop(
-                  context,
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<void> _pickAudioFile() async {
     try {
       final FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -306,6 +248,66 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
     }
   }
 
+  Future<void> _handleAudioFile(File audioFile) async {
+    debugPrint('Selected audio file: ${audioFile.path}');
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Send audio?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                debugPrint('Audio sending canceled');
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text('Send'),
+              onPressed: () {
+                debugPrint('Sending audio file...');
+                Fluttertoast.showToast(msg: 'Sending...');
+                groupCubit
+                    .uploadMediaToGroup(
+                  FirebasePath.audios,
+                  audioFile,
+                  widget.groupData.groupId!,
+                  getAudioFileName,
+                )
+                    .whenComplete(
+                      () {
+                    notificationBody = 'sent audio';
+                    groupCubit.sendMessageToGroup(
+                      group: widget.groupData,
+                      sender: sender,
+                      message: notificationBody ?? '',
+                      type: MessageType.record,
+                      isAction: false,
+                      mediaUrls: groupCubit.mediaUrls,
+                    ) .whenComplete(
+                          () => audioPlayer.play(
+                        AssetSource(
+                          "audios/message_received.wav",
+                        ),
+                      ),
+                    );
+                  },
+                ).catchError((error) {
+                  Fluttertoast.showToast(msg: 'Error: $error');
+                  debugPrint('Error sending audio file: $error');
+                });
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _handleVideoFile(File videoFile) async {
     debugPrint('Selected video file: ${videoFile.path}');
     showDialog(
@@ -340,8 +342,8 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                   widget.groupData.groupId!,
                   getVideoFileName,
                 )
-                    .then(
-                  (value) {
+                    .whenComplete(
+                  () {
                     notificationBody = 'sent video';
                     groupCubit.sendMessageToGroup(
                       group: widget.groupData,
