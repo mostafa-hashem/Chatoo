@@ -115,7 +115,6 @@ class StoryFirebaseServices {
     }
   }
 
-
   Future<User?> getUserById(String userId) async {
     final DocumentSnapshot<Map<String, dynamic>> userDoc =
         await FirebaseFirestore.instance.collection(FirebasePath.users).doc(userId).get();

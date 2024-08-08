@@ -184,18 +184,17 @@ Future<String> getVideoFileName(File videoFile) async {
 Future<String> getAudioFileName(File audioFile) async {
   await _requestPermissions();
   final AudioPlayer audioPlayer = AudioPlayer();
-  await audioPlayer.setSourceUrl(
-    audioFile.path,
-  );
+  await audioPlayer.setSourceUrl(audioFile.path);
   final Duration? duration = await audioPlayer.getDuration();
-
   await audioPlayer.dispose();
 
   final int? durationInSeconds = duration?.inSeconds;
   final String fileExtension = audioFile.path.split('.').last;
-  final String fileName = '${durationInSeconds}s.$fileExtension';
+  // Remove spaces from the file name
+  final String fileName = '${durationInSeconds}s.$fileExtension'.replaceAll(' ', '');
   return fileName;
 }
+
 
 bool containsLink(String message) {
   final RegExp urlPattern = RegExp(

@@ -263,16 +263,46 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
   }
 
   Future<void> _pickAudioFile() async {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'],
-    );
+    try {
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [
+          'mp3',
+          'wav',
+          'aac',
+          'flac',
+          'ogg',
+          'm4a',
+          'aiff',
+          'alac',
+          'dsd',
+          'wma',
+        ],
+      );
 
-    if (result != null) {
-      final File audioFile = File(result.files.single.path!);
-      await _handleAudioFile(audioFile);
-    } else {
-      debugPrint('No audio file selected.');
+      if (result != null && result.files.single.path != null) {
+        final String originalPath = result.files.single.path!;
+        final File originalAudioFile = File(originalPath);
+
+        if (await originalAudioFile.exists()) {
+          final String newFileName = '${_generateRandomId()}.mp3';
+
+          final String newPath = await getApplicationDocumentsDirectory()
+              .then((value) => '${value.path}/$newFileName');
+
+          final File newAudioFile = await originalAudioFile.copy(newPath);
+
+          await _handleAudioFile(newAudioFile);
+        } else {
+          debugPrint(
+            'The selected audio file does not exist: ${originalAudioFile.path}',
+          );
+        }
+      } else {
+        debugPrint('No audio file selected.');
+      }
+    } catch (e) {
+      debugPrint('Error picking audio file: $e');
     }
   }
 
@@ -537,10 +567,9 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                     size: 24,
                                   ),
                                 ),
-                                suffixIcon: Row(
+                                suffixIcon: groupCubit.messageController.text.isEmpty ? Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (groupCubit.messageController.text.isEmpty)
                                       IconButton(
                                         onPressed: () async {
                                           final ImagePicker picker =
@@ -580,13 +609,12 @@ class _GroupTypeMessageWidgetState extends State<GroupTypeMessageWidget> {
                                         },
                                         icon: const Icon(Icons.image),
                                       ),
-                                    if (false)
                                       IconButton(
                                         onPressed: _pickAudioFile,
                                         icon: const Icon(Icons.audiotrack),
                                       ),
                                   ],
-                                ),
+                                ) : null,
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color: AppColors.primary,

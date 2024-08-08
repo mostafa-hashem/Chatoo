@@ -284,17 +284,30 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
           'flac',
           'ogg',
           'm4a',
+          'aiff',
+          'alac',
+          'dsd',
+          'wma',
         ],
       );
 
       if (result != null && result.files.single.path != null) {
-        final String path = result.files.single.path!;
-        final File audioFile = File(path);
+        final String originalPath = result.files.single.path!;
+        final File originalAudioFile = File(originalPath);
 
-        if (await audioFile.exists()) {
-          await _handleAudioFile(audioFile);
+        if (await originalAudioFile.exists()) {
+          final String newFileName = '${_generateRandomId()}.mp3';
+
+          final String newPath = await getApplicationDocumentsDirectory()
+              .then((value) => '${value.path}/$newFileName');
+
+          final File newAudioFile = await originalAudioFile.copy(newPath);
+
+          await _handleAudioFile(newAudioFile);
         } else {
-          debugPrint('The selected audio file does not exist: $path');
+          debugPrint(
+            'The selected audio file does not exist: ${originalAudioFile.path}',
+          );
         }
       } else {
         debugPrint('No audio file selected.');
@@ -331,7 +344,7 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                   widget.friendData.id ?? '',
                   getAudioFileName,
                 )
-                    .then((value) {
+                    .whenComplete(() {
                   notificationBody = 'sent audio';
                   debugPrint('Audio file sent successfully');
                   friendCubit
@@ -554,55 +567,63 @@ class _FriendTypeMessageWidgetState extends State<FriendTypeMessageWidget> {
                                       : AppColors.light,
                                 ),
                                 decoration: InputDecoration(
-                                  suffixIcon: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (friendCubit
-                                          .messageController.text.isEmpty)
-                                        IconButton(
-                                          onPressed: () async {
-                                            final ImagePicker picker =
-                                                ImagePicker();
-                                            final XFile? xFile =
-                                                await picker.pickMedia();
-                                            if (xFile != null) {
-                                              File xFilePathToFile(
-                                                  XFile xFile) {
-                                                return File(xFile.path);
-                                              }
+                                  suffixIcon: friendCubit
+                                          .messageController.text.isEmpty
+                                      ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              onPressed: () async {
+                                                final ImagePicker picker =
+                                                    ImagePicker();
+                                                final XFile? xFile =
+                                                    await picker.pickMedia();
+                                                if (xFile != null) {
+                                                  File xFilePathToFile(
+                                                    XFile xFile,
+                                                  ) {
+                                                    return File(xFile.path);
+                                                  }
 
-                                              mediaFile =
-                                                  xFilePathToFile(xFile);
-                                              final String fileType = xFile.name
-                                                  .split('.')
-                                                  .last
-                                                  .toLowerCase();
-                                              if (['jpg', 'jpeg', 'png', 'gif']
-                                                  .contains(fileType)) {
-                                                await _cropImage(mediaFile!);
-                                              } else if ([
-                                                'mp4',
-                                                'mov',
-                                                'avi',
-                                                'mkv',
-                                              ].contains(fileType)) {
-                                                await _handleVideoFile(
-                                                  mediaFile!,
-                                                );
-                                              }
-                                            }
-                                          },
-                                          icon: const Icon(Icons.image),
-                                        ),
-                                      if (false)
-                                        IconButton(
-                                          onPressed: _pickAudioFile,
-                                          icon: const Icon(Icons.audiotrack),
-                                        ),
-                                    ],
-                                  ),
+                                                  mediaFile =
+                                                      xFilePathToFile(xFile);
+                                                  final String fileType = xFile
+                                                      .name
+                                                      .split('.')
+                                                      .last
+                                                      .toLowerCase();
+                                                  if ([
+                                                    'jpg',
+                                                    'jpeg',
+                                                    'png',
+                                                    'gif',
+                                                  ].contains(fileType)) {
+                                                    await _cropImage(
+                                                      mediaFile!,
+                                                    );
+                                                  } else if ([
+                                                    'mp4',
+                                                    'mov',
+                                                    'avi',
+                                                    'mkv',
+                                                  ].contains(fileType)) {
+                                                    await _handleVideoFile(
+                                                      mediaFile!,
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                              icon: const Icon(Icons.image),
+                                            ),
+                                            IconButton(
+                                              onPressed: _pickAudioFile,
+                                              icon:
+                                                  const Icon(Icons.audiotrack),
+                                            ),
+                                          ],
+                                        )
+                                      : null,
                                   prefixIcon: IconButton(
-                                    // padding: const EdgeInsets.all(4),
                                     onPressed: () {
                                       setState(() {
                                         emojiShowing = !emojiShowing;

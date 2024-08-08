@@ -307,17 +307,30 @@ class _StoryTextFieldState extends State<StoryTextField> {
           'flac',
           'ogg',
           'm4a',
+          'aiff',
+          'alac',
+          'dsd',
+          'wma',
         ],
       );
 
       if (result != null && result.files.single.path != null) {
-        final String path = result.files.single.path!;
-        final File audioFile = File(path);
+        final String originalPath = result.files.single.path!;
+        final File originalAudioFile = File(originalPath);
 
-        if (await audioFile.exists()) {
-          await _handleAudioFile(audioFile);
+        if (await originalAudioFile.exists()) {
+          final String newFileName = '${_generateRandomId()}.mp3';
+
+          final String newPath = await getApplicationDocumentsDirectory()
+              .then((value) => '${value.path}/$newFileName');
+
+          final File newAudioFile = await originalAudioFile.copy(newPath);
+
+          await _handleAudioFile(newAudioFile);
         } else {
-          debugPrint('The selected audio file does not exist: $path');
+          debugPrint(
+            'The selected audio file does not exist: ${originalAudioFile.path}',
+          );
         }
       } else {
         debugPrint('No audio file selected.');
@@ -463,25 +476,6 @@ class _StoryTextFieldState extends State<StoryTextField> {
                         size: 24,
                       ),
                     ),
-                  )
-                else
-                  IconButton(
-                    padding: const EdgeInsets.all(4),
-                    onPressed: () {
-                      setState(() {
-                        emojiShowing = !emojiShowing;
-                        FocusScope.of(context).unfocus();
-                      });
-                    },
-                    icon: CircleAvatar(
-                      backgroundColor: AppColors.primary,
-                      radius: 20.r,
-                      child: const Icon(
-                        Icons.emoji_emotions,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
                   ),
                 if (isRecording)
                   const Flexible(
@@ -552,7 +546,6 @@ class _StoryTextFieldState extends State<StoryTextField> {
                                 },
                                 icon: const Icon(Icons.image),
                               ),
-                            if (false)
                               IconButton(
                                 onPressed: _pickAudioFile,
                                 icon: const Icon(
@@ -560,6 +553,20 @@ class _StoryTextFieldState extends State<StoryTextField> {
                                 ),
                               ),
                           ],
+                        ),
+                        prefixIcon: IconButton(
+                          padding: const EdgeInsets.all(4),
+                          onPressed: () {
+                            setState(() {
+                              emojiShowing = !emojiShowing;
+                              FocusScope.of(context).unfocus();
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.emoji_emotions,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                         hintText: 'Type a message',
                         hintStyle: Theme.of(context).textTheme.bodySmall,

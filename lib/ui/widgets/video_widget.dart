@@ -1,6 +1,7 @@
 
 import 'dart:typed_data';
 
+import 'package:chat_app/features/friends/data/model/friend_message_data.dart';
 import 'package:chat_app/features/profile/cubit/profile_cubit.dart';
 import 'package:chat_app/route_manager.dart';
 import 'package:chat_app/ui/resources/app_colors.dart';
@@ -9,6 +10,7 @@ import 'package:chat_app/utils/data/models/user.dart';
 import 'package:chat_app/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class VideoWidget extends StatefulWidget {
@@ -17,11 +19,15 @@ class VideoWidget extends StatefulWidget {
   final String senderId;
   final bool isInGroup;
   final int? sentAt;
+  final bool? isLink;
+  final FriendMessage? friendMessage;
 
   const VideoWidget({
     super.key,
     required this.videoPath,
      this.sentAt,
+    this.friendMessage,
+    this.isLink,
      this.senderName,
     required this.senderId,
     required this.isInGroup,
@@ -94,6 +100,10 @@ class _VideoWidgetState extends State<VideoWidget> {
 
     final adjustedWidth = width > maxWidth ? maxWidth : width;
     final adjustedHeight = height > maxHeight ? maxHeight : height;
+
+    final messageText = widget.friendMessage?.message;
+    _checkTextDirection(messageText ?? "");
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -103,7 +113,7 @@ class _VideoWidgetState extends State<VideoWidget> {
             'path': widget.videoPath,
             'isVideo': true,
             'isStory': false,
-            'mediaTitle': '',
+            'mediaTitle': widget.friendMessage?.message ?? '',
             'mediaOwner': widget.senderName,
             'mediaTime': widget.sentAt,
             'profilePicture': false,
@@ -175,6 +185,31 @@ class _VideoWidgetState extends State<VideoWidget> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.01,
           ),
+          if (widget.friendMessage != null) GestureDetector(
+            onTap: widget.isLink ?? false
+                ? () async {
+              if (await canLaunchUrl(
+                Uri.parse(widget.friendMessage?.message ?? ""),
+              )) {
+                await launchUrl(
+                  Uri.parse(widget.friendMessage?.message ?? ""),
+                  mode: LaunchMode.externalApplication,
+                );
+              } else {
+                throw 'Could not launch ${widget.friendMessage?.message ?? ""}';
+              }
+            }
+                : null,
+            child: Text(
+              widget.friendMessage?.message ?? "",
+              textDirection: _textDirection,
+              textAlign: _textAlign,
+              style: TextStyle(
+                fontSize: 15.sp,
+                color: widget.isLink ?? false ? Colors.blue : Colors.white,
+              ),
+            ),
+          ) ,
           if (widget.sentAt!= null)
           Text(
             getFormattedTime(widget.sentAt!),

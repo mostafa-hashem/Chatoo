@@ -32,8 +32,6 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
   AudioManager audioManager = AudioManager();
   late User profileCubit;
   late FriendCubit friendCubit;
-  TextAlign _textAlign = TextAlign.left;
-  TextDirection _textDirection = TextDirection.ltr;
   String? mediaUrl;
   String? fileName;
   bool isVideo = false;
@@ -46,6 +44,8 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
     widget.friendMessage.messageType ??= MessageType.text;
   }
 
+  TextAlign _textAlign = TextAlign.left;
+  TextDirection _textDirection = TextDirection.ltr;
   void _checkTextDirection(String text) {
     if (text.isNotEmpty && isArabic(text)) {
       setState(() {
@@ -105,6 +105,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
 
   @override
   Widget build(BuildContext context) {
+  final bool isAudio = widget.friendMessage.messageType == MessageType.record || widget.friendMessage.messageType == MessageType.audio;
     final bool isSender = widget.sentByMe;
     final EdgeInsetsGeometry messagePadding = isSender
         ? EdgeInsets.only(top: 4.h, bottom: 4.h, left: 0.w, right: 15.w)
@@ -114,8 +115,8 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
     final EdgeInsetsGeometry containerPadding =
         EdgeInsets.symmetric(vertical: 8.h, horizontal: 15.w);
 
-    final messageText = widget.friendMessage.message;
-    _checkTextDirection(messageText);
+  final messageText = widget.friendMessage.message;
+  _checkTextDirection(messageText);
 
     return InkWell(
       onDoubleTap: () {
@@ -180,14 +181,14 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
         );
       },
       child: Container(
-        padding: widget.friendMessage.messageType == MessageType.record
+        padding: isAudio
             ? null
             : messagePadding,
         alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: messageMargin,
           padding: containerPadding,
-          decoration: widget.friendMessage.messageType == MessageType.record
+          decoration: isAudio
               ? null
               : BoxDecoration(
                   borderRadius: isSender
@@ -279,30 +280,34 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
               VideoWidget(
                 videoPath: mediaUrl!,
                 senderId: widget.friendMessage.sender,
+                sentAt:  widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
                 isInGroup: false,
                 senderName: widget.friendName,
               ),
             if (widget.friendMessage.replayToStory != null && !isVideo)
               ImageWidget(
                 imagePath: mediaUrl!,
+                sentAt:  widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
                 senderId: widget.friendMessage.sender,
                 isInGroup: false,
                 senderName: widget.friendName,
+                isLink: isLink,
+                friendMessage: widget.friendMessage,
               ),
-            GestureDetector(
+            if (widget.friendMessage.replayToStory == null) GestureDetector(
               onTap: isLink
                   ? () async {
-                      if (await canLaunchUrl(
-                        Uri.parse(widget.friendMessage.message),
-                      )) {
-                        await launchUrl(
-                          Uri.parse(widget.friendMessage.message),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      } else {
-                        throw 'Could not launch ${widget.friendMessage.message}';
-                      }
-                    }
+                if (await canLaunchUrl(
+                  Uri.parse(widget.friendMessage.message),
+                )) {
+                  await launchUrl(
+                    Uri.parse(widget.friendMessage.message ),
+                    mode: LaunchMode.externalApplication,
+                  );
+                } else {
+                  throw 'Could not launch ${widget.friendMessage.message}';
+                }
+              }
                   : null,
               child: Text(
                 widget.friendMessage.message,
@@ -313,8 +318,10 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
                   color: isLink ? Colors.blue : Colors.white,
                 ),
               ),
-            ),
+            ) ,
+            if (widget.friendMessage.replayToStory == null)
             SizedBox(height: 5.h),
+            if (widget.friendMessage.replayToStory == null)
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -362,7 +369,7 @@ class _FriendMessagesTileState extends State<FriendMessagesTile> {
           senderId: widget.friendMessage.sender,
           isInGroup: false,
         );
-      case MessageType.record:
+      case MessageType.record || MessageType.audio:
         return RecordTile(
           recordPath: widget.friendMessage.mediaUrls?.first ?? '',
           sentAt: widget.friendMessage.sentAt!.toLocal().millisecondsSinceEpoch,
